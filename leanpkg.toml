@@ -1,0 +1,8 @@
+[package]
+name = "knot-theory"
+version = "0.1"
+lean_version = "leanprover-community/lean:3.49.1"
+path = "src"
+
+[dependencies]
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "2fe1f93c50b8b8ce1b72cca1158fbef4052f4c9e"}
