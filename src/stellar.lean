@@ -14,7 +14,7 @@ def stellar_subdivision
     (x : α)
     (s_in_X : s ∈ X.simplices)
     (x_nin_X : x ∉ vertices X)
-  : simplicial_coe (α × ℕ) α -> simplicial_complex α
+  : simplicial_coe (α × ℕ) α → simplicial_complex α
 := λ φ : simplicial_coe (α × ℕ) α,
     (X\St(X, s) s_in_X) ∪ φ[((φ[((simplex {x}) ⋆ ∂s)]) ⋆ Lk(X, s) s_in_X)]
 notation `σ(` X `, ` s `; ` x `, ` φ `; ` s_ne `, ` s_in_X `, ` x_nin_X `)` := @stellar_subdivision _ _ X s s_ne x s_in_X x_nin_X φ
@@ -108,6 +108,19 @@ lemma stellar_equiv_trans
 := begin
   unfold stellar_equiv,
   apply relation.transitive_refl_trans_gen,
+end
+
+lemma iso_stellar_equiv
+    (X Y : simplicial_complex α)
+  : X ≅ Y → X ≅ₛₜ Y
+:= begin
+  intro X_iso_Y,
+  simp only[stellar_equiv],
+  apply relation.refl_trans_gen.single,
+  simp only[stellar_move],
+  intro φ,
+  right, right,
+  assumption,
 end
 
 /-
@@ -254,7 +267,7 @@ lemma join_comm_stellar_equiv
     (@stellar_subdivision _ _ (L ⋆ Z) (t ⊔ₛ ∅) Ht_empty_ne (y, 0) Ht_empty Hy_0 ψ)
     ((@stellar_subdivision _ _ L t Ht_ne y Ht Hy φ) ⋆ Z),
   rw [simplicial_iso_symm],
-  apply stellar_subdiv_distr_join_left;
+  apply @stellar_subdiv_distr_join_left _ _ _ _ _ Ht_ne;
   assumption,
 
   apply simplicial_join_iso_left,
@@ -291,7 +304,7 @@ lemma join_comm_stellar_equiv
     (@stellar_subdivision _ _ (K ⋆ Z) (s ⊔ₛ ∅) Hs_empty_ne (x, 0) Hs_empty Hx_0 ψ)
     ((@stellar_subdivision _ _ K s Hs_ne x Hs Hx φ) ⋆ Z),
   rw [simplicial_iso_symm],
-  apply stellar_subdiv_distr_join_left;
+  apply @stellar_subdiv_distr_join_left _ _ _ _ _ Hs_ne;
   assumption,
 
   apply simplicial_join_iso_left,
@@ -343,7 +356,7 @@ lemma join_comm_stellar_equiv
     (@stellar_subdivision _ _ (Y ⋆ L) (∅ ⊔ₛ t) Ht_empty_ne (y, 1) Ht_empty Hy_1 ψ)
     (Y ⋆ @stellar_subdivision _ _ L t Ht_ne y Ht Hy φ),
   rw [simplicial_iso_symm],
-  apply stellar_subdiv_distr_join_right;
+  apply @stellar_subdiv_distr_join_right _ _ _ _ _ Ht_ne;
   assumption,
 
   apply simplicial_join_iso_right,
@@ -380,7 +393,7 @@ lemma join_comm_stellar_equiv
     (@stellar_subdivision _ _ (Y ⋆ K) (∅ ⊔ₛ s) Hs_empty_ne (x, 1) Hs_empty Hx_1 ψ)
     (Y ⋆ @stellar_subdivision _ _ K s Hs_ne x Hs Hx φ),
   rw [simplicial_iso_symm],
-  apply stellar_subdiv_distr_join_right;
+  apply @stellar_subdiv_distr_join_right _ _ _ _ _ Hs_ne;
   assumption,
 
   apply simplicial_join_iso_right,

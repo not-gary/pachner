@@ -327,7 +327,7 @@ def simplicial_map.comp [decidable_eq β] [decidable_eq γ]
   : simplicial_map X Z
 := simplicial_map.mk 
      (g.map ∘ f.map)
-     (is_simplicial_comp f.map f.is_simplicial g.map g.is_simplicial)     
+     (is_simplicial_comp f.map f.is_simplicial g.map g.is_simplicial)
 
 /-
 # Simplicial isomorphisms
@@ -345,8 +345,9 @@ def is_inverse_simplicial_iso
     {Y : simplicial_complex β}
     (f : simplicial_map X Y)
     (g : simplicial_map Y X)
-:= (simplicial_map.comp f g).map = (id_simplicial_map X).map
- ∧ (simplicial_map.comp g f).map = (id_simplicial_map Y).map
+  : Prop
+:= (vertices X).restrict (simplicial_map.comp f g).map = (vertices X).restrict id
+ ∧ (vertices Y).restrict (simplicial_map.comp g f).map = (vertices Y).restrict id
 
 lemma is_inverse_simplicial_iso_symm
     {X : simplicial_complex α}
@@ -371,6 +372,7 @@ def is_simplicial_iso
     {X : simplicial_complex α}
     {Y : simplicial_complex β}
     (f : simplicial_map X Y)
+  : Prop
 := ∃ g : simplicial_map Y X, is_inverse_simplicial_iso f g
 --:= set.bij_on (simplicial_map_lift f) X.simplices Y.simplices
 
@@ -404,13 +406,21 @@ lemma iso_comp_is_iso
   simp only[is_inverse_simplicial_iso, simplicial_map.comp, id_simplicial_map] at *,
   cases f_iso with f_inv_left f_inv_right,
   cases g_iso with g_inv_left g_inv_right,
+  simp at *,
+  unfold set.eq_on at *,
   split,
 
-  rw [function.comp.assoc, ←function.comp.assoc g_inv.map, g_inv_left],
+  intros x x_vert,
+  specialize f_inv_left x_vert,
+  specialize g_inv_left (simplicial_map_on_vertices X Y f x x_vert),
+  rw [function.comp.assoc, ←function.comp.assoc g_inv.map, function.comp_app, g_inv_left],
   simp,
   assumption,
 
-  rw [function.comp.assoc, ←function.comp.assoc f.map, f_inv_right],
+  intros z z_vert,
+  specialize g_inv_right z_vert,
+  specialize f_inv_right (simplicial_map_on_vertices Z Y g_inv z z_vert),
+  rw [function.comp.assoc, ←function.comp.assoc f.map, function.comp_app, f_inv_right],
   simp,
   assumption,
 end
@@ -1151,7 +1161,202 @@ lemma simplicial_join_incl_right
   refl,
 end
 
+lemma simplicial_join_vertices_mem_left
+    (X Y : simplicial_complex α)
+    (x : α)
+  : (x, 0) ∈ vertices (X ⋆ Y) ↔ x ∈ vertices X
+:= begin
+  dsimp only[vertices, simplicial_join, simplicial_complex.simplices],
+  repeat { rw [set.mem_Union] },
+  
+  split,
+  { intro x0_in_XY,
+    choose s s_lift Hs x0_in_s using x0_in_XY,
+    rw [set.mem_set_of, set.mem_range] at Hs,
+    choose Hs s_lifts using Hs,
+    choose t Ht u Hu tu_eq_s using Hs,
+    
+    use t,
+    rw [set.mem_Union],
+    use Ht,
+    have Hx_0 : (x, 0) ∈ s, from
+    begin
+      rw [←finset.mem_coe, s_lifts],
+      assumption,
+    end,
+    rw [finset.mem_coe],
+    rw [←tu_eq_s, simplex_disjoint_mem_left] at Hx_0,
+    assumption, },
+  { intro x_in_s,
+    choose s s_lift Hs x_in_s using x_in_s,
+    rw [set.mem_range] at Hs,
+    choose Hs s_lifts using Hs,
+    
+    use (s ⊔ₛ ∅),
+    rw [set.mem_set_of, set.mem_Union],
+    have H_ex : ∃ (z : finset α) (Hz : z ∈ X.simplices)
+                  (w : finset α) (Hw : w ∈ Y.simplices),
+                 z ⊔ₛ w = s ⊔ₛ ∅, from
+    begin
+      use s, split, assumption,
+      use ∅, split, apply simplicial_complex_empty_simplex,
+      refl,
+    end,
+    use H_ex,
+    rw [finset.mem_coe, simplex_disjoint_mem_left],
+    have Hx : x ∈ s, from
+    begin
+      rw [←finset.mem_coe, s_lifts],
+      assumption,
+    end,
+    assumption, }
+end
+
+lemma simplicial_join_vertices_mem_right
+    (X Y : simplicial_complex α)
+    (x : α)
+  : (x, 1) ∈ vertices (X ⋆ Y) ↔ x ∈ vertices Y
+:= begin
+  dsimp only[vertices, simplicial_join, simplicial_complex.simplices],
+  repeat { rw [set.mem_Union] },
+  
+  split,
+  { intro x1_in_XY,
+    choose s s_lift Hs x1_in_s using x1_in_XY,
+    rw [set.mem_set_of, set.mem_range] at Hs,
+    choose Hs s_lifts using Hs,
+    choose t Ht u Hu tu_eq_s using Hs,
+    
+    use u,
+    rw [set.mem_Union],
+    use Hu,
+    have Hx_1 : (x, 1) ∈ s, from
+    begin
+      rw [←finset.mem_coe, s_lifts],
+      assumption,
+    end,
+    rw [finset.mem_coe],
+    rw [←tu_eq_s, simplex_disjoint_mem_right] at Hx_1,
+    assumption, },
+  { intro x_in_s,
+    choose s s_lift Hs x_in_s using x_in_s,
+    rw [set.mem_range] at Hs,
+    choose Hs s_lifts using Hs,
+    
+    use (∅ ⊔ₛ s),
+    rw [set.mem_set_of, set.mem_Union],
+    have H_ex : ∃ (z : finset α) (Hz : z ∈ X.simplices)
+                  (w : finset α) (Hw : w ∈ Y.simplices),
+                 z ⊔ₛ w = ∅ ⊔ₛ s, from
+    begin
+      use ∅, split, apply simplicial_complex_empty_simplex,
+      use s, split, assumption,
+      refl,
+    end,
+    use H_ex,
+    rw [finset.mem_coe, simplex_disjoint_mem_right],
+    have Hx : x ∈ s, from
+    begin
+      rw [←finset.mem_coe, s_lifts],
+      assumption,
+    end,
+    assumption, }
+end
+
+lemma simplicial_join_mem_vertices
+    (X Y : simplicial_complex α)
+    (x : α × ℕ)
+  : x ∈ vertices (X ⋆ Y) ↔ (x.fst ∈ vertices X ∧ x.snd = 0) ∨ (x.fst ∈ vertices Y ∧ x.snd = 1)
+:= begin
+  split,
+  { intro x_in_XY,
+    simp only[vertices, simplicial_join] at x_in_XY,
+    rw [set.mem_Union] at x_in_XY,
+    choose y x_in_XY using x_in_XY,
+    rw [set.mem_Union] at x_in_XY,
+    choose Hy x_in_y using x_in_XY,
+    rw [set.mem_set_of] at Hy,
+    choose s Hy using Hy,
+    cases Hy with Hs Hy,
+    choose t Hy using Hy,
+    cases Hy with Ht st_eq_y,
+    rw [finset.ext_iff] at st_eq_y,
+    specialize st_eq_y x,
+    cases st_eq_y with st_imp_y y_imp_st,
+    rw [finset.mem_coe] at x_in_y,
+    specialize y_imp_st x_in_y,
+    rw [simplex_disjoint_mem] at y_imp_st,
+    cases y_imp_st with x_in_s x_in_t,
+    
+    left,
+    cases x_in_s with x_in_s x0,
+    split,
+    
+    simp only[vertices],
+    rw [set.mem_Union],
+    use s,
+    rw [set.mem_Union],
+    use Hs,
+    rw [finset.mem_coe],
+    assumption,
+    
+    assumption,
+    
+    right,
+    cases x_in_t with x_in_t x1,
+    split,
+    
+    simp only[vertices],
+    rw [set.mem_Union],
+    use t,
+    rw [set.mem_Union],
+    use Ht,
+    rw [finset.mem_coe],
+    assumption,
+    
+    assumption, },
+  { intro x_in_X_or_Y,
+    cases x_in_X_or_Y with x_in_X x_in_Y,
+    
+    cases x_in_X with x_in_X x0,
+    simp only[vertices] at *,
+    rw [set.mem_Union] at *,
+    choose s x_in_X using x_in_X,
+    use (s ⊔ₛ ∅),
+    rw [set.mem_Union] at *,
+    choose Hs x_in_s using x_in_X,
+    have Hs_incl : s ⊔ₛ ∅ ∈ (X ⋆ Y).simplices, from
+    begin
+      apply simplicial_join_incl_left,
+      assumption,
+    end,
+    use Hs_incl,
+    rw [finset.mem_coe, simplex_disjoint_mem],
+    left,
+    rw [finset.mem_coe] at x_in_s,
+    split; assumption,
+    
+    cases x_in_Y with x_in_Y x1,
+    simp only[vertices] at *,
+    rw [set.mem_Union] at *,
+    choose t x_in_Y using x_in_Y,
+    use (∅ ⊔ₛ t),
+    rw [set.mem_Union] at *,
+    choose Ht x_in_t using x_in_Y,
+    have Ht_incl : ∅ ⊔ₛ t ∈ (X ⋆ Y).simplices, from
+    begin
+      apply simplicial_join_incl_right,
+      assumption,
+    end,
+    use Ht_incl,
+    rw [finset.mem_coe, simplex_disjoint_mem],
+    right,
+    rw [finset.mem_coe] at x_in_t,
+    split; assumption, }
+end
+
 -- TODO: Fix the proofs that f, g are simplicial.
+-- TODO: Change the function to (s, t) ↦ (f s) ⊔ₛ (g t).
 lemma simplicial_join_iso
     (X Y : simplicial_complex α)
     (Z W : simplicial_complex β)
@@ -1160,7 +1365,6 @@ lemma simplicial_join_iso
   unfold is_simplicially_iso,
   unfold is_simplicial_iso,
   unfold is_inverse_simplicial_iso,
-  unfold id_simplicial_map,
   simp only[simplicial_map.comp, simplicial_map.map],
 
   intros X_iso_Z Y_iso_W,
@@ -1468,9 +1672,11 @@ lemma simplicial_join_iso
   use gs,
   simp only[simplicial_map.map],
 
+  -- TODO: Fix.
   split; rw [function.funext_iff],
   { intro x,
     simp only[id, function.comp, f, g],
+    simp at *,
     split_ifs;
     rw [prod.eq_iff_fst_eq_snd_eq],
 
@@ -1478,25 +1684,82 @@ lemma simplicial_join_iso
     simp,
     rw [←function.comp_apply g_zx.map f_xz.map, gzx_fxz_id],
     simp,
+
+    rw [←simplicial_join_vertices_mem_left _ Y],
+    have x_in_XY : ↑x ∈ vertices (X ⋆ Y), from
+    begin
+      apply subtype.coe_prop,
+    end,
+    rw [←h],
+    simp only[prod.mk.eta],
+    assumption,
     
     split,
     simp,
+
     rw [←function.comp_apply g_wy.map f_yw.map, gwy_fyw_id],
-    simp, },
+    simp,
+    
+    rw [←simplicial_join_vertices_mem_right X],
+    have x_in_XY : ↑x ∈ vertices (X ⋆ Y), from
+    begin
+      apply subtype.coe_prop,
+    end,
+    rw [simplicial_join_mem_vertices] at x_in_XY,
+    cases x_in_XY,
+    
+    cases x_in_XY with x_in_X x0,
+    contradiction,
+    
+    cases x_in_XY with x_in_Y x1,
+    rw [←x1],
+    simp only[prod.mk.eta],
+    rw [simplicial_join_mem_vertices],
+    right,
+    split; assumption, },
   { intro x,
     simp only[id, function.comp, f, g],
+    simp at *,
     split_ifs;
     rw [prod.eq_iff_fst_eq_snd_eq],
-    
+
     split,
     simp,
     rw [←function.comp_apply f_xz.map g_zx.map, fxz_gzx_id],
     simp,
+
+    rw [←simplicial_join_vertices_mem_left _ W],
+    have x_in_XY : ↑x ∈ vertices (Z ⋆ W), from
+    begin
+      apply subtype.coe_prop,
+    end,
+    rw [←h],
+    simp only[prod.mk.eta],
+    assumption,
     
     split,
     simp,
+
     rw [←function.comp_apply f_yw.map g_wy.map, fyw_gwy_id],
-    simp, }
+    simp,
+    
+    rw [←simplicial_join_vertices_mem_right Z],
+    have x_in_XY : ↑x ∈ vertices (Z ⋆ W), from
+    begin
+      apply subtype.coe_prop,
+    end,
+    rw [simplicial_join_mem_vertices] at x_in_XY,
+    cases x_in_XY,
+    
+    cases x_in_XY with x_in_X x0,
+    contradiction,
+    
+    cases x_in_XY with x_in_Y x1,
+    rw [←x1],
+    simp only[prod.mk.eta],
+    rw [simplicial_join_mem_vertices],
+    right,
+    split; assumption, },
 end
 
 lemma simplicial_join_iso_left
@@ -1557,108 +1820,6 @@ lemma simplicial_join_distr_union_right
     (X Y Z : simplicial_complex α)
   : (Y ∪ Z) ⋆ X ≅ (Y ⋆ X) ∪ (Z ⋆ X)
 := sorry
-
-lemma simplicial_join_vertices_mem_left
-    (X Y : simplicial_complex α)
-    (x : α)
-  : (x, 0) ∈ vertices (X ⋆ Y) ↔ x ∈ vertices X
-:= begin
-  dsimp only[vertices, simplicial_join, simplicial_complex.simplices],
-  repeat { rw [set.mem_Union] },
-  
-  split,
-  { intro x0_in_XY,
-    choose s s_lift Hs x0_in_s using x0_in_XY,
-    rw [set.mem_set_of, set.mem_range] at Hs,
-    choose Hs s_lifts using Hs,
-    choose t Ht u Hu tu_eq_s using Hs,
-    
-    use t,
-    rw [set.mem_Union],
-    use Ht,
-    have Hx_0 : (x, 0) ∈ s, from
-    begin
-      rw [←finset.mem_coe, s_lifts],
-      assumption,
-    end,
-    rw [finset.mem_coe],
-    rw [←tu_eq_s, simplex_disjoint_mem_left] at Hx_0,
-    assumption, },
-  { intro x_in_s,
-    choose s s_lift Hs x_in_s using x_in_s,
-    rw [set.mem_range] at Hs,
-    choose Hs s_lifts using Hs,
-    
-    use (s ⊔ₛ ∅),
-    rw [set.mem_set_of, set.mem_Union],
-    have H_ex : ∃ (z : finset α) (Hz : z ∈ X.simplices)
-                  (w : finset α) (Hw : w ∈ Y.simplices),
-                 z ⊔ₛ w = s ⊔ₛ ∅, from
-    begin
-      use s, split, assumption,
-      use ∅, split, apply simplicial_complex_empty_simplex,
-      refl,
-    end,
-    use H_ex,
-    rw [finset.mem_coe, simplex_disjoint_mem_left],
-    have Hx : x ∈ s, from
-    begin
-      rw [←finset.mem_coe, s_lifts],
-      assumption,
-    end,
-    assumption, }
-end
-
-lemma simplicial_join_vertices_mem_right
-    (X Y : simplicial_complex α)
-    (x : α)
-  : (x, 1) ∈ vertices (X ⋆ Y) ↔ x ∈ vertices Y
-:= begin
-  dsimp only[vertices, simplicial_join, simplicial_complex.simplices],
-  repeat { rw [set.mem_Union] },
-  
-  split,
-  { intro x1_in_XY,
-    choose s s_lift Hs x1_in_s using x1_in_XY,
-    rw [set.mem_set_of, set.mem_range] at Hs,
-    choose Hs s_lifts using Hs,
-    choose t Ht u Hu tu_eq_s using Hs,
-    
-    use u,
-    rw [set.mem_Union],
-    use Hu,
-    have Hx_1 : (x, 1) ∈ s, from
-    begin
-      rw [←finset.mem_coe, s_lifts],
-      assumption,
-    end,
-    rw [finset.mem_coe],
-    rw [←tu_eq_s, simplex_disjoint_mem_right] at Hx_1,
-    assumption, },
-  { intro x_in_s,
-    choose s s_lift Hs x_in_s using x_in_s,
-    rw [set.mem_range] at Hs,
-    choose Hs s_lifts using Hs,
-    
-    use (∅ ⊔ₛ s),
-    rw [set.mem_set_of, set.mem_Union],
-    have H_ex : ∃ (z : finset α) (Hz : z ∈ X.simplices)
-                  (w : finset α) (Hw : w ∈ Y.simplices),
-                 z ⊔ₛ w = ∅ ⊔ₛ s, from
-    begin
-      use ∅, split, apply simplicial_complex_empty_simplex,
-      use s, split, assumption,
-      refl,
-    end,
-    use H_ex,
-    rw [finset.mem_coe, simplex_disjoint_mem_right],
-    have Hx : x ∈ s, from
-    begin
-      rw [←finset.mem_coe, s_lifts],
-      assumption,
-    end,
-    assumption, }
-end
 
 -- Lemma 2.1, p.5
 lemma dim_of_join

@@ -3,7 +3,6 @@ import data.set        -- basics on sets
 import data.set.finite -- basics on finite sets
 import data.finset     -- type-level finite sets
 import .simplicial_complex
-import .fin_simplicial_complex
 import .simplicial_map
 
 variables {α β : Type*}
