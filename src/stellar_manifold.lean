@@ -14,53 +14,81 @@ def stellar_n_sphere
 := simplicial_complex.mk
     (finset.powerset (finset.range (n + 2)) \ {finset.range (n + 2)})
     (begin
-      simp, safe,
+      rw [set.nonempty_coe_sort, set.nonempty_def],
+      use ∅,
+      rw [set.mem_diff],
+      split,
 
-      have : s ⊆ finset.range(n + 2) -> finset.range(n + 2) ⊆ s -> s = finset.range(n + 2), from
-      begin
-        exact subset_antisymm,
-      end,
-      finish,
+      rw [finset.mem_coe],
+      apply finset.empty_mem_powerset,
 
-      have : t ⊆ s -> s ⊆ finset.range(n + 2) -> t ⊆ finset.range(n + 2), from
-      begin
-        exact subset_trans,
-      end,
-      finish
+      rw [set.mem_singleton_iff],
+      apply ne.symm,
+      apply finset.nonempty.ne_empty,
+      rw [finset.nonempty_range_iff],
+      tauto,
     end)
+    (begin
+      simp only[is_subset_closed],
+      intros s s_sphere t t_sset_s,
 
-notation `S` n := stellar_n_sphere n
+      rw [set.mem_diff, finset.mem_coe, finset.mem_powerset, set.mem_singleton_iff] at *,
+      cases s_sphere with s_in_power s_ne_range,
+      split,
+
+      apply @subset_trans _ _ _ t s (finset.range(n + 2));
+      assumption,
+
+      have Hs : s ⊂ finset.range (n + 2), from
+      begin
+        apply ssubset_of_ne_of_subset;
+        assumption,
+      end,
+      apply ne_of_ssubset,
+      apply @ssubset_of_subset_of_ssubset _ _ _ _ t s (finset.range(n + 2));
+      assumption,
+    end)
+notation `S(` n `)` := stellar_n_sphere n
 
 def stellar_n_disk
     (n : ℕ)
   : simplicial_complex ℕ
 := simplicial_complex.mk
     (finset.powerset (finset.range (n + 1)))
-    (by {simp, tauto})
+    (begin
+      rw [set.nonempty_coe_sort, set.nonempty_def],
+      use ∅,
+      rw [finset.mem_coe],
+      apply finset.empty_mem_powerset,
+    end)
+    (by { simp, tauto })
+notation `D(` n `)` := stellar_n_disk n
 
-notation `D` n := stellar_n_disk n
-
+@[simp]
 def is_stellar_sphere
     (X : simplicial_complex α)
   : Prop
-:= ∃ n : ℕ, is_stellar_equivalent X (S (n + 1))
+:= X ≅ @empty_sc α ∨ ∃ (n : ℕ) (Y : simplicial_complex α), X ≅ₛₜ Y ∧ Y ≅ S(n)
 
+@[simp]
 def is_stellar_n_sphere
     (X : simplicial_complex α)
     (n : ℕ)
   : Prop
-:= is_stellar_equivalent X (S (n + 1))
+:= X ≅ @empty_sc α ∨ ∃ Y : simplicial_complex α, X ≅ₛₜ Y ∧ Y ≅ S(n)
 
+@[simp]
 def is_stellar_ball
     (X : simplicial_complex α)
   : Prop
-:= ∃ n : ℕ, is_stellar_equivalent X (D (n + 1))
+:= X ≅ @empty_sc α ∨ ∃ (n : ℕ) (Y : simplicial_complex α), X ≅ₛₜ Y ∧ Y ≅ D(n)
 
+@[simp]
 def is_stellar_n_ball
     (X : simplicial_complex α)
     (n : ℕ)
   : Prop
-:= is_stellar_equivalent X (D (n + 1))
+:= X ≅ @empty_sc α ∨ ∃ Y : simplicial_complex α, X ≅ₛₜ Y ∧ Y ≅ D(n)
 
 @[simp]
 def is_stellar_manifold
@@ -68,8 +96,8 @@ def is_stellar_manifold
   : Prop
 := ∀ x : α,
     ({x} ∈ X.simplices) →
-      is_stellar_sphere (Lk(X, {x})) ∨
-      is_stellar_ball (Lk(X, {x}))
+      is_stellar_sphere (Lk(X, {x}) (by assumption)) ∨
+      is_stellar_ball (Lk(X, {x}) (by assumption))
 
 structure stellar_manifold (α : Type*) [decidable_eq α]
 := mk :: (complex : simplicial_complex α)
@@ -146,16 +174,466 @@ structure closed_stellar_manifold (α : Type*) [decidable_eq α]
 # Properties of Stellar Balls/Spheres
 -/
 
+lemma link_zero_disk_empty
+    (x : ℕ)
+    (x_in_disk : {x} ∈ D(0).simplices)
+  : Lk(D(0), {x}) x_in_disk ≅ @empty_sc ℕ
+:= begin
+  apply simplicial_iso_preserves_equiv,
+  simp only[link, stellar_n_disk, empty_sc, simplicial_complex.simplices],
+  simp only[stellar_n_disk] at x_in_disk,
+  rw [set.ext_iff],
+  intro s,
+  split,
+
+  intro s_in_link,
+  rw [set.mem_sep_iff] at s_in_link,
+  choose s_in_power xs_in_power xs_empty using s_in_link,
+  rw [finset.mem_coe] at *,
+  rw [finset.mem_powerset] at *,
+  have H_range : finset.range (0 + 1) = {0}, by tauto,
+  rw [H_range] at *,
+  have Hx_0 : {x} = {0}, by finish,
+  rw [finset.singleton_inj] at Hx_0,
+  rw [Hx_0] at *,
+  have : s = ∅ ∨ s = {0}, by finish,
+  have Hs_empty : s = ∅, by finish,
+  rw [set.mem_singleton_iff],
+  assumption,
+
+  intro s_empty,
+  rw [set.mem_singleton_iff] at s_empty,
+  rw [set.mem_sep_iff],
+  rw [finset.mem_coe, finset.mem_powerset] at x_in_disk,
+  have H_range : finset.range (0 + 1) = {0}, by tauto,
+  rw [H_range, finset.singleton_subset_iff, finset.mem_singleton] at x_in_disk,
+  split,
+
+  rw [finset.mem_coe, s_empty],
+  apply finset.empty_mem_powerset,
+  split,
+
+  rw [finset.mem_coe, s_empty, x_in_disk, finset.union_empty, H_range],
+  apply finset.mem_powerset_self,
+
+  rw [s_empty, x_in_disk, finset.inter_empty],
+end
+
 -- Lemma 3.2 (1), p.10
 lemma stellar_n_ball_is_stellar_mfd
-  : ∀ (n : ℕ), is_stellar_manifold (D n)
-:= sorry
+  : ∀ (n : ℕ), is_stellar_manifold D(n)
+:= begin
+  intro n,
+  induction n,
+
+  dsimp only[is_stellar_manifold, is_stellar_sphere, is_stellar_ball],
+  intros x x_in_disk,
+  right, left,
+  apply link_zero_disk_empty,
+
+  dsimp only[is_stellar_manifold, is_stellar_sphere, is_stellar_ball],
+  intros x x_in_disk,
+  set m := n_n.succ,
+  set n := n_n,
+  right, right,
+  use n, use D(n),
+  split,
+
+  rotate, refl,
+
+  apply iso_stellar_equiv,
+  unfold is_simplicially_iso,
+
+  let f : ℕ → ℕ := λ i : ℕ, if (i < x) then i else (i - 1),
+  have f_simpl : is_simplicial_map (Lk(D(m), {x}) x_in_disk) D(n) f, from
+  begin
+    unfold is_simplicial_map,
+    intros s s_in_link,
+    simp only[link, stellar_n_disk, simplicial_complex.simplices] at x_in_disk s_in_link ⊢,
+    rw [set.mem_sep_iff] at s_in_link,
+    choose s_in_power xs_in_power xs_empty using s_in_link,
+    rw [finset.mem_coe, finset.mem_powerset, finset.subset_iff] at *,
+    intros y y_in_img,
+    rw [finset.mem_image] at y_in_img,
+    choose b Hb fb_eq_y using y_in_img,
+    specialize s_in_power Hb,
+    have Hbs : b ∈ {x} ∪ s, by { apply finset.mem_union_right, assumption },
+    specialize xs_in_power Hbs,
+    have Hx : x ∈ {x}, by { rw [finset.mem_singleton], },
+    specialize x_in_disk Hx, 
+    simp only[f] at fb_eq_y,
+    revert fb_eq_y,
+    split_ifs,
+
+    intro b_eq_y,
+    rw [finset.mem_range] at *,
+    subst b,
+    have Hmn : n + 1 = m, by tauto,
+    rw [Hmn] at *,
+    omega,
+
+    intro b_pred_eq_y,
+    rw [finset.mem_range] at *,
+    subst y,
+    have Hmn : n + 1 = m, by tauto,
+    rw [Hmn] at *,
+    omega,
+  end,
+
+  let g : ℕ → ℕ := λ i : ℕ, if (i < x) then i else i + 1,
+  have g_simpl : is_simplicial_map D(n) (Lk(D(m), {x}) x_in_disk) g, from
+  begin
+    unfold is_simplicial_map,
+    intros s s_in_disk,
+    simp only[link, stellar_n_disk, simplicial_complex.simplices] at x_in_disk s_in_disk ⊢,
+    rw [set.mem_sep_iff],
+    repeat { rw [finset.mem_coe, finset.mem_powerset, finset.subset_iff] at *, },
+    split,
+
+    intros y y_in_img,
+    rw [finset.mem_image] at y_in_img,
+    choose a Ha ga_eq_x using y_in_img,
+    specialize s_in_disk Ha,
+    have Hx : x ∈ {x}, by { rw [finset.mem_singleton] },
+    specialize x_in_disk Hx,
+    rw [finset.mem_range] at *,
+    revert ga_eq_x,
+    simp only[g],
+    split_ifs,
+
+    intro a_eq_y,
+    subst y,
+    omega,
+
+    intro a_succ_eq_y,
+    subst y,
+    have Hmn : n + 1 = m, by tauto,
+    rw [Hmn] at *,
+    omega,
+
+    split,
+    intros y y_in_ximg,
+    rw [finset.mem_union] at y_in_ximg,
+    cases y_in_ximg,
+
+    specialize x_in_disk y_in_ximg,
+    assumption,
+
+    rw [finset.mem_image] at y_in_ximg,
+    choose a Ha ga_eq_y using y_in_ximg,
+    specialize s_in_disk Ha,
+    rw [finset.mem_range] at *,
+    simp only[g] at ga_eq_y,
+    revert ga_eq_y,
+    split_ifs,
+
+    intro a_eq_y,
+    subst y,
+    have Hmn : n + 1 = m, by tauto,
+    rw [Hmn] at *,
+    omega,
+
+    intro a_succ_eq_y,
+    subst y,
+    have Hmn : n + 1 = m, by tauto,
+    rw [Hmn] at *,
+    omega,
+
+    apply finset.singleton_inter_of_not_mem,
+    rw [finset.mem_image],
+    simp,
+    intros y y_in_s,
+    simp only[g],
+    split_ifs;
+    omega,
+  end,
+
+  let fs : simplicial_map (Lk(D(m), {x}) x_in_disk) D(n) := simplicial_map.mk f f_simpl,
+  let gs : simplicial_map D(n) (Lk(D(m), {x}) x_in_disk) := simplicial_map.mk g g_simpl,
+
+  use fs,
+  unfold is_simplicial_iso,
+  use gs,
+  unfold is_inverse_simplicial_iso,
+  split,
+
+  { simp only[simplicial_map.comp, simplicial_map.map],
+    simp,
+    unfold set.eq_on,
+    intros y y_in_vert_link,
+    simp only[vertices] at y_in_vert_link,
+    rw [set.mem_Union] at y_in_vert_link,
+    choose s y_in_vert_link using y_in_vert_link,
+    rw [set.mem_Union] at y_in_vert_link,
+    choose Hs y_in_s using y_in_vert_link,
+    
+    simp only[simplicial_complex.simplices] at Hs,
+    rw [set.mem_inter_iff] at Hs,
+    cases Hs with Hs_union Hs_inter,
+    rw [set.mem_sep_iff] at Hs_union Hs_inter,
+    cases Hs_union with s_in_disk xs_in_disk,
+    cases Hs_inter with s_in_disk xs_empty,
+    rw [finset.mem_coe] at *,
+
+    have y_nin_xs : y ∉ {x} ∩ s, from
+    begin
+      rw [xs_empty],
+      tauto,
+    end,
+    rw [finset.mem_inter] at y_nin_xs,
+    simp at y_nin_xs,
+    have y_ne_x : y ≠ x, from
+    begin
+      revert y_in_s,
+      contrapose,
+      tauto,
+    end,
+
+    rw [function.comp_apply],
+    simp only[f, g],
+    split_ifs,
+    
+    simp,
+    
+    have : y = x, by omega,
+    contradiction,
+    
+    have : 1 ≤ y, by omega,
+    rw [nat.sub_add_cancel],
+    simp,
+    assumption, },
+
+  { simp only[simplicial_map.comp, simplicial_map.map],
+    simp,
+    unfold set.eq_on,
+    intros y y_in_vert_disk,
+    simp only[vertices] at y_in_vert_disk,
+    rw [set.mem_Union] at y_in_vert_disk,
+    choose s y_in_vert_disk using y_in_vert_disk,
+    rw [set.mem_Union] at y_in_vert_disk,
+    choose Hs y_in_s using y_in_vert_disk,
+    
+    simp only[stellar_n_disk, simplicial_complex.simplices] at Hs,
+    rw [finset.mem_coe] at *,
+    rw [finset.mem_powerset, finset.subset_iff] at Hs,
+    specialize Hs y_in_s,
+    rw [finset.mem_range] at Hs,
+    
+    rw [function.comp_apply],
+    simp only[f, g],
+    split_ifs,
+    
+    simp,
+    
+    have : y < x, by omega,
+    contradiction,
+    
+    simp, }
+end
+
+-- TODO: Finish lemma.
+lemma link_zero_sphere_empty
+    (x : ℕ)
+    (x_in_sphere : {x} ∈ S(0).simplices)
+  : Lk(S(0), {x}) x_in_sphere ≅ @empty_sc ℕ
+:= begin
+  apply simplicial_iso_preserves_equiv,
+  simp only[link, stellar_n_sphere, empty_sc, simplicial_complex.simplices],
+  simp only[stellar_n_sphere, simplicial_complex.simplices] at x_in_sphere,
+  rw [set.ext_iff],
+  intro s,
+  split,
+
+  { intro s_in_link,
+    rw [set.mem_sep_iff] at s_in_link,
+    choose s_in_power xs_in_power xs_empty using s_in_link,
+    rw [set.mem_diff] at *,
+    
+    cases s_in_power with s_in_power s_nin_int,
+    cases xs_in_power with xs_in_power xs_nin_int,
+    cases x_in_sphere with x_in_power x_nin_int,
+    
+    rw [finset.mem_coe, finset.mem_powerset] at *,
+    rw [set.mem_singleton_iff] at *,
+    have H_range : finset.range (0 + 2) = {0, 1}, by tauto,
+    rw [H_range] at *,
+    have Hx : x ∈ {x}, by { rw [finset.mem_singleton], },
+    rw [finset.subset_iff] at x_in_power,
+    specialize x_in_power Hx,
+    simp at x_in_power,
+    cases x_in_power,
+    
+    subst x,
+    have s_sset : s ⊂ {0, 1}, from
+    begin
+      rw [finset.ssubset_iff_subset_ne],
+      split; assumption,
+    end,
+    have s0_sset : {0} ∪ s ⊂ {0, 1}, from
+    begin
+      rw [finset.ssubset_iff_subset_ne],
+      split; assumption,
+    end,
+    rw [finset.ssubset_iff_subset_ne] at s0_sset,
+    cases s0_sset with s0_subset s0_ne,
+    have s0_diff_sset : ({0} ∪ s) \ {0} ⊂ {0, 1} \ {0}, from
+    begin
+      rw [finset.union_sdiff_left],
+      rw [finset.ssubset_iff_subset_ne],
+      split,
+
+      apply finset.sdiff_subset_sdiff; tauto,
+
+      simp,
+      rw [finset.ext_iff],
+      simp, use 1,
+      split; simp,
+
+      sorry,
+    end,
+    all_goals {sorry}, },
+
+  { sorry, }
+end
 
 -- Lemma 3.2 (2), p.10
+-- TODO: Prove maps are simplicial. Should be almost identical to disk.
 lemma stellar_n_sphere_is_stellar_mfd
-  : ∀ (n : ℕ), is_stellar_manifold (S n)
+  : ∀ (n : ℕ), is_stellar_manifold S(n)
 := begin
-  sorry
+  intro n,
+  induction n;
+  unfold is_stellar_manifold;
+  intros x x_in_sphere;
+  left,
+
+  unfold is_stellar_sphere,
+  left,
+  apply link_zero_sphere_empty,
+
+  set n := n_n,
+  set m := n.succ,
+  have Hmn : n + 1 = m, by tauto,
+
+  unfold is_stellar_sphere,
+  right,
+  use n, use S(n),
+  split,
+
+  rotate, refl,
+
+  apply iso_stellar_equiv,
+  unfold is_simplicially_iso,
+
+  let f : ℕ → ℕ := λ i : ℕ, if (i < x) then i else (i - 1),
+  have f_simpl : is_simplicial_map (Lk(S(m), {x}) x_in_sphere) S(n) f, by sorry,
+
+  let g : ℕ → ℕ := λ i : ℕ, if (i < x) then i else (i + 1),
+  have g_simpl : is_simplicial_map S(n) (Lk(S(m), {x}) x_in_sphere) g, by sorry,
+
+  let fs : simplicial_map (Lk(S(m), {x}) x_in_sphere) S(n) := simplicial_map.mk f f_simpl,
+  let gs : simplicial_map S(n) (Lk(S(m), {x}) x_in_sphere) := simplicial_map.mk g g_simpl,
+
+  use fs,
+  unfold is_simplicial_iso,
+  use gs,
+  unfold is_inverse_simplicial_iso,
+  split,
+
+  { simp only[simplicial_map.comp, simplicial_map.map],
+    simp,
+    unfold set.eq_on,
+    intros y y_in_vert,
+
+    simp only[vertices] at y_in_vert,
+    rw [set.mem_Union] at y_in_vert,
+    choose s y_in_vert using y_in_vert,
+    rw [set.mem_Union] at y_in_vert,
+    choose s_in_link y_in_s using y_in_vert,
+    
+    simp only[simplicial_complex.simplices] at s_in_link,
+    rw [set.mem_inter_iff] at s_in_link,
+    cases s_in_link with s_in_union s_in_inter,
+    rw [set.mem_sep_iff] at s_in_union s_in_inter,
+    cases s_in_union with s_in_sphere xs_in_sphere,
+    cases s_in_inter with s_in_sphere xs_empty,
+    
+    simp only[stellar_n_sphere] at *,
+    rw [set.mem_diff] at *,
+    cases s_in_sphere with s_in_power s_nin_int,
+    cases xs_in_sphere with xs_in_power xs_nin_int,
+    cases x_in_sphere with x_in_power x_nin_int,
+    rw [finset.mem_coe] at *,
+    
+    rw [finset.mem_powerset, finset.subset_iff] at *,
+    specialize s_in_power y_in_s,
+    have Hx : x ∈ {x}, by { rw [finset.mem_singleton] },
+    specialize x_in_power Hx,
+    have Hxs : x ∈ {x} ∪ s, by { rw [finset.mem_union], left, apply Hx },
+    specialize xs_in_power Hxs,
+    rw [finset.mem_range] at *,
+
+    have y_nin_xs : y ∉ {x} ∩ s, from
+    begin
+      rw [xs_empty],
+      tauto,
+    end,
+    rw [finset.mem_inter] at y_nin_xs,
+    simp at y_nin_xs,
+    have y_ne_x : y ≠ x, from
+    begin
+      revert y_in_s,
+      contrapose,
+      tauto,
+    end,
+    
+    rw [function.comp_apply],
+    simp only[f, g],
+    split_ifs,
+    
+    simp,
+    
+    have : y = x, by omega,
+    contradiction,
+    
+    have : 1 ≤ y, by omega,
+    rw [nat.sub_add_cancel],
+    simp,
+    assumption, },
+
+  { simp only[simplicial_map.comp, simplicial_map.map],
+    simp,
+    unfold set.eq_on,
+    intros y y_in_vert,
+
+    simp only[vertices] at y_in_vert,
+    rw [set.mem_Union] at y_in_vert,
+    choose s y_in_vert using y_in_vert,
+    rw [set.mem_Union] at y_in_vert,
+    choose s_in_sphere y_in_s using y_in_vert,
+    
+    simp only[stellar_n_sphere, simplicial_complex.simplices] at s_in_sphere x_in_sphere,
+    rw [set.mem_diff] at s_in_sphere x_in_sphere,
+    cases s_in_sphere with s_in_power s_nin_int,
+    cases x_in_sphere with x_in_power x_nin_int,
+    rw [finset.mem_coe] at *,
+    
+    rw [finset.mem_powerset, finset.subset_iff] at *,
+    specialize s_in_power y_in_s,
+    have Hx : x ∈ {x}, by { rw [finset.mem_singleton] },
+    specialize x_in_power Hx,
+    rw [finset.mem_range] at *,
+
+    rw [function.comp_apply],
+    simp only[f, g],
+    split_ifs,
+
+    simp,
+
+    have : y < x, by omega,
+    contradiction,
+
+    simp, },
 end
 
 -- Lemma 3.3 (1), p.12
