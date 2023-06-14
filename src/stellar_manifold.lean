@@ -747,11 +747,18 @@ lemma simplicial_complex_boundary_iso
   : X ≅ Y → simplicial_complex_boundary X ≅ simplicial_complex_boundary Y
 := sorry
 
-lemma boundary_simplex_in_complex
+lemma simplicial_complex_boundary_subcomplex
     (X : simplicial_complex ℕ)
     (s : finset ℕ)
     (s_in_bd_X : s ∈ (simplicial_complex_boundary X).simplices)
   : s ∈ X.simplices
+:= sorry
+
+lemma simplicial_complex_boundary_subcomplex_vertices
+    (X : simplicial_complex ℕ)
+    (x : ℕ)
+    (x_in_X_bd : x ∈ vertices (simplicial_complex_boundary X))
+  : x ∈ vertices X
 := sorry
 
 /-
@@ -1565,7 +1572,7 @@ lemma boundary_link_comm
     (X : stellar_manifold)
     (s : finset ℕ)
     (s_in_bd_X : s ∈ (simplicial_complex_boundary X.complex).simplices)
-  : 0 ≤ dim s → simplicial_complex_boundary (Lk(X.complex, s) (boundary_simplex_in_complex X.complex s s_in_bd_X)) ≅ Lk(simplicial_complex_boundary X.complex, s) s_in_bd_X
+  : 0 ≤ dim s → simplicial_complex_boundary (Lk(X.complex, s) (simplicial_complex_boundary_subcomplex X.complex s s_in_bd_X)) ≅ Lk(simplicial_complex_boundary X.complex, s) s_in_bd_X
 := sorry
 -- := begin
 --   intro s_nontriv,
@@ -1692,7 +1699,7 @@ lemma stellar_ball_boundary_comm
 := sorry
 
 lemma disk_boundary_is_sphere
-    (n : ℕ)
+    (n : ℤ)
   : simplicial_complex_boundary D(n + 1) ≅ S(n)
 := sorry
 
@@ -1896,12 +1903,12 @@ lemma closed_mfd_empty_boundary
 end
 
 -- Proposition 3.11 (1), p.18
-lemma stellar_ball_boundary_dist_join_union
+lemma stellar_ball_boundary_distr_join_union
     (X Y : simplicial_complex ℕ)
     (φ : simplicial_coe (ℕ × ℕ) ℕ)
-    (X_stellar_ball : is_stellar_ball X)
-    (Y_stellar_ball : is_stellar_ball Y)
-  : simplicial_complex_boundary (φ[X ⋆ Y]) ≅ (X ⋆ (simplicial_complex_boundary Y)) ∪ ((simplicial_complex_boundary X) ⋆ Y)
+  : is_stellar_ball X →
+      is_stellar_ball Y →
+        simplicial_complex_boundary (φ[X ⋆ Y]) ≅ (X ⋆ (simplicial_complex_boundary Y)) ∪ ((simplicial_complex_boundary X) ⋆ Y)
 := sorry
 
 -- Proposition 3.11 (2), p.18
@@ -1910,7 +1917,24 @@ lemma stellar_sphere_ball_boundary_distr_join_left
     (φ : simplicial_coe (ℕ × ℕ) ℕ)
     (X_stellar_sphere : is_stellar_sphere X)
     (Y_stellar_ball : is_stellar_ball Y)
-  : simplicial_complex_boundary (φ[X ⋆ Y]) ≅ X ⋆ (simplicial_complex_boundary Y)
+  : is_stellar_sphere X →
+      is_stellar_ball Y →
+        simplicial_complex_boundary (φ[X ⋆ Y]) ≅ X ⋆ (simplicial_complex_boundary Y)
+:= sorry
+
+lemma neg_one_ball_is_zero_disk {α : Type*} [decidable_eq α]
+    (X : simplicial_complex α)
+    (x : α)
+    (x_nin_X : x ∉ vertices X)
+  : neg_one_ball x x_nin_X ≅ D(0)
+:= sorry
+
+lemma cone_is_zero_disk_join_boundary
+    (X : simplicial_complex ℕ)
+    (x : ℕ)
+    (φ : simplicial_coe (ℕ × ℕ) ℕ)
+    (x_nin_X : x ∉ vertices X)
+  : Cone(X, x) x_nin_X ≅ D(0) ⋆ X
 := sorry
 
 -- Corollary 3.12, p.20
@@ -1918,8 +1942,61 @@ lemma stellar_ball_boundary_comm_cone_union
     (X : simplicial_complex ℕ)
     (x : ℕ)
     (φ : simplicial_coe (ℕ × ℕ) ℕ)
-    (X_stellar_ball : is_stellar_ball X)
     (x_nin_X : x ∉ vertices X)
-  : simplicial_complex_boundary (φ[cone X x x_nin_X]) ≅ φ[(cone (simplicial_complex_boundary X) x sorry)] ∪ X
-:= sorry
+  : is_stellar_ball X →
+      simplicial_complex_boundary (φ[cone X x x_nin_X]) ≅ φ[(cone (simplicial_complex_boundary X) x (by { revert x_nin_X, contrapose, simp, apply simplicial_complex_boundary_subcomplex_vertices }))] ∪ X
+:= begin
+  set x_nin_X_bd : x ∉ vertices (simplicial_complex_boundary X) := by { revert x_nin_X, contrapose, simp, apply simplicial_complex_boundary_subcomplex_vertices },
+
+  intro X_ball,
+  apply simplicial_iso_trans
+    (simplicial_complex_boundary (φ[Cone(X, x) x_nin_X]))
+    (simplicial_complex_boundary (φ[D(0) ⋆ X])),
+  apply simplicial_complex_boundary_iso,
+  
+  apply simplicial_iso_trans (φ[Cone(X, x) x_nin_X]) (Cone(X, x) x_nin_X),
+  rw [simplicial_iso_symm],
+  apply φ.iso_onto_image,
+
+  rw [simplicial_iso_symm],
+  apply simplicial_iso_trans (φ[D(0) ⋆ X]) (D(0) ⋆ X),
+  rw [simplicial_iso_symm],
+  apply φ.iso_onto_image,
+  
+  rw [simplicial_iso_symm],
+  apply cone_is_zero_disk_join_boundary,
+  apply φ,
+
+  apply simplicial_iso_trans
+    (simplicial_complex_boundary (φ[D(0) ⋆ X]))
+    ((D(0) ⋆ simplicial_complex_boundary X) ∪ (simplicial_complex_boundary D(0) ⋆ X)),
+  apply stellar_ball_boundary_distr_join_union,
+  unfold is_stellar_ball,
+  use 0,
+  assumption,
+
+  apply simplicial_iso_trans
+    ((D(0) ⋆ simplicial_complex_boundary X) ∪ (simplicial_complex_boundary D(0) ⋆ X))
+    ((D(0) ⋆ simplicial_complex_boundary X) ∪ (empty_sc ⋆ X)),
+  apply simplicial_union_iso_right,
+  apply simplicial_join_iso_left,
+  apply simplicial_iso_trans (simplicial_complex_boundary D(0)) S(-1),
+  apply disk_boundary_is_sphere (-1),
+  have H_neg_one : -1 = -[1+ 0], by tauto,
+  rw [H_neg_one],
+  simp only [stellar_n_sphere],
+
+  apply simplicial_union_iso,
+
+  rotate,
+  apply simplicial_join_id_right,
+
+  apply simplicial_iso_trans
+    (D(0) ⋆ simplicial_complex_boundary X)
+    (Cone(simplicial_complex_boundary X, x) x_nin_X_bd),
+  rw [simplicial_iso_symm],
+  apply cone_is_zero_disk_join_boundary,
+  apply φ,
+  apply φ.iso_onto_image,
+end
 
