@@ -517,6 +517,36 @@ lemma simplicial_iso_preserves_equiv
   simp only[id_simplicial_map],
 end
 
+lemma empty_iso_empty
+  : @empty_sc α ≅ @empty_sc β
+:= sorry
+
+lemma simplicial_union_iso
+    (X Y : simplicial_complex α)
+    (Z W : simplicial_complex β)
+  : X ≅ Z → Y ≅ W → X ∪ Y ≅ Z ∪ W
+:= sorry
+
+lemma simplicial_union_iso_left
+    (X Y Z : simplicial_complex α)
+  : X ≅ Y → X ∪ Z ≅ Y ∪ Z
+:= begin
+  intro X_iso_Y,
+  apply simplicial_union_iso,
+  assumption,
+  apply simplicial_iso_refl,
+end
+
+lemma simplicial_union_iso_right
+    (X Y Z : simplicial_complex α)
+  : X ≅ Y → Z ∪ X ≅ Z ∪ Y
+:= begin
+  intro X_iso_Y,
+  apply simplicial_union_iso,
+  apply simplicial_iso_refl,
+  assumption,
+end
+
 end isomorphism
 
 /-
@@ -525,7 +555,7 @@ end isomorphism
 
 section coercion
 
-variables [decidable_eq α] [decidable_eq β]
+variables [decidable_eq α] [decidable_eq β] [decidable_eq γ]
 
 -- Define as map on simplicial complexes that's iso'ic onto image.
 structure simplicial_coe'
@@ -562,6 +592,80 @@ lemma coe_preserves_iso
   rw [simplicial_iso_symm],
   assumption,
 end
+
+lemma coe_comp_is_injective
+    (φ : simplicial_coe α β)
+    (ψ : simplicial_coe β γ)
+  : (ψ.coe ∘ φ.coe).injective
+:= begin
+  apply function.injective.comp,
+  apply ψ.injective,
+  apply φ.injective,
+end
+
+lemma coe_comp_image
+    (X : simplicial_complex α)
+    (φ : simplicial_coe α β)
+    (ψ : simplicial_coe β γ)
+  : (simplicial_image X (ψ.coe ∘ φ.coe) (coe_comp_is_injective φ ψ)).simplices = (simplicial_image (φ[X]) ψ.coe ψ.injective).simplices
+:= begin
+  dsimp only [simplicial_image, simplicial_complex.simplices],
+  rw [set.ext_iff],
+  intro s,
+  split,
+
+  { intro s_in_comp,
+    rw [set.mem_set_of] at *,
+    choose t Ht img_eq_s using s_in_comp,
+    
+    set u : finset β := finset.image φ.coe t,
+    use u,
+    split,
+    
+    rw [set.mem_set_of],
+    use t, split, assumption,
+    refl,
+    
+    rw [←finset.image_image] at img_eq_s,
+    assumption, },
+
+  { intro s_in_coe,
+    rw [set.mem_set_of] at *,
+    choose t Ht img_eq_s using s_in_coe,
+    rw [set.mem_set_of] at Ht,
+    choose u u_in_X img_u_eq_t using Ht,
+    
+    use u, split, assumption,
+    rw [←finset.image_image, img_u_eq_t],
+    assumption, },
+end
+
+lemma coe_comp_is_coe
+    (φ : simplicial_coe α β)
+    (ψ : simplicial_coe β γ)
+  : ∀ X : simplicial_complex α, X ≅ simplicial_image X (ψ.coe ∘ φ.coe) (coe_comp_is_injective φ ψ)
+:= begin
+  intro X,
+  apply simplicial_iso_trans X (φ[X]),
+  apply φ.iso_onto_image,
+  
+  rw [simplicial_iso_symm],
+  apply simplicial_iso_trans
+    (simplicial_image X (ψ.coe ∘ φ.coe) (coe_comp_is_injective φ ψ))
+    (simplicial_image (φ[X]) ψ.coe ψ.injective),
+  apply simplicial_iso_preserves_equiv,
+  apply coe_comp_image,
+  
+  rw [simplicial_iso_symm],
+  apply ψ.iso_onto_image,
+end
+
+@[simp]
+def simplicial_coe.comp
+    (φ : simplicial_coe α β)
+    (ψ : simplicial_coe β γ)
+  : simplicial_coe α γ
+:= simplicial_coe.mk (ψ.coe ∘ φ.coe) (coe_comp_is_injective φ ψ) (coe_comp_is_coe φ ψ)
 
 end coercion
 
@@ -1356,7 +1460,6 @@ lemma simplicial_join_mem_vertices
 end
 
 -- TODO: Fix the proofs that f, g are simplicial.
--- TODO: Change the function to (s, t) ↦ (f s) ⊔ₛ (g t).
 lemma simplicial_join_iso
     (X Y : simplicial_complex α)
     (Z W : simplicial_complex β)
@@ -1794,9 +1897,14 @@ lemma simplicial_join_comm
 := sorry
 
 -- Make sense of natural projections, inclusions, etc.
-lemma simplicial_join_id
+lemma simplicial_join_id_left
     (X : simplicial_complex α)
   : X ⋆ empty_sc ≅ X
+:= sorry
+
+lemma simplicial_join_id_right
+    (X : simplicial_complex α)
+  : empty_sc ⋆ X ≅ X
 := sorry
 
 lemma simplicial_join_natural_incl_left

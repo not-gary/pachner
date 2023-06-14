@@ -6,7 +6,8 @@ import .simplicial_complex
 import .simplicial_subcomplex
 import .simplicial_map
 
-variables {α : Type*} [decidable_eq α]
+variables {α β : Type*}
+variables [decidable_eq α] [decidable_eq β]
 
 def stellar_subdivision
     (X : simplicial_complex α)
@@ -110,7 +111,13 @@ lemma stellar_equiv_trans
   apply relation.transitive_refl_trans_gen,
 end
 
-lemma iso_stellar_equiv
+lemma stellar_equiv_iso
+    (X Y : simplicial_complex α)
+    (Z W : simplicial_complex β)
+  : X ≅ Z → Y ≅ W → X ≅ₛₜ Y → Z ≅ₛₜ W
+:= sorry
+
+lemma stellar_equiv_preserves_iso
     (X Y : simplicial_complex α)
   : X ≅ Y → X ≅ₛₜ Y
 := begin
@@ -122,6 +129,21 @@ lemma iso_stellar_equiv
   right, right,
   assumption,
 end
+
+lemma simplicial_join_stellar_equiv
+    (X Y Z W : simplicial_complex α)
+  : X ≅ₛₜ Z → Y ≅ₛₜ W → X ⋆ Y ≅ₛₜ Z ⋆ W
+:= sorry
+
+lemma simplicial_join_stellar_equiv_left
+    (X Y Z : simplicial_complex α)
+  : X ≅ₛₜ Y → X ⋆ Z ≅ₛₜ Y ⋆ Z
+:= sorry
+
+lemma simplicial_join_stellar_equiv_right
+    (X Y Z : simplicial_complex α)
+  : X ≅ₛₜ Y → Z ⋆ X ≅ₛₜ Z ⋆ Y
+:= sorry
 
 /-
 # Properties of Stellar Subdivision

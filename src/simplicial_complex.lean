@@ -131,7 +131,7 @@ instance simplex.fintype
     (s : finset α)
   : fintype (simplex s).simplices
 := begin
-  simp only[simplex, simplicial_complex.simplices],
+  simp only [simplex, simplicial_complex.simplices],
   apply finset_coe.fintype,
 end
 
@@ -139,7 +139,7 @@ instance simplex.finite
     (s : finset α)
   : finite (simplex s).simplices
 := begin
-  simp only[simplex, simplicial_complex.simplices],
+  simp only [simplex, simplicial_complex.simplices],
   rw [set.finite_coe_iff],
   apply set.finite.intro,
   apply finset_coe.fintype,
@@ -245,6 +245,35 @@ lemma dim_std_simplex
 
   show _, by exact ⟨dim_leq_n, dim_geq_n⟩,
 end
+
+lemma dim_neg_one_iff_empty
+    (s : finset α)
+  : dim s = -1 ↔ s = ∅
+:= sorry
+
+lemma dim_zero_iff_vertex
+    (s : finset α)
+  : dim s = 0 ↔ ∃ x : α, s = {x}
+:= sorry
+
+lemma simplex_decomp [decidable_eq α]
+    (s : finset α)
+  : 0 < dim s → ∃ (x ∈ s) (t : finset α), t = s \ {x}
+:= sorry
+
+lemma simplex_decomp_dim [decidable_eq α]
+    (s : finset α)
+    (x : α)
+    (x_in_s : x ∈ s)
+  : 0 < dim s → 0 ≤ dim (s \ {x})
+:= sorry
+
+lemma simplex_decomp_dim_eq [decidable_eq α]
+    (s : finset α)
+    (x : α)
+    (x_in_s : x ∈ s)
+  : 0 < dim s → dim (s \ {x}) = dim s - 1
+:= sorry
 
 -- The dimension of a finite complex is the maximum
 -- dimension of its simplices.

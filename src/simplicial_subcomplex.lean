@@ -51,7 +51,7 @@ instance simplex_boundary.fintype
   : fintype (∂s).simplices
 := begin
   unfold simplex_boundary,
-  dsimp only[simplicial_complex.simplices],
+  dsimp only [simplicial_complex.simplices],
   apply set.fintype_union,
 end
 
@@ -110,7 +110,7 @@ instance star.fintype
   : fintype (star X s s_in_X).simplices
 := begin
   unfold star,
-  dsimp only[simplicial_complex.simplices],
+  dsimp only [simplicial_complex.simplices],
 
   have H_dec : decidable_pred (λ a : finset α, s ∪ a ∈ X.simplices), from
   begin
@@ -233,6 +233,13 @@ lemma link_iso
     (t_in_Y : t ∈ Y.simplices)
     (f_iso : is_simplicial_iso f)
   : finset.image f.map s = t → Lk(X, s) s_in_X ≅ Lk(Y, t) t_in_Y
+:= sorry
+
+lemma link_subcomplex
+    (X : simplicial_complex α)
+    (s t : finset α)
+    (s_in_X : s ∈ X.simplices)
+  : t ∈ (Lk(X, s) s_in_X).simplices → t ∈ X.simplices
 := sorry
 
 -- Complement of the star of a complex wrt a simplex.
@@ -731,11 +738,115 @@ end
 # Properties of Links
 -/
 
+lemma link_ident
+    (X : simplicial_complex α)
+  : Lk(X, ∅) (by { apply simplicial_complex_empty_simplex }) ≅ X
+:= sorry
+
+lemma link_disjoint_base
+    (X : simplicial_complex α)
+    (s t : finset α)
+    (s_in_X : s ∈ X.simplices)
+  : t ∈ (Lk(X, s) s_in_X).simplices → disjoint s t
+:= sorry
+
+lemma face_in_link_of_complement
+    (X : simplicial_complex α)
+    (s t : finset α)
+    (s_in_X : s ∈ X.simplices)
+    (t_sset_s : t ⊆ s)
+  : s \ t ∈ (Lk(X, t) (by { apply X.subset_closed s; assumption, })).simplices
+:= sorry 
+
 -- Lemma 3.5, p.14
 lemma link_of_face_complement
     (X : simplicial_complex α)
     (s t : finset α)
     (s_in_X : s ∈ X.simplices)
     (t_sset_s : t ⊆ s)
-  : Lk(X, s) s_in_X ≅ Lk(Lk(X, t) (by { apply X.subset_closed s; assumption }), s \ t) (by { sorry })
-:= sorry
+  : Lk(X, s) s_in_X ≅ Lk(Lk(X, t) (by { apply X.subset_closed s; assumption }), s \ t) (by { apply face_in_link_of_complement })
+:= begin
+  by_cases (s = t),
+
+  simp only [h, finset.sdiff_self],
+  rw [simplicial_iso_symm],
+  apply link_ident,
+
+  apply simplicial_iso_preserves_equiv,
+  simp only [link, set.ext_iff],
+  intro u,
+  split,
+
+  { intro u_in_link,
+    rw [set.mem_sep_iff] at *,
+    choose u_in_X su_in_X su_empty using u_in_link,
+    repeat { rw [set.mem_sep_iff] },
+    split,
+
+    split, assumption,
+    split,
+
+    apply X.subset_closed (s ∪ u),
+    assumption,
+    apply finset.union_subset_union,
+    assumption,
+    apply finset.subset.refl,
+    
+    rw [←su_empty],
+    apply finset.inter_congr_right,
+    rw [su_empty],
+    apply finset.empty_subset,
+    apply @finset.subset.trans _ (t ∩ u) t s,
+    apply finset.inter_subset_left,
+    assumption,
+    
+    split, split,
+    apply X.subset_closed (s ∪ u),
+    assumption,
+    apply finset.union_subset_union,
+    apply finset.sdiff_subset,
+    apply finset.subset.refl,
+    
+    split,
+    rw [←finset.union_assoc, finset.union_comm t, finset.sdiff_union_self_eq_union],
+    have Hts : s ∪ t = s, by { rw [finset.union_eq_left_iff_subset], assumption },
+    rw [Hts],
+    assumption,
+    
+    rw [finset.inter_distrib_left, finset.inter_sdiff_self, finset.union_comm, finset.union_empty],
+    rw [←su_empty],
+    apply finset.inter_congr_right,
+    rw [su_empty],
+    apply finset.empty_subset,
+    apply @finset.subset.trans _ (t ∩ u) t s,
+    apply finset.inter_subset_left,
+    assumption,
+    
+    rw [←finset.subset_empty, ←su_empty],
+    apply finset.inter_subset_inter_right,
+    apply finset.sdiff_subset, },
+
+  { intro u_in_link_of_link,
+    rw [set.mem_sep_iff] at *,
+    choose u_in_t_link stu_in_t_link stu_empty using u_in_link_of_link,
+    rw [set.mem_sep_iff] at *,
+    choose u_in_X tu_in_X tu_empty using u_in_t_link,
+    choose stu_in_X t_stu_in_X t_stu_empty using stu_in_t_link,
+    
+    split, assumption,
+    split,
+    
+    rw [←finset.union_assoc, finset.union_comm t, finset.sdiff_union_self_eq_union] at t_stu_in_X,
+    have Hts : s ∪ t = s, by { rw [finset.union_eq_left_iff_subset], assumption },
+    rw [Hts] at t_stu_in_X,
+    assumption,
+    
+    have Hst : s \ t ∪ t = s, by { apply finset.sdiff_union_of_subset, assumption },
+    have Hstu : (s \ t ∩ u) ∪ (t ∩ u) = ∅, from
+    begin
+      rw [finset.union_eq_empty_iff],
+      split; assumption,
+    end,
+    rw [←Hst, finset.inter_distrib_right],
+    assumption, },
+end
