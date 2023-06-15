@@ -569,10 +569,16 @@ structure simplicial_coe
     (α : Type*) [decidable_eq α]
     (β : Type*) [decidable_eq β]
 := mk :: (coe : α → β)
-         (injective : coe.injective) -- necessary?
+         (injective : coe.injective)
          (iso_onto_image : ∀ X : simplicial_complex α, X ≅ simplicial_image X coe injective)
 
 notation φ `[` X `]` := simplicial_image X φ.coe φ.injective
+
+lemma coe_is_iso
+    (X : simplicial_complex α)
+    (φ : simplicial_coe α β)
+  : is_simplicial_iso (@simplicial_map.mk α β _ X (φ[X]) φ.coe (by { apply map_is_simplicial_onto_image, }))
+:= sorry
 
 lemma coe_preserves_iso
     (X Y : simplicial_complex α)
