@@ -111,6 +111,20 @@ lemma stellar_equiv_trans
   apply relation.transitive_refl_trans_gen,
 end
 
+lemma stellar_equiv_neg_trans
+    (X Y Z : simplicial_complex α)
+  : X ≅ₛₜ Y → ¬Y ≅ₛₜ Z → ¬X ≅ₛₜ Z
+:= begin
+  intros X_eq_Y Y_neq_Z,
+  revert Y_neq_Z,
+  contrapose,
+  simp only [not_not],
+  intro X_eq_Z,
+  rw [stellar_equiv_symm] at X_eq_Y,
+  revert X_eq_Y X_eq_Z,
+  apply stellar_equiv_trans,
+end
+
 lemma stellar_equiv_iso
     (X Y : simplicial_complex α)
     (Z W : simplicial_complex β)
