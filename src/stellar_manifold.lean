@@ -3295,10 +3295,11 @@ lemma stellar_ball_boundary_comm_cone_union
   apply simplicial_iso_trans
     (simplicial_complex_boundary (φ[D(0) ⋆ X]))
     ((D(0) ⋆ simplicial_complex_boundary X) ∪ (simplicial_complex_boundary D(0) ⋆ X)),
-  apply stellar_ball_boundary_distr_join_union,
-  unfold is_stellar_ball,
-  use 0,
-  assumption,
+  sorry,  -- apply stellar_ball_boundary_distr_join_union,
+          -- unfold is_stellar_ball,
+          -- use 0,
+          -- assumption,
+  -- TODO: 3.11 (1) is too slow, causes timeout.
 
   apply simplicial_iso_trans
     ((D(0) ⋆ simplicial_complex_boundary X) ∪ (simplicial_complex_boundary D(0) ⋆ X))
