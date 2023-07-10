@@ -54,6 +54,11 @@ def stellar_n_sphere
    end
 notation `S(` n `)` := stellar_n_sphere n
 
+instance stellar_n_sphere.fintype
+    (n : ℤ)
+  : fintype (S(n)).simplices
+:= sorry
+
 lemma stellar_sphere_vertices
     (n : ℕ)
   : vertices S(n) = finset.range (n + 2)
@@ -164,14 +169,90 @@ lemma range_boundary_is_stellar_sphere
   : ∂(finset.range n) ≅ S(n - 1)
 := sorry
 
+-- Special coercion on spheres.
+def join_proj_spheres_map
+    (m : ℕ) (n : ℤ)
+  : ℕ × ℕ → ℕ
+:= λ x : ℕ × ℕ, if (x.snd = 0) then x.fst else x.fst + m + 2
+
+lemma join_proj_spheres_is_coe
+    (m : ℕ) (n : ℤ)
+  : set.inj_on (join_proj_spheres_map m n) (vertices (S(m) ⋆ S(n)))
+:= begin
+  simp only [set.inj_on],
+  intros x x_in_join y y_in_join px_eq_py,
+  simp only [join_proj_spheres_map, ite_eq_iff] at px_eq_py,
+  cases px_eq_py,
+  all_goals {
+    cases px_eq_py with x_snd x_eq_py,
+    symmetry' at x_eq_py,
+    simp only [ite_eq_iff] at x_eq_py,
+    cases x_eq_py;
+    cases x_eq_py with y_snd x_eq_y,
+  },
+
+  -- x, y in LHS.
+  simp only [prod.eq_iff_fst_eq_snd_eq],
+  split,
+
+  symmetry,
+  apply x_eq_y,
+
+  rw [←y_snd] at x_snd,
+  apply x_snd,
+
+  -- x in LHS, y in RHS. Contradiction.
+  have H := simplicial_join_vertices_mem_left S(m) S(n) x.fst,
+  cases H with px_in_Sm x_in_Sm_Sn,
+  rw [←@prod.mk.eta ℕ ℕ x, x_snd] at x_in_join,
+  specialize px_in_Sm x_in_join,
+  rw [stellar_sphere_vertices, finset.mem_coe, finset.mem_range] at px_in_Sm,
+  have H_contra : ¬x.fst < m + 2, by omega,
+  contradiction,
+
+  -- x in RHS, y in LHS. Contradiction.
+  have H := simplicial_join_vertices_mem_left S(m) S(n) y.fst,
+  cases H with py_in_Sm y_in_Sm_Sn,
+  rw [←@prod.mk.eta ℕ ℕ y, y_snd] at y_in_join,
+  specialize py_in_Sm y_in_join,
+  rw [stellar_sphere_vertices, finset.mem_coe, finset.mem_range] at py_in_Sm,
+  have H_contra : ¬y.fst < m + 2, by omega,
+  contradiction,
+
+  -- x, y in RHS.
+  simp only [prod.eq_iff_fst_eq_snd_eq],
+  split,
+
+  simp only [add_left_inj] at x_eq_y,
+  symmetry' at x_eq_y,
+  apply x_eq_y,
+
+  rw [simplicial_join_mem_vertices] at x_in_join y_in_join,
+  cases x_in_join with x_contra x_in_rhs,
+  cases x_contra, contradiction,
+
+  cases y_in_join with y_contra y_in_rhs,
+  cases y_contra, contradiction,
+
+  cases x_in_rhs with x_in_Sn x_snd,
+  cases y_in_rhs with y_in_Sn y_snd,
+  rw [←y_snd] at x_snd,
+  apply x_snd,
+end
+
+def join_proj_spheres
+    (m : ℕ) (n : ℤ)
+  : simplicial_coe (S(m) ⋆ S(n)) ℕ
+:= simplicial_coe.mk (join_proj_spheres_map m n) (join_proj_spheres_is_coe m n)
+notation `φˢ⟨` m `, ` n `⟩` := join_proj_spheres m n
+
 lemma stellar_sphere_inductive
     (n : ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
-  : S(n) ≅ₛₜ φ[S(0) ⋆ S(n - 1)]
+  : S(n) ≅ₛₜ (φˢ⟨0, n - 1⟩[S(0) ⋆ S(n - 1)])
 := begin
   apply @stellar_equiv_iso _ _ _ _ (S(↑n) ⋆ empty_sc) (S(↑0) ⋆ S(↑n - 1)),
   apply simplicial_join_id_left,
-  apply φ.iso_onto_image,
+  apply (φˢ⟨0, n - 1⟩).iso_onto_image,
 
   have Hn : ↑n = int.of_nat n, by tauto,
   induction n,
@@ -197,7 +278,6 @@ lemma stellar_sphere_inductive
   rotate, refl,
 
   unfold stellar_move,
-  intro ψ,
   right, left,
   use (finset.range (n.succ) ⊔ₛ ∅),
 
@@ -250,13 +330,12 @@ lemma stellar_sphere_inductive
     (@stellar_subdivision _ _ (S(n.succ) ⋆ empty_sc)
       (s ⊔ₛ ∅) Hs_ne
       (n.succ + 2, 0)
-      Hs Hx ψ)
+      Hs Hx)
     ((@stellar_subdivision _ _ S(n.succ)
       s H_range_ne
       (n.succ + 2)
       (by { sorry })
-      (by { sorry })
-      φ) ⋆ empty_sc),
+      (by { sorry })) ⋆ empty_sc),
 
   rw [simplicial_iso_symm],
   apply @stellar_subdiv_distr_join_left ℕ _ S(n.succ) empty_sc s H_range_ne,
@@ -268,14 +347,12 @@ lemma stellar_sphere_inductive
       s H_range_ne
       (n.succ + 2)
       (by { sorry })
-      (by { sorry })
-      φ) ⋆ empty_sc)
+      (by { sorry })) ⋆ empty_sc)
     (@stellar_subdivision _ _ S(n.succ)
       s H_range_ne
       (n.succ + 2)
       (by { sorry })
-      (by { sorry })
-      φ),
+      (by { sorry })),
   apply simplicial_join_id_left,
 
   apply simplicial_iso_trans
@@ -283,8 +360,7 @@ lemma stellar_sphere_inductive
       s H_range_ne
       (n.succ + 2)
       (by { sorry })
-      (by { sorry })
-      φ)
+      (by { sorry }))
     (((simplex {n.succ + 1}) ⋆ ∂s) ∪ ((simplex {n.succ + 2}) ⋆ ∂s)),
 
 
@@ -295,24 +371,24 @@ lemma stellar_sphere_inductive
   simp,
 
   apply simplicial_iso_trans
-    (φ[φ[(simplex {n.succ + 2}) ⋆ ∂s] ⋆ Lk(S(n.succ), s) sorry])
-    (φ[(simplex {n.succ + 2}) ⋆ ∂s] ⋆ Lk(S(n.succ), s) sorry),
+    ((π₁ _)[(π₁ _)[(simplex {n.succ + 2}) ⋆ ∂s] ⋆ Lk(S(n.succ), s) sorry])
+    ((π₁ _)[(simplex {n.succ + 2}) ⋆ ∂s] ⋆ Lk(S(n.succ), s) sorry),
   rw [simplicial_iso_symm],
-  apply φ.iso_onto_image,
+  apply (π₁ _).iso_onto_image,
 
   apply simplicial_iso_trans
-    (φ[(simplex {n.succ + 2}) ⋆ ∂s] ⋆ Lk(S(n.succ), s) sorry)
-    (φ[(simplex {n.succ + 2}) ⋆ ∂s] ⋆ empty_sc),
+    ((π₁ _)[(simplex {n.succ + 2}) ⋆ ∂s] ⋆ Lk(S(n.succ), s) sorry)
+    ((π₁ _)[(simplex {n.succ + 2}) ⋆ ∂s] ⋆ empty_sc),
   apply simplicial_join_iso,
   apply simplicial_iso_refl,
   apply stellar_sphere_empty_link,
 
   apply simplicial_iso_trans
-    (φ[(simplex {n.succ + 2}) ⋆ ∂s] ⋆ empty_sc)
-    (φ[(simplex {n.succ + 2}) ⋆ ∂s]),
+    ((π₁ _)[(simplex {n.succ + 2}) ⋆ ∂s] ⋆ empty_sc)
+    ((π₁ _)[(simplex {n.succ + 2}) ⋆ ∂s]),
   apply simplicial_join_id_left,
   rw [simplicial_iso_symm],
-  apply φ.iso_onto_image,
+  apply (π₁ _).iso_onto_image,
 
   apply simplicial_iso_trans
     (simplex {n.succ + 1} ⋆ ∂s ∪ simplex {n.succ + 2} ⋆ ∂s)
@@ -330,22 +406,21 @@ end
 
 lemma join_stellar_sphere
     (m n : ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
-  : φ[S(m) ⋆ S(n)] ≅ₛₜ S(m + n + 1)
+  : φˢ⟨m, n⟩[S(m) ⋆ S(n)] ≅ₛₜ S(m + n + 1)
 := begin
   rw [stellar_equiv_symm],
   apply stellar_equiv_trans
     S(m + n + 1)
-    (φ[S(0) ⋆ S(m + n + 1 - 1)]),
+    (φˢ⟨0, m + n + 1 - 1⟩[S(0) ⋆ S(m + n + 1 - 1)]),
   apply stellar_sphere_inductive,
 
   apply stellar_equiv_iso
     (S(0) ⋆ S(m + n + 1 - 1))
     (S(m) ⋆ S(n))
-    (φ[S(0) ⋆ S(m + n + 1 - 1)])
-    (φ[S(m) ⋆ S(n)]),
-  rotate, apply φ.iso_onto_image,
-  rotate, apply φ.iso_onto_image,
+    (φˢ⟨0, m + n + 1 - 1⟩[S(0) ⋆ S(m + n + 1 - 1)])
+    (φˢ⟨m, n⟩[S(m) ⋆ S(n)]),
+  rotate, apply φˢ⟨m, n⟩.iso_onto_image,
+  rotate, apply φˢ⟨0, m + n + 1 - 1⟩.iso_onto_image,
 
   have Hn : ↑n = int.of_nat n, by tauto,
   have Hm : ↑m = int.of_nat m, by tauto,
@@ -376,20 +451,20 @@ lemma join_stellar_sphere
   specialize m_ih Hmn,
   simp only [add_zero, int.of_nat_eq_coe, nat.cast_zero, add_tsub_cancel_right] at *,
 
-  have H : S(m_n.succ + n_n.succ) ≅ₛₜ φ[S(m_n) ⋆ S(n_n.succ)], from
+  have H : S(m_n.succ + n_n.succ) ≅ₛₜ φˢ⟨m_n, n_n.succ⟩[S(m_n) ⋆ S(n_n.succ)], from
   begin
     rw [stellar_equiv_symm],
     apply stellar_equiv_trans
-      (φ[S(m_n) ⋆ S(n_n.succ)])
-      (φ[S(0) ⋆ S(m_n + n_n.succ)]),
+      (φˢ⟨m_n, n_n.succ⟩[S(m_n) ⋆ S(n_n.succ)])
+      (φˢ⟨0, m_n + n_n.succ⟩[S(0) ⋆ S(m_n + n_n.succ)]),
 
     apply stellar_equiv_iso
       (S(m_n) ⋆ S(n_n.succ))
       (S(0) ⋆ S(m_n + n_n.succ))
-      (φ[S(m_n) ⋆ S(n_n.succ)])
-      (φ[S(0) ⋆ S(m_n + n_n.succ)]),
-    apply φ.iso_onto_image,
-    apply φ.iso_onto_image,
+      (φˢ⟨m_n, n_n.succ⟩[S(m_n) ⋆ S(n_n.succ)])
+      (φˢ⟨0, m_n + n_n.succ⟩[S(0) ⋆ S(m_n + n_n.succ)]),
+    apply φˢ⟨m_n, n_n.succ⟩.iso_onto_image,
+    apply φˢ⟨0, m_n + n_n.succ⟩.iso_onto_image,
     rw [stellar_equiv_symm],
     assumption,
 
@@ -400,61 +475,26 @@ lemma join_stellar_sphere
       apply congr_arg,
       sorry, --stupid
     end,
-    rw [HS_rw],
+    simp_rw [HS_rw],
     apply stellar_sphere_inductive,
   end,
 
   apply stellar_equiv_trans
     (S(0) ⋆ S(m_n.succ + n_n.succ))
-    (S(0) ⋆ φ[S(m_n) ⋆ S(n_n.succ)]),
+    (S(0) ⋆ φˢ⟨m_n, n_n.succ⟩[S(m_n) ⋆ S(n_n.succ)]),
   apply simplicial_join_stellar_equiv_right,
   assumption,
 
   apply stellar_equiv_trans
-    (S(0) ⋆ φ[S(m_n) ⋆ S(n_n.succ)])
-    (S(0) ⋆ φ[S(m_n) ⋆ φ[S(0) ⋆ S(n_n)]]),
-  apply simplicial_join_stellar_equiv_right,
-  apply stellar_equiv_iso
-    (S(m_n) ⋆ S(n_n.succ))
-    (S(m_n) ⋆ φ[S(0) ⋆ S(n_n)])
-    (φ[S(m_n) ⋆ S(n_n.succ)])
-    (φ[S(m_n) ⋆ φ[S(0) ⋆ S(n_n)]]),
-  apply φ.iso_onto_image,
-  apply φ.iso_onto_image,
-  apply simplicial_join_stellar_equiv_right,
-  have Hn_pred : ↑n_n = ↑(n_n.succ) - 1, by simp,
-  have HSn_rw : S(↑n_n) = S(↑(n_n.succ) - 1), from
-  begin
-    conv_rhs { congr, simp },
-  end,
-  rw [HSn_rw],
-  apply stellar_sphere_inductive,
-
-  apply stellar_equiv_trans
-    (S(0) ⋆ φ[S(m_n) ⋆ φ[S(0) ⋆ S(n_n)]])
-    (φ[S(0) ⋆ S(m_n)] ⋆ φ[S(0) ⋆ S(n_n)]),
+    (S(0) ⋆ φˢ⟨m_n, n_n.succ⟩[S(m_n) ⋆ S(n_n.succ)])
+    (φˢ⟨0, m_n⟩[S(0) ⋆ S(m_n)] ⋆ S(n_n.succ)),
   apply stellar_equiv_preserves_iso,
   rw [simplicial_iso_symm],
   apply simplicial_join_assoc,
 
-  apply simplicial_join_stellar_equiv,
-  
-  rw [stellar_equiv_symm],
-  have Hm_pred : ↑m_n = ↑(m_n.succ) - 1, by simp,
-  have HSm_rw : S(↑m_n) = S(↑(m_n.succ) - 1), from
-  begin
-    conv_rhs { congr, simp },
-  end,
-  rw [HSm_rw],
-  apply stellar_sphere_inductive,
-
-  rw [stellar_equiv_symm],
-  have Hn_pred : ↑n_n = ↑(n_n.succ) - 1, by simp,
-  have HSn_rw : S(↑n_n) = S(↑(n_n.succ) - 1), from
-  begin
-    conv_rhs { congr, simp },
-  end,
-  rw [HSn_rw],
+  apply simplicial_join_stellar_equiv_left,
+  have H_rw : S(m_n) = S(m_n.succ - 1), by simp,
+  simp_rw [stellar_equiv_symm, H_rw],
   apply stellar_sphere_inductive,
 end
 
@@ -477,6 +517,11 @@ def stellar_n_disk
    end
 notation `D(` n `)` := stellar_n_disk n
 
+instance stellar_n_disk.fintype
+    (n : ℤ)
+  : fintype (D(n)).simplices
+:= sorry
+
 lemma stellar_disk_range
     (m n : ℕ)
   : m ≤ n + 1 → finset.range m ∈ D(n).simplices
@@ -486,6 +531,51 @@ lemma disk_is_sphere_iff_empty
     (m n : ℤ)
   : D(m) ≅ₛₜ S(n) ↔ m < 0 ∧ n < 0
 := sorry
+
+-- Special coercion on disks.
+def join_proj_disks_map
+    (m : ℕ) (n : ℤ)
+  : ℕ × ℕ → ℕ
+:= λ x : ℕ × ℕ, if (x.snd = 0) then x.fst else x.fst + m + 1
+
+lemma join_proj_disks_is_coe
+    (m : ℕ) (n : ℤ)
+  : set.inj_on (join_proj_disks_map m n) (vertices (D(m) ⋆ D(n)))
+:= by { admit, }
+
+def join_proj_disks
+    (m : ℕ) (n : ℤ)
+  : simplicial_coe (D(m) ⋆ D(n)) ℕ
+:= simplicial_coe.mk (join_proj_disks_map m n) (join_proj_disks_is_coe m n)
+notation `φᵈ⟨` m `, ` n `⟩` := join_proj_disks m n
+
+-- Special coercion on disks and spheres.
+def join_proj_disk_sphere_map
+    (m : ℕ) (n : ℤ)
+  : ℕ × ℕ → ℕ
+:= λ x : ℕ × ℕ, if (x.snd = 0) then x.fst else x.fst + m + 2
+
+lemma join_proj_disk_sphere_is_coe
+    (m : ℕ) (n : ℤ)
+  : set.inj_on (join_proj_disk_sphere_map m n) (vertices (D(m) ⋆ S(n)))
+:= by { admit, }
+
+lemma join_proj_disk_sphere_is_coe_swap
+    (m : ℕ) (n : ℤ)
+  : set.inj_on (join_proj_disk_sphere_map m n) (vertices (S(m) ⋆ D(n)))
+:= by { admit, }
+
+def join_proj_disk_sphere
+    (m : ℕ) (n : ℤ)
+  : simplicial_coe (D(m) ⋆ S(n)) ℕ
+:= simplicial_coe.mk (join_proj_disk_sphere_map m n) (join_proj_disk_sphere_is_coe m n)
+notation `φᵈˢ⟨` m `, ` n `⟩` := join_proj_disk_sphere m n
+
+def join_proj_sphere_disk
+    (m : ℕ) (n : ℤ)
+  : simplicial_coe (S(m) ⋆ D(n)) ℕ
+:= simplicial_coe.mk (join_proj_disk_sphere_map m n) (join_proj_disk_sphere_is_coe_swap m n)
+notation `φˢᵈ⟨` m `, ` n `⟩` := join_proj_sphere_disk m n
 
 -- TODO: Prove maps are simplicial.
 --       Reprove for m, n ≥ -1. Cascade to later proofs.
@@ -702,6 +792,11 @@ structure stellar_manifold
          (dim : ℕ)
          (is_manifold : is_stellar_n_manifold complex dim)
 
+instance stellar_manifold.fintype
+    (X : stellar_manifold)
+  : fintype X.complex.simplices
+:= sorry
+
 lemma simplicial_iso_preserves_stellar_mfd
     (X Y : simplicial_complex ℕ)
     (n : ℕ)
@@ -724,6 +819,11 @@ lemma manifold_dim_sub_simplex
   have H := simplex_dim_le_manifold_dim X s s_in_X,
   omega,
 end
+
+lemma manifold_dim_is_complex_dim
+    (X : stellar_manifold)
+  : ↑X.dim = dim_of_complex X.complex
+:= sorry
 
 /-
 # Boundary of a Stellar Manifold
@@ -782,6 +882,15 @@ lemma simplicial_complex_boundary_subcomplex
   : s ∈ X.simplices
 := sorry
 
+lemma simplicial_complex_boundary_is_subcomplex
+    (X : simplicial_complex ℕ)
+  : simplicial_complex_boundary X ⊆ X
+:= begin
+  simp only [simplicial_complex.has_subset, is_subcomplex, set.subset_def],
+  intros s s_in_bd_X,
+  apply simplicial_complex_boundary_subcomplex X s s_in_bd_X,
+end
+
 lemma simplicial_complex_boundary_subcomplex_vertices
     (X : simplicial_complex ℕ)
     (x : ℕ)
@@ -789,7 +898,7 @@ lemma simplicial_complex_boundary_subcomplex_vertices
   : x ∈ vertices X
 := sorry
 
-lemma boundary_subcomplex_simplicial_complex_vertices
+lemma simplicial_complex_boundary_subcomplex_vertices_contra
     (X : simplicial_complex ℕ)
     (x : ℕ)
     (x_nin_X : x ∉ vertices X)
@@ -1315,7 +1424,7 @@ end
 -- Lemma 3.3 (1), p.12
 lemma join_stellar_balls
     (X Y : simplicial_complex ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
+    (φ : simplicial_coe (X ⋆ Y) ℕ)
     (m n : ℤ)
   : -1 ≤ m → -1 ≤ n →
       is_stellar_n_ball X m →
@@ -1325,43 +1434,46 @@ lemma join_stellar_balls
   intros m_geq_neg_one n_geq_neg_one X_stellar_ball Y_stellar_ball,
   unfold is_stellar_n_ball at *,
 
-  apply stellar_equiv_trans (φ[X ⋆ Y]) (φ[D(m) ⋆ D(n)]),
-  apply stellar_equiv_iso (X ⋆ Y) (D(m) ⋆ D(n)),
+  apply stellar_equiv_iso (X ⋆ Y) (D(m + n + 1) ⋆ empty_sc),
   apply φ.iso_onto_image,
-  apply φ.iso_onto_image,
-  apply @join_comm_stellar_equiv _ _ _ _ _ _ φ;
+  apply simplicial_join_id_left,
+
+  apply stellar_equiv_trans (X ⋆ Y) (D(m) ⋆ D(n)),
+  apply simplicial_join_stellar_equiv;
   assumption,
 
   apply stellar_equiv_preserves_iso,
-  apply simplicial_iso_trans (φ[D(m) ⋆ D(n)]) (D(m) ⋆ D(n)),
   rw [simplicial_iso_symm],
-  apply φ.iso_onto_image,
+  apply simplicial_iso_trans (D(m + n + 1) ⋆ empty_sc) D(m + n + 1),
+  apply simplicial_join_id_left,
+  rw [simplicial_iso_symm],
   apply join_stellar_disk,
 end
 
 -- Lemma 3.3 (2), p.12
 lemma join_stellar_spheres
     (X Y : simplicial_complex ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
     (m n : ℕ)
+    (φ : simplicial_coe (X ⋆ Y) ℕ)
   : is_stellar_n_sphere X m → is_stellar_n_sphere Y n → is_stellar_n_sphere (φ[X ⋆ Y]) (m + n + 1)
 := begin
   intros X_stellar_sphere Y_stellar_sphere,
   unfold is_stellar_n_sphere at *,
 
-  apply stellar_equiv_trans (φ[X ⋆ Y]) (φ[S(m) ⋆ S(n)]),
+  apply stellar_equiv_trans (φ[X ⋆ Y]) (φˢ⟨m, n⟩[S(m) ⋆ S(n)]),
+
   apply stellar_equiv_iso (X ⋆ Y) (S(m) ⋆ S(n)),
   apply φ.iso_onto_image,
-  apply φ.iso_onto_image,
-  apply @join_comm_stellar_equiv _ _ _ _ _ _ φ;
+  apply φˢ⟨m, n⟩.iso_onto_image,
+  apply simplicial_join_stellar_equiv;
   assumption,
-
+  
   apply join_stellar_sphere,
 end
 
 lemma join_stellar_spheres_gen
     (X Y : simplicial_complex ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
+    (φ : simplicial_coe (X ⋆ Y) ℕ)
   : is_stellar_sphere X → is_stellar_sphere Y → is_stellar_sphere (φ[X ⋆ Y])
 := begin
   intros X_sphere Y_sphere,
@@ -1377,84 +1489,60 @@ lemma join_stellar_spheres_gen
   apply @int.le_trans _ (m + n),
   apply @int.le_trans _ m,
   tauto, simp, simp,
-  apply join_stellar_spheres;
-  assumption,
+  apply join_stellar_spheres,
+  apply X_m_sphere,
+  apply Y_n_sphere,
 
   -- m ≥ 0, n < 0
   use m, split, tauto,
   simp only [stellar_n_sphere] at Y_n_sphere,
-  apply stellar_equiv_trans (φ[X ⋆ Y]) (φ[X ⋆ empty_sc]),
+  apply stellar_equiv_trans (φ[X ⋆ Y]) X,
 
   apply stellar_equiv_iso (X ⋆ Y) (X ⋆ empty_sc),
   apply φ.iso_onto_image,
-  apply φ.iso_onto_image,
+  apply simplicial_join_id_left,
   apply simplicial_join_stellar_equiv_right,
   assumption,
 
-  apply stellar_equiv_trans (φ[X ⋆ empty_sc]) X,
-  apply stellar_equiv_preserves_iso,
-  apply simplicial_iso_trans (φ[X ⋆ empty_sc]) (X ⋆ empty_sc),
-  rw [simplicial_iso_symm],
-  apply φ.iso_onto_image,
-  apply simplicial_iso_trans (X ⋆ empty_sc) X,
-  apply simplicial_join_id_left,
-  apply simplicial_iso_refl,
-  assumption,
+  apply X_m_sphere,
 
   -- m < 0, n ≥ 0
   use n, split, tauto,
   simp only [stellar_n_sphere] at X_m_sphere,
-  apply stellar_equiv_trans (φ[X ⋆ Y]) (φ[empty_sc ⋆ Y]),
+  apply stellar_equiv_trans (φ[X ⋆ Y]) Y,
 
   apply stellar_equiv_iso (X ⋆ Y) (empty_sc ⋆ Y),
   apply φ.iso_onto_image,
-  apply φ.iso_onto_image,
+  apply simplicial_join_id_right,
   apply simplicial_join_stellar_equiv_left,
   assumption,
 
-  apply stellar_equiv_trans (φ[empty_sc ⋆ Y]) Y,
-  apply stellar_equiv_preserves_iso,
-  apply simplicial_iso_trans (φ[empty_sc ⋆ Y]) (empty_sc ⋆ Y),
-  rw [simplicial_iso_symm],
-  apply φ.iso_onto_image,
-  apply simplicial_iso_trans (empty_sc ⋆ Y) Y,
-  apply simplicial_join_id_right,
-  apply simplicial_iso_refl,
-  assumption,
+  apply Y_n_sphere,
 
   -- m, n < 0
   use (-[1+ 0]), split, tauto,
   simp only [stellar_n_sphere] at *,
-  apply stellar_equiv_trans (φ[X ⋆ Y]) (φ[empty_sc ⋆ empty_sc]),
+  apply stellar_equiv_trans (φ[X ⋆ Y]) empty_sc,
 
   apply stellar_equiv_iso (X ⋆ Y) (empty_sc ⋆ empty_sc),
   apply φ.iso_onto_image,
-  apply φ.iso_onto_image,
+  apply simplicial_join_id_left,
   apply simplicial_join_stellar_equiv;
   assumption,
-
-  apply stellar_equiv_iso empty_sc empty_sc,
-
-  apply simplicial_iso_trans empty_sc (empty_sc ⋆ empty_sc),
-  rw [simplicial_iso_symm],
-  apply simplicial_join_id_left,
-  apply φ.iso_onto_image,
-  apply simplicial_iso_refl,
 
   refl,
 end
 
 lemma stellar_subdiv_disk
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
     (n x : ℕ)
     (x_nin_disk : x ∉ vertices D(n + 1))
-  : σ(D(n + 1), finset.range(n + 2); x, φ; sorry, sorry, x_nin_disk) ≅ D(0) ⋆ S(n)
+  : σ(D(n + 1), finset.range(n + 2), x; sorry, sorry, x_nin_disk) ≅ D(0) ⋆ S(n)
 := sorry
 
 -- Lemma 3.3 (3), p.12
 lemma join_stellar_ball_and_sphere
     (X Y : simplicial_complex ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
+    (φ : simplicial_coe (X ⋆ Y) ℕ)
     (m n : ℤ)
   : 0 ≤ m → -1 ≤ n →
       is_stellar_n_ball X m →
@@ -1469,49 +1557,58 @@ lemma join_stellar_ball_and_sphere
   induction n,
 
   -- m, n ≥ 0
-  apply stellar_equiv_trans (φ[X ⋆ Y]) (φ[D(m) ⋆ S(n)]),
-  apply stellar_equiv_iso (X ⋆ Y) (D(m) ⋆ S(n)),
+  apply stellar_equiv_iso (X ⋆ Y) (D(m + n + 1) ⋆ empty_sc),
   apply φ.iso_onto_image,
-  apply φ.iso_onto_image,
-  apply @join_comm_stellar_equiv _ _ _ _ _ _ φ;
+  apply simplicial_join_id_left,
+  
+  apply stellar_equiv_trans (X ⋆ Y) (D(m) ⋆ S(n)),
+  apply join_comm_stellar_equiv;
   assumption,
 
-  apply stellar_equiv_trans (φ[D(m) ⋆ S(n)]) (φ[φ[D(↑m - 1) ⋆ D(0)] ⋆ S(n)]),
-  apply stellar_equiv_iso (D(m) ⋆ S(n)) (φ[D(↑m - 1) ⋆ D(0)] ⋆ S(n)),
-  apply φ.iso_onto_image,
-  apply φ.iso_onto_image,
+  apply stellar_equiv_trans (D(m) ⋆ S(n)) (φᵈ⟨0, ↑m - 1⟩[D(0) ⋆ D(↑m - 1)] ⋆ S(n)),
+  
+  apply simplicial_join_stellar_equiv_left,
   apply stellar_equiv_preserves_iso,
-  apply simplicial_join_iso_left,
+  apply simplicial_iso_trans D(m) (D(↑m - 1) ⋆ D(0)),
   rw [simplicial_iso_symm],
-  apply simplicial_iso_trans (φ[D(↑m - 1) ⋆ D(0)]) (D(↑m - 1) ⋆ D(0)),
-  rw [simplicial_iso_symm],
-  apply φ.iso_onto_image,
+  have H_rw : D(↑m) = D(↑m - int.of_nat 1 + 0 + 1), by simp,
+  rw [H_rw],
+  apply join_stellar_disk,
 
-  have H1 : D(↑m - 1) ⋆ D(0) ≅ D(↑m - 1 + 0 + 1), by { apply join_stellar_disk },
-  have H2 : D(↑m - 1 + 0 + 1) ≅ D(↑m), from
-  begin
-    apply simplicial_iso_preserves_equiv,
-    simp,
-  end,
-  apply simplicial_iso_trans (D(↑m - 1) ⋆ D(0)) D(↑m - 1 + 0 + 1);
-  assumption,
-
-  apply stellar_equiv_trans (φ[φ[D(↑m - 1) ⋆ D(0)] ⋆ S(n)]) (φ[D(↑m - 1) ⋆ φ[D(0) ⋆ S(n)]]),
-  apply stellar_equiv_iso (φ[D(↑m - 1) ⋆ D(0)] ⋆ S(n)) (D(↑m - 1) ⋆ φ[D(0) ⋆ S(n)]),
-  apply φ.iso_onto_image,
-  apply φ.iso_onto_image,
+  apply simplicial_iso_trans (D(↑m - 1) ⋆ D(0)) (D(0) ⋆ D(↑m - 1)),
+  apply simplicial_join_comm,
+  apply φᵈ⟨0, ↑m - 1⟩.iso_onto_image,
+  
+  apply stellar_equiv_trans
+    (φᵈ⟨0, ↑m - 1⟩[D(0) ⋆ D(↑m - 1)] ⋆ S(n))
+    (D(↑m - 1) ⋆ φᵈˢ⟨0, n⟩[D(0) ⋆ S(n)]),
   apply stellar_equiv_preserves_iso,
+
+  apply simplicial_iso_trans
+    (φᵈ⟨0, ↑m - 1⟩[D(0) ⋆ D(↑m - 1)] ⋆ S(n))
+    (S(n) ⋆ φᵈ⟨0, ↑m - 1⟩[D(0) ⋆ D(↑m - 1)]),
+  apply simplicial_join_comm,
+
+  apply simplicial_iso_trans
+    (S(n) ⋆ φᵈ⟨0, ↑m - 1⟩[D(0) ⋆ D(↑m - 1)])
+    (φˢᵈ⟨n, 0⟩[S(n) ⋆ D(0)] ⋆ D(↑m - 1)),
+  rw [simplicial_iso_symm],
   apply simplicial_join_assoc,
 
-  apply stellar_equiv_trans (φ[D(↑m - 1) ⋆ φ[D(0) ⋆ S(n)]]) (φ[D(↑m - 1) ⋆ D(n + 1)]),
-  apply stellar_equiv_iso (D(↑m - 1) ⋆ φ[D(0) ⋆ S(n)]) (D(↑m - 1) ⋆ D(n + 1)),
-  apply φ.iso_onto_image,
-  apply φ.iso_onto_image,
+  apply simplicial_iso_trans
+    (φˢᵈ⟨n, 0⟩[S(n) ⋆ D(0)] ⋆ D(↑m - 1))
+    (D(↑m - 1) ⋆ φˢᵈ⟨n, 0⟩[S(n) ⋆ D(0)]),
+  apply simplicial_join_comm,
+
+  apply simplicial_join_iso_right,
+  apply coe_preserves_iso,
+  apply simplicial_join_comm,
+
+  apply stellar_equiv_trans (D(↑m - 1) ⋆ φᵈˢ⟨0, n⟩[D(0) ⋆ S(n)]) (D(↑m - 1) ⋆ D(n + 1)),
   apply simplicial_join_stellar_equiv_right,
   apply relation.refl_trans_gen.single,
 
   unfold stellar_move,
-  intro ψ,
   left,
 
   use (finset.range (n + 2)),
@@ -1552,24 +1649,21 @@ lemma join_stellar_ball_and_sphere
   end,
   use Hy,
 
-  apply simplicial_iso_trans (φ[D(0) ⋆ S(n)]) (D(0) ⋆ S(n)),
+  apply simplicial_iso_trans (φᵈˢ⟨0, n⟩[D(0) ⋆ S(n)]) (D(0) ⋆ S(n)),
   rw [simplicial_iso_symm],
-  apply φ.iso_onto_image,
+  apply φᵈˢ⟨0, n⟩.iso_onto_image,
   rw [simplicial_iso_symm],
   apply stellar_subdiv_disk,
 
   apply stellar_equiv_preserves_iso,
-  apply simplicial_iso_trans (φ[D(↑m - 1) ⋆ D(↑n + 1)]) (D(↑m - 1) ⋆ D(n + 1)),
-  rw [simplicial_iso_symm],
-  apply φ.iso_onto_image,
-
   apply simplicial_iso_trans (D(↑m - 1) ⋆ D(n + 1)) D(↑m - 1 + (n + 1) + 1),
   apply join_stellar_disk,
 
   apply simplicial_iso_trans D(↑m - 1 + (n + 1) + 1) D(↑m + n + 1),
   apply simplicial_iso_preserves_equiv,
   simp,
-  refl,
+  rw [simplicial_iso_symm],
+  apply simplicial_join_id_left,
 
   -- m ≥ 0, n < 0
   have n_neg_one : -1 = -[1+ n], from
@@ -1586,10 +1680,10 @@ lemma join_stellar_ball_and_sphere
   have H_rw : int.of_nat m + -1 + 1 = m, by simp,
   rw [H_rw],
 
-  apply stellar_equiv_trans (φ[X ⋆ Y]) (φ[D(m) ⋆ S(-1)]),
+  apply stellar_equiv_trans (φ[X ⋆ Y]) (φᵈˢ⟨m, -1⟩[D(m) ⋆ S(-1)]),
   apply stellar_equiv_iso (X ⋆ Y) (D(m) ⋆ S(-1)),
   apply φ.iso_onto_image,
-  apply φ.iso_onto_image,
+  apply φᵈˢ⟨m, -1⟩.iso_onto_image,
   apply simplicial_join_stellar_equiv,
   assumption,
   assumption,
@@ -1601,7 +1695,7 @@ lemma join_stellar_ball_and_sphere
   apply simplicial_iso_trans D(m) (D(m) ⋆ empty_sc),
   rw [simplicial_iso_symm],
   apply simplicial_join_id_left,
-  apply φ.iso_onto_image,
+  apply φᵈˢ⟨m, -1⟩.iso_onto_image,
 
   -- m < 0, n ≥ 0
   have H_contra := int.neg_succ_lt_zero m,
@@ -1778,12 +1872,12 @@ lemma link_not_n_sphere_iff_n_ball
       unfold is_stellar_sphere,
       unfold is_stellar_n_sphere at H_sphere,
       use (↑(X.dim) - dim s - 1),
-      assumption,
+      sorry,
 
       unfold is_stellar_ball,
       unfold is_stellar_n_ball at n_ball,
       use (↑(X.dim) - dim s - 1),
-      assumption,
+      sorry,
     end,
     rw [stellar_sphere_and_ball_iff_empty] at H_contra,
     contradiction,
@@ -1796,12 +1890,12 @@ lemma link_not_n_sphere_iff_n_ball
       unfold is_stellar_sphere,
       unfold is_stellar_n_sphere at h,
       use (↑(X.dim) - dim s - 1),
-      assumption,
+      sorry,
 
       unfold is_stellar_ball,
       unfold is_stellar_n_ball at n_ball,
       use (↑(X.dim) - dim s - 1),
-      assumption,
+      sorry,
     end,
     rw [stellar_sphere_and_ball_iff_empty] at H_contra,
     contradiction,
@@ -1851,46 +1945,215 @@ lemma link_not_sphere_iff_ball
 end
 
 lemma stellar_subdiv_zero_dim_ident
-    (X : stellar_manifold)
+    (X : simplicial_complex ℕ) [fintype X.simplices]
     (s : finset ℕ) [s_ne : nonempty s]
     (x : ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
-    (s_in_X : s ∈ X.complex.simplices)
-    (x_nin_X : x ∉ vertices X.complex)
-  : X.dim = 0 →
-      σ(X.complex, s; x, φ; s_ne, s_in_X, x_nin_X) ≅ X.complex
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : dim_of_complex X = 0 →
+      σ(X, s, x; s_ne, s_in_X, x_nin_X) ≅ X
 := sorry
 
 -- Proposition 3.4 (2), p.13
 lemma stellar_eq_preserves_stellar_mfd
-    (X Y : simplicial_complex ℕ)
-    (n : ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
-  : is_stellar_n_manifold X n → X ≅ₛₜ Y → is_stellar_n_manifold Y n
+    (X : stellar_manifold)
+    (Y : simplicial_complex ℕ)
+  : X.complex ≅ₛₜ Y → is_stellar_n_manifold Y X.dim
 := begin
-  intros X_mfd X_eq_Y,
-  induction n,
+  intros X_eq_Y,
+  induction H_ind : X.dim,
+
+  have X_fin := stellar_manifold.fintype X,
+  have Y_fin := @stellar_equiv.fintype ℕ _ X.complex Y X_fin X_eq_Y,
 
   -- 0-dim case
-  unfold is_stellar_n_manifold at *,
-  induction X_eq_Y with K L X_eq_K K_move_L,
-  assumption,
+  induction X_eq_Y with K L X_eq_K K_move_L K_mfd_ih,
+  rw [←H_ind],
+  apply X.is_manifold,
+
+  have K_fin : fintype K.simplices := @stellar_equiv.fintype ℕ _ X.complex K X_fin X_eq_K,
+  specialize K_mfd_ih K_fin,
 
   intros l l_in_L,
   unfold stellar_move at K_move_L,
-  specialize K_move_L φ,
   cases K_move_L with K_subdiv_L K_move_L,
 
   choose t Ht Ht_ne y Hy K_subdiv_L using K_subdiv_L,
-  unfold is_simplicially_iso at K_subdiv_L,
-  choose f f_iso using K_subdiv_L,
-  unfold is_simplicial_iso at f_iso,
-  choose g fg_inv using f_iso,
+  let K_subdiv_L_cases := K_subdiv_L,
+  unfold is_simplicially_iso at K_subdiv_L_cases,
+  choose f f_iso using K_subdiv_L_cases,
+  have f_iso_cases := f_iso,
+  unfold is_simplicial_iso at f_iso_cases,
+  choose g fg_inv using f_iso_cases,
 
-  have k_in_K : finset.image g.map {l} ∈ K.simplices, from
+  let Km := stellar_manifold.mk K 0 K_mfd_ih,
+  have L_dim : @dim_of_complex ℕ L Y_fin = 0, from
   begin
-    apply g.is_simplicial,
+    rw [@stellar_subdiv_preserves_dim ℕ _ L Y_fin t Ht_ne y Ht Hy],
+    sorry,
+    -- rw [←@simplicial_iso_preserves_dim ℕ ℕ _ _ K K_fin (@stellar_subdivision ℕ _ L t Ht_ne y Ht Hy φ) K_subdiv_L],
   end,
+
+  have subdiv_ident := @stellar_subdiv_zero_dim_ident L Y_fin t Ht_ne y Ht Hy L_dim,
+  have subdiv_ident_cases := subdiv_ident,
+
+  unfold is_simplicially_iso at subdiv_ident_cases,
+  choose fL fL_iso using subdiv_ident_cases,
+  have fL_iso_cases := fL_iso,
+  unfold is_simplicial_iso at fL_iso_cases,
+  choose gL fgL_inv using fL_iso_cases,
+
+  let g_comp := simplicial_map.comp gL g,
+  have g_comp_iso : is_simplicial_iso g_comp, from
+  begin
+    apply iso_comp_is_iso,
+    apply iso_inv_is_iso fL; assumption,
+    apply iso_inv_is_iso f; assumption,
+  end,
+
+  have k_in_K : {g_comp.map l} ∈ K.simplices, from
+  begin
+    rw [←finset.image_singleton],
+    apply g_comp.is_simplicial,
+    assumption,
+  end,
+
+  unfold is_stellar_n_manifold at K_mfd_ih,
+  specialize K_mfd_ih (g_comp.map l),
+  specialize K_mfd_ih k_in_K,
+  cases K_mfd_ih with K_sphere K_ball,
+
+  left,
+  apply stellar_equiv_preserves_stellar_n_sphere (Lk(K, {g_comp.map l}) k_in_K),
+  assumption,
+  apply stellar_equiv_preserves_iso,
+  rw [simplicial_iso_symm],
+  apply link_iso _ _ _ _ g_comp,
+  assumption,
+  rw [finset.image_singleton],
+
+  right,
+  apply stellar_equiv_preserves_stellar_n_ball (Lk(K, {g_comp.map l}) k_in_K),
+  assumption,
+  apply stellar_equiv_preserves_iso,
+  rw [simplicial_iso_symm],
+  apply link_iso _ _ _ _ g_comp,
+  assumption,
+  rw [finset.image_singleton],
+
+  cases K_move_L with L_subdiv_K K_iso_L,
+  choose s Hs Hs_ne x Hx L_subdiv_K using L_subdiv_K,
+
+  let L_subdiv_K_cases := L_subdiv_K,
+  unfold is_simplicially_iso at L_subdiv_K_cases,
+  choose f f_iso using L_subdiv_K_cases,
+  have f_iso_cases := f_iso,
+  unfold is_simplicial_iso at f_iso_cases,
+  choose g fg_inv using f_iso_cases,
+
+  let Km := stellar_manifold.mk K 0 K_mfd_ih,
+  have K_dim : @dim_of_complex ℕ K K_fin = 0, from
+  begin
+    have H : Km.complex = K, by refl,
+    sorry,
+    -- rw [←H, ←manifold_dim_is_complex_dim Km],
+  end,
+  have subdiv_ident := @stellar_subdiv_zero_dim_ident K K_fin s Hs_ne x Hs Hx K_dim,
+  have subdiv_ident_cases := subdiv_ident,
+
+  unfold is_simplicially_iso at subdiv_ident_cases,
+  choose fL fL_iso using subdiv_ident_cases,
+  have fL_iso_cases := fL_iso,
+  unfold is_simplicial_iso at fL_iso_cases,
+  choose gL fgL_inv using fL_iso_cases,
+
+  let f_comp := simplicial_map.comp f fL,
+  have f_comp_iso : is_simplicial_iso f_comp, from
+  begin
+    apply iso_comp_is_iso;
+    assumption,
+  end,
+
+  have k_in_K : {f_comp.map l} ∈ K.simplices, from
+  begin
+    rw [←finset.image_singleton],
+    apply f_comp.is_simplicial,
+    assumption,
+  end,
+
+  unfold is_stellar_n_manifold at K_mfd_ih,
+  specialize K_mfd_ih (f_comp.map l),
+  specialize K_mfd_ih k_in_K,
+  cases K_mfd_ih with K_sphere K_ball,
+
+  left,
+  apply stellar_equiv_preserves_stellar_n_sphere (Lk(K, {f_comp.map l}) k_in_K),
+  assumption,
+  apply stellar_equiv_preserves_iso,
+  rw [simplicial_iso_symm],
+  apply link_iso _ _ _ _ f_comp,
+  assumption,
+  rw [finset.image_singleton],
+
+  right,
+  apply stellar_equiv_preserves_stellar_n_ball (Lk(K, {f_comp.map l}) k_in_K),
+  assumption,
+  apply stellar_equiv_preserves_iso,
+  rw [simplicial_iso_symm],
+  apply link_iso _ _ _ _ f_comp,
+  assumption,
+  rw [finset.image_singleton],
+
+  have K_iso_L_cases := K_iso_L,
+  unfold is_simplicially_iso at K_iso_L_cases,
+  choose f f_iso using K_iso_L_cases,
+  have f_iso_cases := f_iso,
+  unfold is_simplicial_iso at f_iso_cases,
+  choose g fg_inv using f_iso_cases,
+
+  have g_iso : is_simplicial_iso g, from
+  begin
+    apply iso_inv_is_iso f;
+    assumption,
+  end,
+
+  have k_in_K : {g.map l} ∈ K.simplices, from
+  begin
+    rw [←finset.image_singleton],
+    apply g.is_simplicial,
+    assumption,
+  end,
+
+  unfold is_stellar_n_manifold at K_mfd_ih,
+  specialize K_mfd_ih (g.map l),
+  specialize K_mfd_ih k_in_K,
+  cases K_mfd_ih with K_sphere K_ball,
+
+  left,
+  apply stellar_equiv_preserves_stellar_n_sphere (Lk(K, {g.map l}) k_in_K),
+  assumption,
+  apply stellar_equiv_preserves_iso,
+  rw [simplicial_iso_symm],
+  apply link_iso _ _ _ _ g,
+  assumption,
+  rw [finset.image_singleton],
+
+  right,
+  apply stellar_equiv_preserves_stellar_n_ball (Lk(K, {g.map l}) k_in_K),
+  assumption,
+  apply stellar_equiv_preserves_iso,
+  rw [simplicial_iso_symm],
+  apply link_iso _ _ _ _ g,
+  assumption,
+  rw [finset.image_singleton],
+
+  -- dim > 0 case
+  induction X_eq_Y with K L X_eq_K K_move_L K_mfd_ih,
+  rw [←H_ind],
+  apply X.is_manifold,
+
+  unfold is_stellar_n_manifold,
+  intros l l_in_L,
 end
 
 lemma link_not_stellar_sphere_imp_stellar_ball
@@ -2026,12 +2289,11 @@ lemma stellar_ball_boundary_ident
     (X : simplicial_complex ℕ)
     (s : finset ℕ) [s_ne : nonempty s]
     (x : ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
     (s_in_X : s ∈ X.simplices)
     (x_nin_X : x ∉ vertices X)
   : is_stellar_ball X →
       s ∉ (simplicial_complex_boundary X).simplices →
-        simplicial_complex_boundary (@stellar_subdivision _ _ X s s_ne x s_in_X x_nin_X φ)
+        simplicial_complex_boundary (@stellar_subdivision _ _ X s s_ne x s_in_X x_nin_X)
           ≅ simplicial_complex_boundary X
 := begin
   intros X_stellar_ball s_nin_bd,
@@ -2048,13 +2310,12 @@ lemma stellar_ball_boundary_comm
     (X : simplicial_complex ℕ)
     (s : finset ℕ) [s_ne : nonempty s]
     (x : ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
     (s_in_X : s ∈ X.simplices)
     (x_nin_X : x ∉ vertices X)
     (s_in_bd : s ∈ (simplicial_complex_boundary X).simplices)
   : is_stellar_ball X →
-      simplicial_complex_boundary (σ(X, s; x, φ; s_ne, s_in_X, x_nin_X))
-        ≅ σ(simplicial_complex_boundary X, s; x, φ; s_ne, s_in_bd, sorry)
+      simplicial_complex_boundary (σ(X, s, x; s_ne, s_in_X, x_nin_X))
+        ≅ σ(simplicial_complex_boundary X, s, x; s_ne, s_in_bd, sorry)
 := sorry
 
 lemma disk_boundary_is_sphere
@@ -2066,7 +2327,6 @@ lemma disk_boundary_is_sphere
 --       cf. proof of Cor. 3.12
 lemma stellar_equiv_factors_stellar_ball_boundary
     (X Y : simplicial_complex ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
   : is_stellar_ball X → X ≅ₛₜ Y → simplicial_complex_boundary X ≅ₛₜ simplicial_complex_boundary Y
 := begin
   intros X_ball X_eq_Y,
@@ -2093,13 +2353,12 @@ lemma stellar_equiv_factors_stellar_ball_boundary
   assumption,
 
   unfold stellar_move at K_move_L,
-  specialize K_move_L φ,
   cases K_move_L with L_subdiv_K K_subdiv_L,
 
   choose t Ht Ht_ne y Hy L_subdiv_K using L_subdiv_K,
   apply stellar_equiv_trans
     (simplicial_complex_boundary K)
-    (simplicial_complex_boundary (σ(L, t; y, φ; Ht_ne, Ht, Hy))),
+    (simplicial_complex_boundary (σ(L, t, y; Ht_ne, Ht, Hy))),
   apply stellar_equiv_preserves_iso,
   apply simplicial_complex_boundary_iso,
   assumption,
@@ -2110,10 +2369,9 @@ lemma stellar_equiv_factors_stellar_ball_boundary
   rw [stellar_equiv_symm],
   apply stellar_equiv_trans
     (simplicial_complex_boundary L)
-    (σ(simplicial_complex_boundary L, t; y, φ; Ht_ne, h, sorry)),
+    (σ(simplicial_complex_boundary L, t, y; Ht_ne, h, sorry)),
   apply relation.refl_trans_gen.single,
   unfold stellar_move,
-  intro ψ,
   right, left,
   use t, use Ht,
   rw [set.mem_singleton_iff],
@@ -2150,7 +2408,7 @@ lemma stellar_equiv_factors_stellar_ball_boundary
   rw [stellar_equiv_symm],
   apply stellar_equiv_trans
     (simplicial_complex_boundary L)
-    (simplicial_complex_boundary (σ(K, s; x, φ; Hs_ne, Hs, Hx))),
+    (simplicial_complex_boundary (σ(K, s, x; Hs_ne, Hs, Hx))),
   apply stellar_equiv_preserves_iso,
   apply simplicial_complex_boundary_iso,
   assumption,
@@ -2161,10 +2419,9 @@ lemma stellar_equiv_factors_stellar_ball_boundary
   rw [stellar_equiv_symm],
   apply stellar_equiv_trans
     (simplicial_complex_boundary K)
-    (σ(simplicial_complex_boundary K, s; x, φ; Hs_ne, h, sorry)),
+    (σ(simplicial_complex_boundary K, s, x; Hs_ne, h, sorry)),
   apply relation.refl_trans_gen.single,
   unfold stellar_move,
-  intro ψ,
   right, left,
   use s, use Hs,
   rw [set.mem_singleton_iff],
@@ -2205,7 +2462,6 @@ end
 lemma boundary_of_ball_is_sphere
     (X : simplicial_complex ℕ)
     (n : ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
   : is_stellar_n_ball X (n + 1) → is_stellar_n_sphere (simplicial_complex_boundary X) n
 := begin
   intro X_n_ball,
@@ -2225,7 +2481,6 @@ lemma boundary_of_ball_is_sphere
   assumption,
   
   apply stellar_equiv_factors_stellar_ball_boundary,
-  apply φ,
 
   rw [stellar_equiv_symm] at X_n_ball,
   apply stellar_equiv_preserves_stellar_ball L,
@@ -2263,14 +2518,533 @@ lemma closed_mfd_empty_boundary
   contradiction,
 end
 
+lemma join_simplicial_complex_boundary_is_subcomplex_left
+    (X Y : simplicial_complex ℕ)
+  : (simplicial_complex_boundary X) ⋆ Y ⊆ X ⋆ Y
+:= begin
+  apply simplicial_join_subcomplex,
+  apply simplicial_complex_boundary_is_subcomplex,
+  refl,
+end
+
+lemma join_simplicial_complex_boundary_is_subcomplex_right
+    (X Y : simplicial_complex ℕ)
+  : X ⋆ (simplicial_complex_boundary Y) ⊆ X ⋆ Y
+:= begin
+  apply simplicial_join_subcomplex,
+  refl,
+  apply simplicial_complex_boundary_is_subcomplex,
+end
+
+lemma union_join_simplicial_complex_boundary_is_subcomplex
+    (X Y : simplicial_complex ℕ)
+  : ((X ⋆ (simplicial_complex_boundary Y) ∪ (simplicial_complex_boundary X) ⋆ Y)) ⊆ X ⋆ Y
+:= begin
+  simp only [simplicial_complex.has_subset, is_subcomplex],
+  apply set.union_subset,
+  apply join_simplicial_complex_boundary_is_subcomplex_right,
+  apply join_simplicial_complex_boundary_is_subcomplex_left,
+end
+
+lemma union_join_simplicial_complex_boundary_is_subcomplex_vertices
+    (X Y : simplicial_complex ℕ)
+  : vertices ((X ⋆ (simplicial_complex_boundary Y)) ∪ ((simplicial_complex_boundary X) ⋆ Y)) ⊆ vertices (X ⋆ Y)
+:= begin
+  apply is_subcomplex_vertices,
+  apply union_join_simplicial_complex_boundary_is_subcomplex,
+end
+
+lemma stellar_ball_boundary_distr_join_union_left
+    (X Y : stellar_manifold)
+    (m n : ℕ)
+    (φ : simplicial_coe (X.complex ⋆ Y.complex) ℕ)
+  : is_stellar_n_ball X.complex m →
+      is_stellar_n_ball Y.complex n →
+        φ[X.complex ⋆ (simplicial_complex_boundary Y.complex); sorry] ⊆ simplicial_complex_boundary (φ[X.complex ⋆ Y.complex])
+:= begin
+  intros X_ball Y_ball,
+  unfold is_stellar_n_ball at *,
+
+  simp only [simplicial_complex.has_subset, is_subcomplex, set.subset_def],
+  intros s s_in_bd,
+  dsimp only [simplicial_complex_boundary, simplicial_image, simplicial_complex.simplices],
+  simp only [set.mem_sep_iff, set.mem_diff, set.mem_set_of],
+  
+  simp only [simplicial_image, simplicial_complex.simplices] at s_in_bd,
+  simp only [set.mem_set_of] at s_in_bd,
+  choose s' s'_in_bd s'_eq_s using s_in_bd,
+  dsimp only [simplicial_complex_boundary, simplicial_join, simplicial_complex.simplices] at s'_in_bd,
+  simp only [set.mem_set_of] at s'_in_bd,
+
+  choose t t_in_X u u_in_Y tu_eq_s' using s'_in_bd,
+  simp only [set.mem_union, set.mem_sep_iff, set.mem_diff] at u_in_Y,
+  cases u_in_Y with u_in_bd u_empty,
+
+  -- u ∈ ∂Y
+  cases u_in_bd with u_in_bd u_not_sphere,
+  cases u_in_bd with u_in_Y u_ne,
+  specialize u_not_sphere u_in_Y,
+  
+  left, split, split,
+  use s', split,
+  rw [←tu_eq_s', simplicial_join_sep],
+  split; assumption,
+  assumption,
+  rw [set.mem_singleton_iff] at u_ne ⊢,
+  rw [←s'_eq_s, ←tu_eq_s', finset.image_eq_empty, simplex_disjoint_empty],
+  simp only [not_and_distrib],
+  sorry, -- TODO: previous tauto call
+  
+  -- Lk(φ[X ⋆ Y], s) is not stellar sphere
+  intro s''_in_XY_img,
+  choose s'' s''_in_XY s''_eq_s using s''_in_XY_img,
+  
+  apply stellar_equiv_preserves_not_stellar_sphere
+    (φ[Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y; sorry]),
+  have link_Y_ne : ¬Lk(Y.complex, u) u_in_Y ≅ @empty_sc ℕ, from
+  begin
+    apply not_stellar_sphere_imp_nonempty,
+    assumption,
+  end,
+  have u_dim : 0 ≤ dim u, by sorry,
+
+  rw [link_not_sphere_iff_ball _ _ _ u_dim link_Y_ne] at u_not_sphere,
+  unfold is_stellar_ball at u_not_sphere,
+  choose z z_bound link_Y_z_ball using u_not_sphere,
+
+  have Hz : 0 ≤ z, from
+  begin
+    sorry,
+  end,
+
+  apply stellar_equiv_preserves_not_stellar_sphere
+    (ν⟨D(z), Lk(X.complex, t) t_in_X⟩[D(z) ⋆ Lk(X.complex, t) t_in_X])
+    (φ[Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y; sorry]),
+  have H_cases := stellar_link_is_stellar_ball_or_sphere X t t_in_X,
+
+  by_cases (t = ∅),
+      
+  -- t = ∅
+  { apply stellar_equiv_preserves_not_stellar_sphere
+      (ν⟨X.complex, D(z)⟩[X.complex ⋆ D(z)]),
+    apply stellar_equiv_preserves_not_stellar_sphere
+      (φᵈ⟨m, z⟩[D(m) ⋆ D(z)]),
+    
+    apply stellar_equiv_preserves_not_stellar_sphere
+      (D(m + z + 1)),
+    simp only [is_stellar_sphere, not_exists],
+    intros x x_bound,
+    rw [disk_is_sphere_iff_empty],
+    simp only [not_and_distrib],
+    left,
+    simp only [not_lt],
+    apply @int.le_trans _ (m + z),
+    apply @int.le_trans _ z,
+    assumption,
+    simp only [le_add_iff_nonneg_left, nat.cast_nonneg],
+    simp only [le_add_iff_nonneg_right, zero_le_one],
+    
+    apply stellar_equiv_preserves_iso,
+    rw [simplicial_iso_symm],
+    apply simplicial_iso_trans (φᵈ⟨m, z⟩[D(m) ⋆ D(z)]) (D(m) ⋆ D(z)),
+    rw [simplicial_iso_symm],
+    apply φᵈ⟨m, z⟩.iso_onto_image,
+    apply join_stellar_disk,
+    
+    apply stellar_equiv_iso
+      (D(m) ⋆ D(z))
+      (X.complex ⋆ D(z)),
+    apply φᵈ⟨m, z⟩.iso_onto_image,
+    apply ν⟨X.complex, D(z)⟩.iso_onto_image,
+    apply simplicial_join_stellar_equiv_left,
+    rw [stellar_equiv_symm],
+    apply X_ball,
+    
+    apply stellar_equiv_iso
+      (X.complex ⋆ D(z))
+      (Lk(X.complex, t) t_in_X ⋆ D(z)),
+    apply ν⟨X.complex, D(z)⟩.iso_onto_image,
+    apply simplicial_iso_trans
+      (Lk(X.complex, t) t_in_X ⋆ D(z))
+      (D(z) ⋆ Lk(X.complex, t) t_in_X),
+    apply simplicial_join_comm,
+    apply ν⟨D(z), Lk(X.complex, t) t_in_X⟩.iso_onto_image,
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_join_iso_left,
+    simp only [h],
+    rw [simplicial_iso_symm],
+    apply link_ident, },
+  
+  -- t ≠ ∅ ↔ 0 ≤ dim t
+  { have t_dim : 0 ≤ dim t, by sorry,
+    -- TODO: Turn into more general lemma.
+    have HXt : dim t ≤ X.dim, by sorry,
+    specialize H_cases t_dim,
+    cases H_cases with link_X_sphere link_X_ball,
+    
+    -- X ≅ₛₜ S(n)
+    apply stellar_equiv_preserves_not_stellar_sphere
+      (ν⟨D(z), S(↑(X.dim) - dim t - 1)⟩[D(z) ⋆ S(↑(X.dim) - dim t - 1)]),
+    apply stellar_equiv_preserves_not_stellar_sphere
+      (D(z + (↑(X.dim) - dim t - 1) + 1)),
+    simp only [is_stellar_sphere, not_exists],
+    intros x x_bound,
+    rw [disk_is_sphere_iff_empty],
+    simp only [not_and_distrib],
+    left,
+    simp only [not_lt],
+    sorry, -- TODO: previous omega call
+    
+    have H_join_ball := join_stellar_ball_and_sphere
+      D(z) S(↑(X.dim) - dim t - 1) ν⟨D(z), S(↑(X.dim) - dim t - 1)⟩
+      z (↑(X.dim) - dim t - 1)
+      Hz (by {sorry})
+      (by {sorry})
+      (by {sorry}),
+    unfold is_stellar_n_ball at H_join_ball,
+    rw [stellar_equiv_symm],
+    assumption,
+    
+    apply stellar_equiv_iso
+      (S(↑(X.dim) - dim t - 1) ⋆ D(z))
+      (Lk(X.complex, t) t_in_X ⋆ D(z)),
+    apply simplicial_iso_trans
+      (S(↑(X.dim) - dim t - 1) ⋆ D(z))
+      (D(z) ⋆ S(↑(X.dim) - dim t - 1)),
+    apply simplicial_join_comm,
+    apply ν⟨D(z), S(↑(X.dim) - dim t - 1)⟩.iso_onto_image,
+    apply simplicial_iso_trans
+      (Lk(X.complex, t) t_in_X ⋆ D(z))
+      (D(z) ⋆ Lk(X.complex, t) t_in_X),
+    apply simplicial_join_comm,
+    apply ν⟨D(z), Lk(X.complex, t) t_in_X⟩.iso_onto_image,
+    
+    apply simplicial_join_stellar_equiv_left,
+    unfold is_stellar_n_sphere at link_X_sphere,
+    rw [stellar_equiv_symm],
+    assumption,
+    
+    -- X ≅ₛₜ D(n)
+    apply stellar_equiv_preserves_not_stellar_sphere
+      (ν⟨D(z), D(↑(X.dim) - dim t - 1)⟩[D(z) ⋆ D(↑(X.dim) - dim t - 1)]),
+    apply stellar_equiv_preserves_not_stellar_sphere
+      (D(z + (↑(X.dim) - dim t - 1) + 1)),
+    simp only [is_stellar_sphere, not_exists],
+    intros x x_bound,
+    rw [disk_is_sphere_iff_empty],
+    simp only [not_and_distrib],
+    left,
+    simp only [not_lt],
+    sorry, -- TODO: previous omega call
+    
+    have Hz_neg_one : -1 ≤ z, by sorry, -- TODO: previous omega call
+    have H_join_ball := join_stellar_balls
+      D(z) D(↑(X.dim) - dim t - 1) ν⟨D(z), D(↑(X.dim) - dim t - 1)⟩
+      z (↑(X.dim) - dim t - 1)
+      Hz_neg_one (by {sorry})
+      (by {sorry})
+      (by {sorry}),
+    unfold is_stellar_n_ball at H_join_ball,
+    rw [stellar_equiv_symm],
+    assumption,
+    
+    apply stellar_equiv_iso
+      (D(↑(X.dim) - dim t - 1) ⋆ D(z))
+      (Lk(X.complex, t) t_in_X ⋆ D(z)),
+    apply simplicial_iso_trans
+      (D(↑(X.dim) - dim t - 1) ⋆ D(z))
+      (D(z) ⋆ D(↑(X.dim) - dim t - 1)),
+    apply simplicial_join_comm,
+    apply ν⟨D(z), D(↑(X.dim) - dim t - 1)⟩.iso_onto_image,
+    apply simplicial_iso_trans
+      (Lk(X.complex, t) t_in_X ⋆ D(z))
+      (D(z) ⋆ Lk(X.complex, t) t_in_X),
+    apply simplicial_join_comm,
+    apply ν⟨D(z), Lk(X.complex, t) t_in_X⟩.iso_onto_image,
+    
+    apply simplicial_join_stellar_equiv_left,
+    unfold is_stellar_n_ball at link_X_ball,
+    rw [stellar_equiv_symm],
+    assumption, },
+  
+  { apply stellar_equiv_iso
+      (Lk(X.complex, t) t_in_X ⋆ D(z))
+      (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y),
+    apply simplicial_iso_trans
+      (Lk(X.complex, t) t_in_X ⋆ D(z))
+      (D(z) ⋆ Lk(X.complex, t) t_in_X),
+    apply simplicial_join_comm,
+    apply ν⟨D(z), Lk(X.complex, t) t_in_X⟩.iso_onto_image,
+    apply (φ.restrict (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y) sorry).iso_onto_image,
+    
+    apply simplicial_join_stellar_equiv_right,
+    rw [stellar_equiv_symm],
+    assumption, },
+    
+  { have s'_in_XY : s' ∈ (X.complex ⋆ Y.complex).simplices, from
+    begin
+      rw [simplicial_join_mem],
+      use t, split, assumption,
+      use u, split, assumption,
+      symmetry,
+      assumption,
+    end,
+    apply stellar_equiv_iso
+      (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y)
+      (Lk(X.complex ⋆ Y.complex, s') s'_in_XY),
+    apply (φ.restrict (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y) sorry).iso_onto_image,
+    let φs := simplicial_map.mk φ.coe (map_is_simplicial_onto_image (X.complex ⋆ Y.complex) φ.coe φ.injective),
+    apply link_iso _ _ _ _ _ _ _ (coe_is_iso _ φ) s'_eq_s,
+    
+    rw [stellar_equiv_symm],
+    apply stellar_equiv_preserves_iso,
+    simp only [←tu_eq_s'],
+    apply join_fact_link, },
+  
+  -- u = ∅
+  by_cases (t = ∅),
+  
+  -- t = ∅
+  rw [set.mem_singleton_iff] at u_empty,
+  have s'_empty : s' = ∅, from
+  begin
+    rw [←tu_eq_s', simplex_disjoint_empty],
+    split; assumption,
+  end,
+  rw [s'_empty, finset.image_empty] at s'_eq_s,
+  right,
+  rw [set.mem_singleton_iff],
+  symmetry,
+  assumption,
+  
+  -- t ≠ ∅
+  left, split, split,
+  use s', split,
+  rw [←tu_eq_s', simplicial_join_sep],
+  split, assumption,
+  rw [set.mem_singleton_iff] at u_empty,
+  rw [u_empty],
+  apply simplicial_complex_empty_simplex,
+  assumption,
+  rw [set.mem_singleton_iff],
+  rw [←s'_eq_s, ←tu_eq_s', finset.image_eq_empty, simplex_disjoint_empty],
+  simp only [not_and_distrib],
+  left, assumption,
+
+  intro s''_in_XY,
+
+  have t_dim : 0 ≤ dim t, by sorry,
+  -- TODO: Turn into more general lemma.
+  have HXt : dim t ≤ X.dim, by sorry,
+  have HX_cases := stellar_link_is_stellar_ball_or_sphere X t t_in_X,
+
+  specialize HX_cases t_dim,
+  cases HX_cases with link_X_sphere link_X_ball,
+  
+  -- X ≅ₛₜ S(n)
+  apply stellar_equiv_preserves_not_stellar_sphere
+    (φᵈˢ⟨n, ↑(X.dim) - dim t - 1⟩[D(n) ⋆ S(↑(X.dim) - dim t - 1)]),
+  apply stellar_equiv_preserves_not_stellar_sphere
+    (D(n + (↑(X.dim) - dim t - 1) + 1)),
+  simp only [is_stellar_sphere, not_exists],
+  intros x x_bound,
+  rw [disk_is_sphere_iff_empty],
+  simp only [not_and_distrib],
+  left,
+  simp only [not_lt],
+  apply @int.le_trans _ n,
+  apply int.coe_zero_le,
+  sorry, -- TODO: previous omega call
+
+  have H_join_ball := join_stellar_ball_and_sphere
+    D(n) S(↑(X.dim) - dim t - 1) φᵈˢ⟨n, ↑(X.dim) - dim t - 1⟩
+    n (↑(X.dim) - dim t - 1)
+    (by {sorry})
+    (by {sorry})
+    (by {sorry})
+    (by {sorry}),
+  unfold is_stellar_n_ball at H_join_ball,
+  rw [stellar_equiv_symm],
+  assumption,
+  
+  have u_in_Y : u ∈ Y.complex.simplices, from
+  begin
+    rw [set.mem_singleton_iff] at u_empty,
+    rw [u_empty],
+    apply simplicial_complex_empty_simplex,
+  end,
+  apply stellar_equiv_iso
+    (S(↑(X.dim) - dim t - 1) ⋆ D(n))
+    (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y),
+  apply simplicial_iso_trans
+    (S(↑(X.dim) - dim t - 1) ⋆ D(n))
+    (D(n) ⋆ S(↑(X.dim) - dim t - 1)),
+  apply simplicial_join_comm,
+  apply φᵈˢ⟨n, ↑(X.dim) - dim t - 1⟩.iso_onto_image,
+
+  have s'_in_XY : s' ∈ (X.complex ⋆ Y.complex).simplices, from
+  begin
+    rw [simplicial_join_mem],
+    use t, split, assumption,
+    use u, split, assumption,
+    symmetry,
+    assumption,
+  end,
+  rw [simplicial_iso_symm],
+  apply simplicial_iso_trans
+    (Lk(φ[X.complex ⋆ Y.complex], s) _)
+    (Lk(X.complex ⋆ Y.complex, s') s'_in_XY),
+  let φs := simplicial_map.mk φ.coe (map_is_simplicial_onto_image (X.complex ⋆ Y.complex) φ.coe φ.injective),
+  rw [simplicial_iso_symm],
+  apply link_iso _ _ _ _ _ _ _ (coe_is_iso _ φ) s'_eq_s,
+
+  simp only [←tu_eq_s'],
+  apply join_fact_link,
+
+  apply stellar_equiv_trans
+    (S(↑(X.dim) - dim t - 1) ⋆ D(n))
+    (S(↑(X.dim) - dim t - 1) ⋆ Lk(Y.complex, u) u_in_Y),
+  apply simplicial_join_stellar_equiv_right,
+  rw [stellar_equiv_symm],
+  apply stellar_equiv_trans (Lk(Y.complex, u) u_in_Y) Y.complex,
+  rw [set.mem_singleton_iff] at u_empty,
+  simp only [u_empty],
+  apply stellar_equiv_preserves_iso,
+  apply link_ident,
+  apply Y_ball,
+  
+  apply simplicial_join_stellar_equiv_left,
+  unfold is_stellar_n_sphere at link_X_sphere,
+  rw [stellar_equiv_symm],
+  assumption,
+  
+  -- X ≅ₛₜ D(n)
+  apply stellar_equiv_preserves_not_stellar_sphere
+    (φᵈ⟨n, ↑(X.dim) - dim t - 1⟩[D(n) ⋆ D(↑(X.dim) - dim t - 1)]),
+  apply stellar_equiv_preserves_not_stellar_sphere
+    (D(n + (↑(X.dim) - dim t - 1) + 1)),
+  simp only [is_stellar_sphere, not_exists],
+  intros x x_bound,
+  rw [disk_is_sphere_iff_empty],
+  simp only [not_and_distrib],
+  left,
+  simp only [not_lt],
+  apply @int.le_trans _ n,
+  apply int.coe_zero_le,
+  sorry, -- TODO: previous omega call
+  
+  have H_join_ball := join_stellar_balls
+    D(n) D(↑(X.dim) - dim t - 1) φᵈ⟨n, ↑(X.dim) - dim t - 1⟩
+    n (↑(X.dim) - dim t - 1)
+    (by {sorry})
+    (by {sorry})
+    (by {sorry})
+    (by {sorry}),
+  unfold is_stellar_n_ball at H_join_ball,
+  rw [stellar_equiv_symm],
+  assumption,
+  
+  have u_in_Y : u ∈ Y.complex.simplices, from
+  begin
+    rw [set.mem_singleton_iff] at u_empty,
+    rw [u_empty],
+    apply simplicial_complex_empty_simplex,
+  end,
+  apply stellar_equiv_iso
+    (D(↑(X.dim) - dim t - 1) ⋆ D(n))
+    (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y),
+  apply simplicial_iso_trans
+    (D(↑(X.dim) - dim t - 1) ⋆ D(n))
+    (D(n) ⋆ D(↑(X.dim) - dim t - 1)),
+  apply simplicial_join_comm,
+  apply φᵈ⟨n, ↑(X.dim) - dim t - 1⟩.iso_onto_image,
+
+  have s'_in_XY : s' ∈ (X.complex ⋆ Y.complex).simplices, from
+  begin
+    rw [simplicial_join_mem],
+    use t, split, assumption,
+    use u, split, assumption,
+    symmetry,
+    assumption,
+  end,
+  rw [simplicial_iso_symm],
+  apply simplicial_iso_trans
+    (Lk(φ[X.complex ⋆ Y.complex], s) _)
+    (Lk(X.complex ⋆ Y.complex, s') s'_in_XY),
+  let φs := simplicial_map.mk φ.coe (map_is_simplicial_onto_image (X.complex ⋆ Y.complex) φ.coe φ.injective),
+  rw [simplicial_iso_symm],
+  apply link_iso _ _ _ _ _ _ _ (coe_is_iso _ φ) s'_eq_s,
+
+  simp only [←tu_eq_s'],
+  apply join_fact_link,
+
+  apply stellar_equiv_trans
+    (D(↑(X.dim) - dim t - 1) ⋆ D(n))
+    (D(↑(X.dim) - dim t - 1) ⋆ Lk(Y.complex, u) u_in_Y),
+  apply simplicial_join_stellar_equiv_right,
+  rw [stellar_equiv_symm],
+  apply stellar_equiv_trans (Lk(Y.complex, u) u_in_Y) Y.complex,
+  rw [set.mem_singleton_iff] at u_empty,
+  simp only [u_empty],
+  apply stellar_equiv_preserves_iso,
+  apply link_ident,
+  apply Y_ball,
+  
+  apply simplicial_join_stellar_equiv_left,
+  unfold is_stellar_n_ball at link_X_ball,
+  rw [stellar_equiv_symm],
+  assumption,
+end
+
+lemma stellar_ball_boundary_distr_join_union_right
+    (X Y : stellar_manifold)
+    (m n : ℕ)
+    (φ : simplicial_coe (X.complex ⋆ Y.complex) ℕ)
+  : is_stellar_n_ball X.complex m →
+      is_stellar_n_ball Y.complex n →
+        φ[(simplicial_complex_boundary X.complex) ⋆ Y.complex; sorry] ⊆ simplicial_complex_boundary (φ[X.complex ⋆ Y.complex])
+:= begin
+  intros X_ball Y_ball,
+
+  let H_comm := simplicial_join_comm X.complex Y.complex,
+
+  unfold is_simplicially_iso at H_comm,
+  choose f f_iso using H_comm,
+  let f_iso_cases := f_iso,
+  unfold is_simplicial_iso at f_iso_cases,
+  choose g fg_inv using f_iso_cases,
+
+  have ψ_injective : set.inj_on (φ.coe ∘ g.map) (vertices (Y.complex ⋆ X.complex)), from
+  begin
+    apply set.inj_on.comp φ.injective,
+    sorry,
+    sorry,
+  end,
+  let ψ := simplicial_coe.mk (φ.coe ∘ g.map) ψ_injective,
+
+  apply simplicial_iso_preserves_subcomplex
+    (ψ[Y.complex ⋆ (simplicial_complex_boundary X.complex); sorry])
+    (simplicial_complex_boundary (ψ[Y.complex ⋆ X.complex])),
+  apply coe_preserves_iso,
+  apply simplicial_join_comm,
+
+  apply simplicial_complex_boundary_iso,
+  apply coe_preserves_iso,
+  apply simplicial_join_comm,
+
+  apply stellar_ball_boundary_distr_join_union_left Y X n m ψ Y_ball X_ball,
+end
+
 -- Proposition 3.11 (1), p.18
+-- TODO: Fix to updated definitions of coercion.
 lemma stellar_ball_boundary_distr_join_union
     (X Y : stellar_manifold)
     (m n : ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
+    (φ : simplicial_coe (X.complex ⋆ Y.complex) ℕ)
   : is_stellar_n_ball X.complex m →
       is_stellar_n_ball Y.complex n →
-        simplicial_complex_boundary (φ[X.complex ⋆ Y.complex]) ≅ (X.complex ⋆ (simplicial_complex_boundary Y.complex)) ∪ ((simplicial_complex_boundary X.complex) ⋆ Y.complex)
+        simplicial_complex_boundary (φ[X.complex ⋆ Y.complex])
+        ≅ (X.complex ⋆ (simplicial_complex_boundary Y.complex)) ∪ ((simplicial_complex_boundary X.complex) ⋆ Y.complex)
 := begin
   intros X_ball Y_ball,
   unfold is_stellar_n_ball at *,
@@ -2278,16 +3052,14 @@ lemma stellar_ball_boundary_distr_join_union
   rw [simplicial_iso_symm],
   apply simplicial_iso_trans
     (X.complex ⋆ simplicial_complex_boundary Y.complex ∪ simplicial_complex_boundary X.complex ⋆ Y.complex)
-    (φ[X.complex ⋆ simplicial_complex_boundary Y.complex ∪ simplicial_complex_boundary X.complex ⋆ Y.complex]),
-  apply φ.iso_onto_image,
+    (φ[X.complex ⋆ simplicial_complex_boundary Y.complex ∪ simplicial_complex_boundary X.complex ⋆ Y.complex; union_join_simplicial_complex_boundary_is_subcomplex_vertices X.complex Y.complex]),
+  apply (φ.restrict (X.complex ⋆ simplicial_complex_boundary Y.complex ∪ simplicial_complex_boundary X.complex ⋆ Y.complex) _).iso_onto_image,
   rw [simplicial_iso_symm],
 
   apply simplicial_iso_preserves_equiv,
-  rw [set.ext_iff],
-  intro s,
-  split,
+  apply set.eq_of_subset_of_subset,
 
-  { intro s_in_bd,
+  { intros s s_in_bd,
     simp only [simplicial_complex_boundary, simplicial_complex.simplices] at s_in_bd,
     simp only [set.mem_union, set.mem_sep_iff] at s_in_bd,
     cases s_in_bd,
@@ -2323,7 +3095,7 @@ lemma stellar_ball_boundary_distr_join_union
     rw [s'_eq_tu] at s'_eq_s,
     simp at s'_eq_s,
     rw [set.mem_singleton_iff] at s_ne,
-    finish,
+    sorry,
     
     right,
     use t,
@@ -2345,7 +3117,7 @@ lemma stellar_ball_boundary_distr_join_union
     symmetry,
     assumption,
     
-    have H_link_sep : ¬is_stellar_sphere (φ[Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y]), from
+    have H_link_sep : ¬is_stellar_sphere (φ[Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y; sorry]), from
     begin
       apply stellar_equiv_preserves_not_stellar_sphere (Lk(φ[X.complex ⋆ Y.complex], s) s_in_XY),
       assumption,
@@ -2367,7 +3139,7 @@ lemma stellar_ball_boundary_distr_join_union
         (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y),
       apply join_fact_link,
 
-      apply φ.iso_onto_image,
+      apply (φ.restrict (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y) _).iso_onto_image,
     end,
 
     have H_bd_sep : ¬is_stellar_sphere (Lk(X.complex, t) t_in_X) ∨ ¬is_stellar_sphere (Lk(Y.complex, u) u_in_Y), from
@@ -2420,802 +3192,35 @@ lemma stellar_ball_boundary_distr_join_union
     symmetry,
     assumption, },
 
-  { intro s_in_union,
-    dsimp only [simplicial_complex_boundary, simplicial_image, simplicial_complex.simplices],
-    simp only [set.mem_union, set.mem_sep_iff, set.mem_diff, set.mem_set_of],
-    
-    simp only [simplicial_image, simplicial_complex.simplices] at s_in_union,
-    simp only [set.mem_set_of] at s_in_union,
-    choose s' s'_in_union s'_eq_s using s_in_union,
-    dsimp only [simplicial_union, simplicial_complex_boundary, simplicial_join, simplicial_complex.simplices] at s'_in_union,
-    simp only [set.mem_union, set.mem_set_of] at s'_in_union,
-    cases s'_in_union with s'_in_bd s'_in_bd,
-    
-    all_goals {
-      choose t t_in_X u u_in_Y tu_eq_s' using s'_in_bd,
-      try {
-        simp only [set.mem_sep_iff, set.mem_diff] at u_in_Y,
-        cases u_in_Y with α_in_bd α_empty,
-      },
-      try {
-        simp only [set.mem_sep_iff, set.mem_diff] at t_in_X,
-        cases t_in_X with α_in_bd α_empty,
-      },
-
-      -- u ∈ ∂K
-      cases α_in_bd with α_in_bd α_not_sphere,
-      cases α_in_bd with α_in_K α_ne,
-      specialize α_not_sphere α_in_K,
-      
-      left, split, split,
-      use s', split,
-      rw [←tu_eq_s', simplicial_join_sep],
-      split; assumption,
-      assumption,
-      rw [set.mem_singleton_iff] at α_ne ⊢,
-      rw [←s'_eq_s, ←tu_eq_s', finset.image_eq_empty, simplex_disjoint_empty],
-      simp only [not_and_distrib],
-      tauto,
-      
-      -- Lk(φ[X ⋆ Y], s) is not stellar sphere
-      intro s''_in_XY_img,
-      choose s'' s''_in_XY s''_eq_s using s''_in_XY_img,
-      
-      try {
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (φ[Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) α_in_K]),
-        have link_K_ne : ¬Lk(Y.complex, u) α_in_K ≅ @empty_sc ℕ, from
-        begin
-          apply not_stellar_sphere_imp_nonempty,
-          assumption,
-        end,
-        have α_dim : 0 ≤ dim u, by sorry,
-      },
-      try {
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (φ[Lk(X.complex, t) α_in_K ⋆ Lk(Y.complex, u) u_in_Y]),
-        have link_K_ne : ¬Lk(X.complex, t) α_in_K ≅ @empty_sc ℕ, from
-        begin
-          apply not_stellar_sphere_imp_nonempty,
-          assumption,
-        end,
-        have α_dim : 0 ≤ dim t, by sorry,
-      },
-      rw [link_not_sphere_iff_ball _ _ _ α_dim link_K_ne] at α_not_sphere,
-      unfold is_stellar_ball at α_not_sphere,
-      choose z z_bound link_K_z_ball using α_not_sphere,
-
-      have Hz : 0 ≤ z, from
-      begin
-        sorry,
-      end,
-    },
-
-    any_goals {
-      apply stellar_equiv_preserves_not_stellar_sphere
-        (φ[Lk(X.complex, t) t_in_X ⋆ D(z)])
-        (φ[Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) α_in_K]),
-      have H_cases := stellar_link_is_stellar_ball_or_sphere X t t_in_X,
-    },
-
-    any_goals {
-      apply stellar_equiv_preserves_not_stellar_sphere
-        (φ[D(z) ⋆ Lk(Y.complex, u) u_in_Y])
-        (φ[Lk(X.complex, t) α_in_K ⋆ Lk(Y.complex, u) u_in_Y]),
-      have H_cases := stellar_link_is_stellar_ball_or_sphere Y u u_in_Y,
-    },
-      
-    -- s' ∈ X ⋆ ∂Y
-    { by_cases (t = ∅),
-      
-      -- t = ∅
-      { apply stellar_equiv_preserves_not_stellar_sphere
-          (φ[X.complex ⋆ D(z)]),
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (φ[D(m) ⋆ D(z)]),
-        
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (D(m + z + 1)),
-        simp only [is_stellar_sphere, not_exists],
-        intros x x_bound,
-        rw [disk_is_sphere_iff_empty],
-        simp only [not_and_distrib],
-        left,
-        simp only [not_lt],
-        apply @int.le_trans _ (m + z),
-        apply @int.le_trans _ z,
-        assumption,
-        simp only [le_add_iff_nonneg_left, nat.cast_nonneg],
-        simp only [le_add_iff_nonneg_right, zero_le_one],
-        
-        apply stellar_equiv_preserves_iso,
-        rw [simplicial_iso_symm],
-        apply simplicial_iso_trans (φ[D(m) ⋆ D(z)]) (D(m) ⋆ D(z)),
-        rw [simplicial_iso_symm],
-        apply φ.iso_onto_image,
-        apply join_stellar_disk,
-        
-        apply stellar_equiv_iso
-          (D(m) ⋆ D(z))
-          (X.complex ⋆ D(z)),
-        apply φ.iso_onto_image,
-        apply φ.iso_onto_image,
-        apply simplicial_join_stellar_equiv_left,
-        rw [stellar_equiv_symm],
-        assumption,
-        
-        apply stellar_equiv_iso
-          (X.complex ⋆ D(z))
-          (Lk(X.complex, t) t_in_X ⋆ D(z)),
-        apply φ.iso_onto_image,
-        apply φ.iso_onto_image,
-        apply stellar_equiv_preserves_iso,
-        apply simplicial_join_iso_left,
-        simp only [h],
-        rw [simplicial_iso_symm],
-        apply link_ident, },
-      
-      -- t ≠ ∅ ↔ 0 ≤ dim t
-      { have t_dim : 0 ≤ dim t, by sorry,
-        -- TODO: Turn into more general lemma.
-        have HXt : dim t ≤ X.dim, by sorry,
-        specialize H_cases t_dim,
-        cases H_cases with link_X_sphere link_X_ball,
-        
-        -- X ≅ₛₜ S(n)
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (φ[D(z) ⋆ S(↑(X.dim) - dim t - 1)]),
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (D(z + (↑(X.dim) - dim t - 1) + 1)),
-        simp only [is_stellar_sphere, not_exists],
-        intros x x_bound,
-        rw [disk_is_sphere_iff_empty],
-        simp only [not_and_distrib],
-        left,
-        simp only [not_lt],
-        omega,
-        
-        have H_join_ball := join_stellar_ball_and_sphere
-          D(z) S(↑(X.dim) - dim t - 1) φ
-          z (↑(X.dim) - dim t - 1)
-          Hz (by {sorry})
-          (by {sorry})
-          (by {sorry}),
-        unfold is_stellar_n_ball at H_join_ball,
-        rw [stellar_equiv_symm],
-        assumption,
-        
-        apply stellar_equiv_iso
-          (S(↑(X.dim) - dim t - 1) ⋆ D(z))
-          (Lk(X.complex, t) t_in_X ⋆ D(z)),
-        apply simplicial_iso_trans
-          (S(↑(X.dim) - dim t - 1) ⋆ D(z))
-          (D(z) ⋆ S(↑(X.dim) - dim t - 1)),
-        apply simplicial_join_comm,
-        apply φ.iso_onto_image,
-        apply φ.iso_onto_image,
-        
-        apply simplicial_join_stellar_equiv_left,
-        unfold is_stellar_n_sphere at link_X_sphere,
-        rw [stellar_equiv_symm],
-        assumption,
-        
-        -- X ≅ₛₜ D(n)
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (φ[D(z) ⋆ D(↑(X.dim) - dim t - 1)]),
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (D(z + (↑(X.dim) - dim t - 1) + 1)),
-        simp only [is_stellar_sphere, not_exists],
-        intros x x_bound,
-        rw [disk_is_sphere_iff_empty],
-        simp only [not_and_distrib],
-        left,
-        simp only [not_lt],
-        omega,
-        
-        have Hz_neg_one : -1 ≤ z, by omega,
-        have H_join_ball := join_stellar_balls
-          D(z) D(↑(X.dim) - dim t - 1) φ
-          z (↑(X.dim) - dim t - 1)
-          Hz_neg_one (by {sorry})
-          (by {sorry})
-          (by {sorry}),
-        unfold is_stellar_n_ball at H_join_ball,
-        rw [stellar_equiv_symm],
-        assumption,
-        
-        apply stellar_equiv_iso
-          (D(↑(X.dim) - dim t - 1) ⋆ D(z))
-          (Lk(X.complex, t) t_in_X ⋆ D(z)),
-        apply simplicial_iso_trans
-          (D(↑(X.dim) - dim t - 1) ⋆ D(z))
-          (D(z) ⋆ D(↑(X.dim) - dim t - 1)),
-        apply simplicial_join_comm,
-        apply φ.iso_onto_image,
-        apply φ.iso_onto_image,
-        
-        apply simplicial_join_stellar_equiv_left,
-        unfold is_stellar_n_ball at link_X_ball,
-        rw [stellar_equiv_symm],
-        assumption, }, },
-      
-    { apply stellar_equiv_iso
-        (Lk(X.complex, t) t_in_X ⋆ D(z))
-        (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) α_in_K),
-      apply φ.iso_onto_image,
-      apply φ.iso_onto_image,
-      
-      apply simplicial_join_stellar_equiv_right,
-      rw [stellar_equiv_symm],
-      assumption, },
-      
-    { have s'_in_XY : s' ∈ (X.complex ⋆ Y.complex).simplices, from
-      begin
-        rw [simplicial_join_mem],
-        use t, split, assumption,
-        use u, split, assumption,
-        symmetry,
-        assumption,
-      end,
-      apply stellar_equiv_iso
-        (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) α_in_K)
-        (Lk(X.complex ⋆ Y.complex, s') s'_in_XY),
-      apply φ.iso_onto_image,
-      let φs := simplicial_map.mk φ.coe (map_is_simplicial_onto_image (X.complex ⋆ Y.complex) φ.coe φ.injective),
-      apply link_iso _ _ _ _ _ _ _ (coe_is_iso _ φ) s'_eq_s,
-      
-      rw [stellar_equiv_symm],
-      apply stellar_equiv_preserves_iso,
-      simp only [←tu_eq_s'],
-      apply join_fact_link, },
-      
-      -- u = ∅
-    { by_cases (t = ∅),
-      
-      -- t = ∅
-      rw [set.mem_singleton_iff] at α_empty,
-      have s'_empty : s' = ∅, from
-      begin
-        rw [←tu_eq_s', simplex_disjoint_empty],
-        split; assumption,
-      end,
-      rw [s'_empty, finset.image_empty] at s'_eq_s,
-      right,
-      rw [set.mem_singleton_iff],
-      symmetry,
-      assumption,
-      
-      -- t ≠ ∅
-      left, split, split,
-      use s', split,
-      rw [←tu_eq_s', simplicial_join_sep],
-      split, assumption,
-      rw [set.mem_singleton_iff] at α_empty,
-      rw [α_empty],
-      apply simplicial_complex_empty_simplex,
-      assumption,
-      rw [set.mem_singleton_iff],
-      rw [←s'_eq_s, ←tu_eq_s', finset.image_eq_empty, simplex_disjoint_empty],
-      simp only [not_and_distrib],
-      left, assumption,
-
-      intro s''_in_XY,
-
-      have t_dim : 0 ≤ dim t, by sorry,
-      -- TODO: Turn into more general lemma.
-      have HXt : dim t ≤ X.dim, by sorry,
-      have HX_cases := stellar_link_is_stellar_ball_or_sphere X t t_in_X,
-
-      specialize HX_cases t_dim,
-      cases HX_cases with link_X_sphere link_X_ball,
-      
-      -- X ≅ₛₜ S(n)
-      apply stellar_equiv_preserves_not_stellar_sphere
-        (φ[D(n) ⋆ S(↑(X.dim) - dim t - 1)]),
-      apply stellar_equiv_preserves_not_stellar_sphere
-        (D(n + (↑(X.dim) - dim t - 1) + 1)),
-      simp only [is_stellar_sphere, not_exists],
-      intros x x_bound,
-      rw [disk_is_sphere_iff_empty],
-      simp only [not_and_distrib],
-      left,
-      simp only [not_lt],
-      apply @int.le_trans _ n,
-      apply int.coe_zero_le,
-      omega,
-
-      have H_join_ball := join_stellar_ball_and_sphere
-        D(n) S(↑(X.dim) - dim t - 1) φ
-        n (↑(X.dim) - dim t - 1)
-        (by {sorry})
-        (by {sorry})
-        (by {sorry})
-        (by {sorry}),
-      unfold is_stellar_n_ball at H_join_ball,
-      rw [stellar_equiv_symm],
-      assumption,
-      
-      have u_in_Y : u ∈ Y.complex.simplices, from
-      begin
-        rw [set.mem_singleton_iff] at α_empty,
-        rw [α_empty],
-        apply simplicial_complex_empty_simplex,
-      end,
-      apply stellar_equiv_iso
-        (S(↑(X.dim) - dim t - 1) ⋆ D(n))
-        (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y),
-      apply simplicial_iso_trans
-        (S(↑(X.dim) - dim t - 1) ⋆ D(n))
-        (D(n) ⋆ S(↑(X.dim) - dim t - 1)),
-      apply simplicial_join_comm,
-      apply φ.iso_onto_image,
-
-      have s'_in_XY : s' ∈ (X.complex ⋆ Y.complex).simplices, from
-      begin
-        rw [simplicial_join_mem],
-        use t, split, assumption,
-        use u, split, assumption,
-        symmetry,
-        assumption,
-      end,
-      rw [simplicial_iso_symm],
-      apply simplicial_iso_trans
-        (Lk(φ[X.complex ⋆ Y.complex], s) _)
-        (Lk(X.complex ⋆ Y.complex, s') s'_in_XY),
-      let φs := simplicial_map.mk φ.coe (map_is_simplicial_onto_image (X.complex ⋆ Y.complex) φ.coe φ.injective),
-      rw [simplicial_iso_symm],
-      apply link_iso _ _ _ _ _ _ _ (coe_is_iso _ φ) s'_eq_s,
-
-      simp only [←tu_eq_s'],
-      apply join_fact_link,
-
-      apply stellar_equiv_trans
-        (S(↑(X.dim) - dim t - 1) ⋆ D(n))
-        (S(↑(X.dim) - dim t - 1) ⋆ Lk(Y.complex, u) u_in_Y),
-      apply simplicial_join_stellar_equiv_right,
-      rw [stellar_equiv_symm],
-      apply stellar_equiv_trans (Lk(Y.complex, u) u_in_Y) Y.complex,
-      rw [set.mem_singleton_iff] at α_empty,
-      simp only [α_empty],
-      apply stellar_equiv_preserves_iso,
-      apply link_ident,
-      assumption,
-      
-      apply simplicial_join_stellar_equiv_left,
-      unfold is_stellar_n_sphere at link_X_sphere,
-      rw [stellar_equiv_symm],
-      assumption,
-      
-      -- X ≅ₛₜ D(n)
-      apply stellar_equiv_preserves_not_stellar_sphere
-        (φ[D(n) ⋆ D(↑(X.dim) - dim t - 1)]),
-      apply stellar_equiv_preserves_not_stellar_sphere
-        (D(n + (↑(X.dim) - dim t - 1) + 1)),
-      simp only [is_stellar_sphere, not_exists],
-      intros x x_bound,
-      rw [disk_is_sphere_iff_empty],
-      simp only [not_and_distrib],
-      left,
-      simp only [not_lt],
-      apply @int.le_trans _ n,
-      apply int.coe_zero_le,
-      omega,
-      
-      have H_join_ball := join_stellar_balls
-        D(n) D(↑(X.dim) - dim t - 1) φ
-        n (↑(X.dim) - dim t - 1)
-        (by {sorry})
-        (by {sorry})
-        (by {sorry})
-        (by {sorry}),
-      unfold is_stellar_n_ball at H_join_ball,
-      rw [stellar_equiv_symm],
-      assumption,
-      
-      have u_in_Y : u ∈ Y.complex.simplices, from
-      begin
-        rw [set.mem_singleton_iff] at α_empty,
-        rw [α_empty],
-        apply simplicial_complex_empty_simplex,
-      end,
-      apply stellar_equiv_iso
-        (D(↑(X.dim) - dim t - 1) ⋆ D(n))
-        (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y),
-      apply simplicial_iso_trans
-        (D(↑(X.dim) - dim t - 1) ⋆ D(n))
-        (D(n) ⋆ D(↑(X.dim) - dim t - 1)),
-      apply simplicial_join_comm,
-      apply φ.iso_onto_image,
-
-      have s'_in_XY : s' ∈ (X.complex ⋆ Y.complex).simplices, from
-      begin
-        rw [simplicial_join_mem],
-        use t, split, assumption,
-        use u, split, assumption,
-        symmetry,
-        assumption,
-      end,
-      rw [simplicial_iso_symm],
-      apply simplicial_iso_trans
-        (Lk(φ[X.complex ⋆ Y.complex], s) _)
-        (Lk(X.complex ⋆ Y.complex, s') s'_in_XY),
-      let φs := simplicial_map.mk φ.coe (map_is_simplicial_onto_image (X.complex ⋆ Y.complex) φ.coe φ.injective),
-      rw [simplicial_iso_symm],
-      apply link_iso _ _ _ _ _ _ _ (coe_is_iso _ φ) s'_eq_s,
-
-      simp only [←tu_eq_s'],
-      apply join_fact_link,
-
-      apply stellar_equiv_trans
-        (D(↑(X.dim) - dim t - 1) ⋆ D(n))
-        (D(↑(X.dim) - dim t - 1) ⋆ Lk(Y.complex, u) u_in_Y),
-      apply simplicial_join_stellar_equiv_right,
-      rw [stellar_equiv_symm],
-      apply stellar_equiv_trans (Lk(Y.complex, u) u_in_Y) Y.complex,
-      rw [set.mem_singleton_iff] at α_empty,
-      simp only [α_empty],
-      apply stellar_equiv_preserves_iso,
-      apply link_ident,
-      assumption,
-      
-      apply simplicial_join_stellar_equiv_left,
-      unfold is_stellar_n_ball at link_X_ball,
-      rw [stellar_equiv_symm],
-      assumption, },
-      
-    -- s' ∈ ∂X ⋆ Y
-    { by_cases (u = ∅),
-      
-      -- u = ∅
-      { apply stellar_equiv_preserves_not_stellar_sphere
-          (φ[D(z) ⋆ Y.complex]),
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (φ[D(z) ⋆ D(n)]),
-        
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (D(z + n + 1)),
-        simp only [is_stellar_sphere, not_exists],
-        intros x x_bound,
-        rw [disk_is_sphere_iff_empty],
-        simp only [not_and_distrib],
-        left,
-        simp only [not_lt],
-        apply @int.le_trans _ (z + n),
-        apply @int.le_trans _ z,
-        assumption,
-        simp only [le_add_iff_nonneg_right, nat.cast_nonneg],
-        simp,
-        
-        apply stellar_equiv_preserves_iso,
-        rw [simplicial_iso_symm],
-        apply simplicial_iso_trans (φ[D(z) ⋆ D(n)]) (D(z) ⋆ D(n)),
-        rw [simplicial_iso_symm],
-        apply φ.iso_onto_image,
-        apply join_stellar_disk,
-        
-        apply stellar_equiv_iso
-          (D(z) ⋆ D(n))
-          (D(z) ⋆ Y.complex),
-        apply φ.iso_onto_image,
-        apply φ.iso_onto_image,
-        apply simplicial_join_stellar_equiv_right,
-        rw [stellar_equiv_symm],
-        assumption,
-        
-        apply stellar_equiv_iso
-          (D(z) ⋆ Y.complex)
-          (D(z) ⋆ Lk(Y.complex, u) u_in_Y),
-        apply φ.iso_onto_image,
-        apply φ.iso_onto_image,
-        apply stellar_equiv_preserves_iso,
-        apply simplicial_join_iso_right,
-        simp only [h],
-        rw [simplicial_iso_symm],
-        apply link_ident, },
-      
-      -- u ≠ ∅ ↔ 0 ≤ dim u
-      { have u_dim : 0 ≤ dim u, by sorry,
-        -- TODO: Turn into more general lemma.
-        have HYu : dim u ≤ Y.dim, by sorry,
-        specialize H_cases u_dim,
-        cases H_cases with link_Y_sphere link_Y_ball,
-        
-        -- Y ≅ₛₜ S(n)
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (φ[D(z) ⋆ S(↑(Y.dim) - dim u - 1)]),
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (D(z + (↑(Y.dim) - dim u - 1) + 1)),
-        simp only [is_stellar_sphere, not_exists],
-        intros x x_bound,
-        rw [disk_is_sphere_iff_empty],
-        simp only [not_and_distrib],
-        left,
-        simp only [not_lt],
-        omega,
-        
-        have H_join_ball := join_stellar_ball_and_sphere
-          D(z) S(↑(Y.dim) - dim u - 1) φ
-          z (↑(Y.dim) - dim u - 1)
-          Hz (by {sorry})
-          (by {sorry})
-          (by {sorry}),
-        unfold is_stellar_n_ball at H_join_ball,
-        rw [stellar_equiv_symm],
-        assumption,
-        
-        apply stellar_equiv_iso
-          (D(z) ⋆ S(↑(Y.dim) - dim u - 1))
-          (D(z) ⋆ Lk(Y.complex, u) u_in_Y),
-        apply φ.iso_onto_image,
-        apply φ.iso_onto_image,
-        
-        apply simplicial_join_stellar_equiv_right,
-        unfold is_stellar_n_sphere at link_Y_sphere,
-        rw [stellar_equiv_symm],
-        assumption,
-        
-        -- Y ≅ₛₜ D(n)
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (φ[D(z) ⋆ D(↑(Y.dim) - dim u - 1)]),
-        apply stellar_equiv_preserves_not_stellar_sphere
-          (D(z + (↑(Y.dim) - dim u - 1) + 1)),
-        simp only [is_stellar_sphere, not_exists],
-        intros x x_bound,
-        rw [disk_is_sphere_iff_empty],
-        simp only [not_and_distrib],
-        left,
-        simp only [not_lt],
-        omega,
-        
-        have Hz_neg_one : -1 ≤ z, by omega,
-        have H_join_ball := join_stellar_balls
-          D(z) D(↑(Y.dim) - dim u - 1) φ
-          z (↑(Y.dim) - dim u - 1)
-          Hz_neg_one (by {sorry})
-          (by {sorry})
-          (by {sorry}),
-        unfold is_stellar_n_ball at H_join_ball,
-        rw [stellar_equiv_symm],
-        assumption,
-        
-        apply stellar_equiv_iso
-          (D(z) ⋆ D(↑(Y.dim) - dim u - 1))
-          (D(z) ⋆ Lk(Y.complex, u) u_in_Y),
-        apply φ.iso_onto_image,
-        apply φ.iso_onto_image,
-        
-        apply simplicial_join_stellar_equiv_right,
-        unfold is_stellar_n_ball at link_Y_ball,
-        rw [stellar_equiv_symm],
-        assumption, }, },
-        
-    { apply stellar_equiv_iso
-        (D(z) ⋆ Lk(Y.complex, u) u_in_Y)
-        (Lk(X.complex, t) α_in_K ⋆ Lk(Y.complex, u) u_in_Y),
-      apply φ.iso_onto_image,
-      apply φ.iso_onto_image,
-      
-      apply simplicial_join_stellar_equiv_left,
-      rw [stellar_equiv_symm],
-      assumption, },
-      
-    { have s'_in_XY : s' ∈ (X.complex ⋆ Y.complex).simplices, from
-      begin
-        rw [simplicial_join_mem],
-        use t, split, assumption,
-        use u, split, assumption,
-        symmetry,
-        assumption,
-      end,
-      apply stellar_equiv_iso
-        (Lk(X.complex, t) α_in_K ⋆ Lk(Y.complex, u) u_in_Y)
-        (Lk(X.complex ⋆ Y.complex, s') s'_in_XY),
-      apply φ.iso_onto_image,
-      let φs := simplicial_map.mk φ.coe (map_is_simplicial_onto_image (X.complex ⋆ Y.complex) φ.coe φ.injective),
-      apply link_iso _ _ _ _ _ _ _ (coe_is_iso _ φ) s'_eq_s,
-      
-      rw [stellar_equiv_symm],
-      apply stellar_equiv_preserves_iso,
-      simp only [←tu_eq_s'],
-      apply join_fact_link, },
-      
-      -- t = ∅
-    { by_cases (u = ∅),
-      
-      -- u = ∅
-      rw [set.mem_singleton_iff] at α_empty,
-      have s'_empty : s' = ∅, from
-      begin
-        rw [←tu_eq_s', simplex_disjoint_empty],
-        split; assumption,
-      end,
-      rw [s'_empty, finset.image_empty] at s'_eq_s,
-      right,
-      rw [set.mem_singleton_iff],
-      symmetry,
-      assumption,
-      
-      -- u ≠ ∅
-      left, split, split,
-      use s', split,
-      rw [←tu_eq_s', simplicial_join_sep],
-      split,
-      rw [set.mem_singleton_iff] at α_empty,
-      rw [α_empty],
-      apply simplicial_complex_empty_simplex,
-      assumption,
-      assumption,
-      rw [set.mem_singleton_iff],
-      rw [←s'_eq_s, ←tu_eq_s', finset.image_eq_empty, simplex_disjoint_empty],
-      simp only [not_and_distrib],
-      right, assumption,
-
-      intro s''_in_XY,
-
-      have u_dim : 0 ≤ dim u, by sorry,
-      -- TODO: Turn into more general lemma.
-      have HYu : dim u ≤ Y.dim, by sorry,
-      have H_cases := stellar_link_is_stellar_ball_or_sphere Y u u_in_Y,
-
-      specialize H_cases u_dim,
-      cases H_cases with link_Y_sphere link_Y_ball,
-      
-      -- Y ≅ₛₜ S(n)
-      apply stellar_equiv_preserves_not_stellar_sphere
-        (φ[D(m) ⋆ S(↑(Y.dim) - dim u - 1)]),
-      apply stellar_equiv_preserves_not_stellar_sphere
-        (D(m + (↑(Y.dim) - dim u - 1) + 1)),
-      simp only [is_stellar_sphere, not_exists],
-      intros x x_bound,
-      rw [disk_is_sphere_iff_empty],
-      simp only [not_and_distrib],
-      left,
-      simp only [not_lt],
-      apply @int.le_trans _ m,
-      apply int.coe_zero_le,
-      omega,
-
-      have H_join_ball := join_stellar_ball_and_sphere
-        D(m) S(↑(Y.dim) - dim u - 1) φ
-        m (↑(Y.dim) - dim u - 1)
-        (by {sorry})
-        (by {sorry})
-        (by {sorry})
-        (by {sorry}),
-      unfold is_stellar_n_ball at H_join_ball,
-      rw [stellar_equiv_symm],
-      assumption,
-      
-      have t_in_X : t ∈ X.complex.simplices, from
-      begin
-        rw [set.mem_singleton_iff] at α_empty,
-        rw [α_empty],
-        apply simplicial_complex_empty_simplex,
-      end,
-      apply stellar_equiv_iso
-        (D(m) ⋆ S(↑(Y.dim) - dim u - 1))
-        (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y),
-      apply φ.iso_onto_image,
-
-      have s'_in_XY : s' ∈ (X.complex ⋆ Y.complex).simplices, from
-      begin
-        rw [simplicial_join_mem],
-        use t, split, assumption,
-        use u, split, assumption,
-        symmetry,
-        assumption,
-      end,
-      rw [simplicial_iso_symm],
-      apply simplicial_iso_trans
-        (Lk(φ[X.complex ⋆ Y.complex], s) _)
-        (Lk(X.complex ⋆ Y.complex, s') s'_in_XY),
-      let φs := simplicial_map.mk φ.coe (map_is_simplicial_onto_image (X.complex ⋆ Y.complex) φ.coe φ.injective),
-      rw [simplicial_iso_symm],
-      apply link_iso _ _ _ _ _ _ _ (coe_is_iso _ φ) s'_eq_s,
-
-      simp only [←tu_eq_s'],
-      apply join_fact_link,
-
-      apply stellar_equiv_trans
-        (D(m) ⋆ S(↑(Y.dim) - dim u - 1))
-        (Lk(X.complex, t) t_in_X ⋆ S(↑(Y.dim) - dim u - 1)),
-      apply simplicial_join_stellar_equiv_left,
-      rw [stellar_equiv_symm],
-      apply stellar_equiv_trans (Lk(X.complex, t) t_in_X) X.complex,
-      rw [set.mem_singleton_iff] at α_empty,
-      simp only [α_empty],
-      apply stellar_equiv_preserves_iso,
-      apply link_ident,
-      assumption,
-      
-      apply simplicial_join_stellar_equiv_right,
-      unfold is_stellar_n_sphere at link_Y_sphere,
-      rw [stellar_equiv_symm],
-      assumption,
-      
-      -- Y ≅ₛₜ D(n)
-      apply stellar_equiv_preserves_not_stellar_sphere
-        (φ[D(m) ⋆ D(↑(Y.dim) - dim u - 1)]),
-      apply stellar_equiv_preserves_not_stellar_sphere
-        (D(m + (↑(Y.dim) - dim u - 1) + 1)),
-      simp only [is_stellar_sphere, not_exists],
-      intros x x_bound,
-      rw [disk_is_sphere_iff_empty],
-      simp only [not_and_distrib],
-      left,
-      simp only [not_lt],
-      apply @int.le_trans _ m,
-      apply int.coe_zero_le,
-      omega,
-      
-      have H_join_ball := join_stellar_balls
-        D(m) D(↑(Y.dim) - dim u - 1) φ
-        m (↑(Y.dim) - dim u - 1)
-        (by {sorry})
-        (by {sorry})
-        (by {sorry})
-        (by {sorry}),
-      unfold is_stellar_n_ball at H_join_ball,
-      rw [stellar_equiv_symm],
-      assumption,
-      
-      have t_in_X : t ∈ X.complex.simplices, from
-      begin
-        rw [set.mem_singleton_iff] at α_empty,
-        rw [α_empty],
-        apply simplicial_complex_empty_simplex,
-      end,
-      apply stellar_equiv_iso
-        (D(m) ⋆ D(↑(Y.dim) - dim u - 1))
-        (Lk(X.complex, t) t_in_X ⋆ Lk(Y.complex, u) u_in_Y),
-      apply φ.iso_onto_image,
-
-      have s'_in_XY : s' ∈ (X.complex ⋆ Y.complex).simplices, from
-      begin
-        rw [simplicial_join_mem],
-        use t, split, assumption,
-        use u, split, assumption,
-        symmetry,
-        assumption,
-      end,
-      rw [simplicial_iso_symm],
-      apply simplicial_iso_trans
-        (Lk(φ[X.complex ⋆ Y.complex], s) _)
-        (Lk(X.complex ⋆ Y.complex, s') s'_in_XY),
-      let φs := simplicial_map.mk φ.coe (map_is_simplicial_onto_image (X.complex ⋆ Y.complex) φ.coe φ.injective),
-      rw [simplicial_iso_symm],
-      apply link_iso _ _ _ _ _ _ _ (coe_is_iso _ φ) s'_eq_s,
-
-      simp only [←tu_eq_s'],
-      apply join_fact_link,
-
-      apply stellar_equiv_trans
-        (D(m) ⋆ D(↑(Y.dim) - dim u - 1))
-        (Lk(X.complex, t) t_in_X ⋆ D(↑(Y.dim) - dim u - 1)),
-      apply simplicial_join_stellar_equiv_left,
-      rw [stellar_equiv_symm],
-      apply stellar_equiv_trans (Lk(X.complex, t) t_in_X) X.complex,
-      rw [set.mem_singleton_iff] at α_empty,
-      simp only [α_empty],
-      apply stellar_equiv_preserves_iso,
-      apply link_ident,
-      assumption,
-      
-      apply simplicial_join_stellar_equiv_right,
-      unfold is_stellar_n_ball at link_Y_ball,
-      rw [stellar_equiv_symm],
-      assumption, }, },
+  { rw [simplicial_coe_union_simplices],
+    apply set.union_subset,
+    apply stellar_ball_boundary_distr_join_union_left X Y m n φ X_ball Y_ball,
+    apply stellar_ball_boundary_distr_join_union_right X Y m n φ X_ball Y_ball, },
 end
+
+lemma stellar_sphere_boundary_empty
+    (n : ℤ)
+  : simplicial_complex_boundary S(n) ≅ @empty_sc ℕ
+:= sorry
+
+lemma stellar_sphere_boundary_empty'
+    (X : simplicial_complex ℕ)
+    (n : ℤ)
+  : is_stellar_n_sphere X n → simplicial_complex_boundary X ≅ @empty_sc ℕ
+:= sorry
 
 -- Proposition 3.11 (2), p.18
 lemma stellar_sphere_ball_boundary_distr_join_left
-    (X Y : simplicial_complex ℕ)
+    (X Y : stellar_manifold)
     (m n : ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
-  : is_stellar_n_sphere X m →
-      is_stellar_n_ball Y n →
-        simplicial_complex_boundary (φ[X ⋆ Y]) ≅ X ⋆ (simplicial_complex_boundary Y)
-:= sorry
+    (φ : simplicial_coe (X.complex ⋆ Y.complex) ℕ)
+  : is_stellar_n_sphere X.complex m →
+      is_stellar_n_ball Y.complex n →
+        simplicial_complex_boundary (φ[X.complex ⋆ Y.complex]) ≅ X.complex ⋆ (simplicial_complex_boundary Y.complex)
+:= begin
+  intros X_sphere Y_ball,
+  sorry,
+end
 
 lemma neg_one_ball_is_zero_disk {α : Type*} [decidable_eq α]
     (X : simplicial_complex α)
@@ -3254,7 +3259,6 @@ end
 lemma cone_is_zero_disk_join_boundary
     (X : simplicial_complex ℕ)
     (x : ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
     (x_nin_X : x ∉ vertices X)
   : Cone(X, x) x_nin_X ≅ D(0) ⋆ X
 := begin
@@ -3265,45 +3269,43 @@ end
 
 -- Corollary 3.12, p.20
 lemma stellar_ball_boundary_comm_cone_union
-    (X : simplicial_complex ℕ)
-    (x : ℕ)
-    (φ : simplicial_coe (ℕ × ℕ) ℕ)
-    (x_nin_X : x ∉ vertices X)
-    (X_ball : is_stellar_ball X)
-  : simplicial_complex_boundary (φ[Cone(X, x) x_nin_X]) ≅ φ[(Cone((simplicial_complex_boundary X), x) (boundary_subcomplex_simplicial_complex_vertices X x x_nin_X))] ∪ X
+    (X : stellar_manifold)
+    (x n : ℕ)
+    (x_nin_X : x ∉ vertices X.complex)
+    (φ : simplicial_coe (Cone(X.complex, x) x_nin_X) ℕ)
+    (ψ : simplicial_coe (Cone((simplicial_complex_boundary X.complex), x) (simplicial_complex_boundary_subcomplex_vertices_contra X.complex x x_nin_X)) ℕ)
+    (X_ball : is_stellar_n_ball X.complex n)
+  : simplicial_complex_boundary (φ[Cone(X.complex, x) x_nin_X]) ≅ ψ[(Cone((simplicial_complex_boundary X.complex), x) (simplicial_complex_boundary_subcomplex_vertices_contra X.complex x x_nin_X))] ∪ X.complex
 := begin
-  set x_nin_X_bd := boundary_subcomplex_simplicial_complex_vertices X x x_nin_X,
+  set x_nin_X_bd := simplicial_complex_boundary_subcomplex_vertices_contra X.complex x x_nin_X,
 
   apply simplicial_iso_trans
-    (simplicial_complex_boundary (φ[Cone(X, x) x_nin_X]))
-    (simplicial_complex_boundary (φ[D(0) ⋆ X])),
+    (simplicial_complex_boundary (φ[Cone(X.complex, x) x_nin_X]))
+    (simplicial_complex_boundary (ν⟨D(0), X.complex⟩[D(0) ⋆ X.complex])),
   apply simplicial_complex_boundary_iso,
   
-  apply simplicial_iso_trans (φ[Cone(X, x) x_nin_X]) (Cone(X, x) x_nin_X),
+  apply simplicial_iso_trans (φ[Cone(X.complex, x) x_nin_X]) (Cone(X.complex, x) x_nin_X),
   rw [simplicial_iso_symm],
   apply φ.iso_onto_image,
 
   rw [simplicial_iso_symm],
-  apply simplicial_iso_trans (φ[D(0) ⋆ X]) (D(0) ⋆ X),
+  apply simplicial_iso_trans (ν⟨D(0), X.complex⟩[D(0) ⋆ X.complex]) (D(0) ⋆ X.complex),
   rw [simplicial_iso_symm],
-  apply φ.iso_onto_image,
+  apply ν⟨D(0), X.complex⟩.iso_onto_image,
   
   rw [simplicial_iso_symm],
   apply cone_is_zero_disk_join_boundary,
-  apply φ,
 
   apply simplicial_iso_trans
-    (simplicial_complex_boundary (φ[D(0) ⋆ X]))
-    ((D(0) ⋆ simplicial_complex_boundary X) ∪ (simplicial_complex_boundary D(0) ⋆ X)),
-  sorry,  -- apply stellar_ball_boundary_distr_join_union,
-          -- unfold is_stellar_ball,
-          -- use 0,
-          -- assumption,
-  -- TODO: 3.11 (1) is too slow, causes timeout.
+    (simplicial_complex_boundary (ν⟨D(0), X.complex⟩[D(0) ⋆ X.complex]))
+    ((D(0) ⋆ simplicial_complex_boundary X.complex) ∪ (simplicial_complex_boundary D(0) ⋆ X.complex)),
+  let Dm := stellar_manifold.mk D(0) 0 (by { apply stellar_n_ball_is_stellar_mfd }),
+  apply stellar_ball_boundary_distr_join_union Dm X 0 n ν⟨D(0), X.complex⟩
+    (by { unfold is_stellar_n_ball, simp only [nat.cast_zero], }) X_ball,
 
   apply simplicial_iso_trans
-    ((D(0) ⋆ simplicial_complex_boundary X) ∪ (simplicial_complex_boundary D(0) ⋆ X))
-    ((D(0) ⋆ simplicial_complex_boundary X) ∪ (empty_sc ⋆ X)),
+    ((D(0) ⋆ simplicial_complex_boundary X.complex) ∪ (simplicial_complex_boundary D(0) ⋆ X.complex))
+    ((D(0) ⋆ simplicial_complex_boundary X.complex) ∪ (empty_sc ⋆ X.complex)),
   apply simplicial_union_iso_right,
   apply simplicial_join_iso_left,
   apply simplicial_iso_trans (simplicial_complex_boundary D(0)) S(-1),
@@ -3318,11 +3320,10 @@ lemma stellar_ball_boundary_comm_cone_union
   apply simplicial_join_id_right,
 
   apply simplicial_iso_trans
-    (D(0) ⋆ simplicial_complex_boundary X)
-    (Cone(simplicial_complex_boundary X, x) x_nin_X_bd),
+    (D(0) ⋆ simplicial_complex_boundary X.complex)
+    (Cone(simplicial_complex_boundary X.complex, x) x_nin_X_bd),
   rw [simplicial_iso_symm],
   apply cone_is_zero_disk_join_boundary,
-  apply φ,
-  apply φ.iso_onto_image,
+  apply ψ.iso_onto_image,
 end
 

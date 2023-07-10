@@ -61,6 +61,21 @@ lemma simplex_boundary_iso
   : simplex s ≅ simplex t → ∂s ≅ ∂t
 := sorry
 
+lemma simplex_boundary_subcomplex
+    (X : simplicial_complex α)
+    (s t : finset α)
+    (s_in_X : s ∈ X.simplices)
+  : t ∈ (∂s).simplices → t ∈ X.simplices
+:= sorry
+
+lemma simplex_boundary_subcomplex_vert
+    (X : simplicial_complex α)
+    (s : finset α)
+    (x : α)
+    (s_in_X : s ∈ X.simplices)
+  : x ∈ vertices (∂s) → x ∈ vertices X
+:= sorry
+
 -- Star of a complex wrt a simplex.
 @[simp]
 def star
@@ -849,4 +864,101 @@ lemma link_of_face_complement
     end,
     rw [←Hst, finset.inter_distrib_right],
     assumption, },
+end
+
+lemma barycenter_disjoint_boundary
+    (X : simplicial_complex α)
+    (s : finset α)
+    (x : α)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : disjoint (vertices (simplex {x})) (vertices (∂s))
+:= begin
+  rw [set.disjoint_left],
+  intros y y_in_barycenter,
+  apply @set.not_mem_subset _ _ _ (vertices X),
+  rw [set.subset_def],
+  intro z,
+  apply simplex_boundary_subcomplex_vert X s z s_in_X,
+
+  dsimp only [vertices, simplex, simplicial_complex.simplices] at y_in_barycenter,
+  simp only [set.mem_Union] at y_in_barycenter,
+  choose t Ht y_in_t using y_in_barycenter,
+
+  simp only [finset.mem_coe, finset.mem_powerset, finset.subset_singleton_iff] at Ht,
+  cases Ht with t_empty t_ne,
+  rw [←finset.coe_eq_empty, set.eq_empty_iff_forall_not_mem] at t_empty,
+  specialize t_empty y,
+  contradiction,
+
+  rw [finset.eq_singleton_iff_unique_mem] at t_ne,
+  cases t_ne with x_in_t y_eq_x,
+  specialize y_eq_x y,
+  rw [finset.mem_coe] at y_in_t,
+  specialize y_eq_x y_in_t,
+  rw [y_eq_x],
+  apply x_nin_X,
+end
+
+lemma barycenter_join_boundary_disjoint_link
+    (X : simplicial_complex α)
+    (s : finset α)
+    (x : α)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : disjoint (vertices ((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X))[(simplex {x} ⋆ ∂s)]))
+              (vertices (Lk(X, s) s_in_X))
+:= begin
+  rw [set.disjoint_left],
+  intros y y_in_join,
+  rw [join_proj_vertices_mem] at y_in_join,
+
+  dsimp only [vertices, link, simplicial_complex.simplices],
+  simp only [set.mem_Union, not_exists],
+  intros u u_in_link,
+  simp only [set.mem_sep_iff] at u_in_link,
+  rcases u_in_link with ⟨u_in_X, su_in_X, su_empty⟩,
+
+  cases y_in_join with y_in_barycenter y_in_bd,
+
+  -- y ∈ {x}
+  dsimp only [vertices, simplex, simplicial_complex.simplices] at y_in_barycenter,
+  simp only [set.mem_Union] at y_in_barycenter,
+  choose t Ht y_in_t using y_in_barycenter,
+  
+  rw [finset.mem_coe, finset.mem_powerset, finset.subset_singleton_iff] at Ht,
+  cases Ht with t_empty t_ne,
+  rw [←finset.coe_eq_empty, set.eq_empty_iff_forall_not_mem] at t_empty,
+  specialize t_empty y,
+  contradiction,
+
+  rw [finset.mem_coe, t_ne, finset.mem_singleton] at y_in_t,
+  simp only [vertices, set.mem_Union, not_exists] at x_nin_X,
+  specialize x_nin_X u,
+  specialize x_nin_X u_in_X,
+  rw [y_in_t],
+  apply x_nin_X,
+
+  -- y ∈ ∂s
+  dsimp only [vertices, simplex_boundary, simplicial_complex.simplices] at y_in_bd,
+  simp only [set.mem_Union] at y_in_bd,
+  choose t Ht y_in_t using y_in_bd,
+
+  rw [set.mem_union, set.mem_diff, finset.mem_coe, finset.mem_powerset, finset.subset_iff] at Ht,
+  cases Ht with t_ne t_empty,
+
+  cases t_ne with y_in_s t_eq_s,
+  rw [finset.mem_coe] at y_in_t,
+  specialize y_in_s y_in_t,
+  rw [←finset.coe_eq_empty, set.eq_empty_iff_forall_not_mem] at su_empty,
+  specialize su_empty y,
+  rw [finset.mem_coe, finset.mem_inter, not_and_distrib] at su_empty,
+  cases su_empty with contra y_nin_u,
+  contradiction,
+  rw [finset.mem_coe],
+  apply y_nin_u,
+
+  rw [set.mem_singleton_iff, ←finset.coe_eq_empty, set.eq_empty_iff_forall_not_mem] at t_empty,
+  specialize t_empty y,
+  contradiction,
 end

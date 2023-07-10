@@ -15,30 +15,81 @@ def stellar_subdivision
     (x : α)
     (s_in_X : s ∈ X.simplices)
     (x_nin_X : x ∉ vertices X)
-  : simplicial_coe (α × ℕ) α → simplicial_complex α
-:= λ φ : simplicial_coe (α × ℕ) α,
-    (X\St(X, s) s_in_X) ∪ φ[((φ[((simplex {x}) ⋆ ∂s)]) ⋆ Lk(X, s) s_in_X)]
-notation `σ(` X `, ` s `; ` x `, ` φ `; ` s_ne `, ` s_in_X `, ` x_nin_X `)` := @stellar_subdivision _ _ X s s_ne x s_in_X x_nin_X φ
+  : simplicial_complex α
+:= (X\St(X, s) s_in_X) ∪ (π₁ (barycenter_join_boundary_disjoint_link X s x s_in_X x_nin_X))[((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X))[(simplex {x} ⋆ ∂s)] ⋆ Lk(X, s) s_in_X)]
+notation `σ(` X `, ` s `, ` x `; ` s_ne `, ` s_in_X `, ` x_nin_X `)` := @stellar_subdivision _ _ X s s_ne x s_in_X x_nin_X
+
+instance stellar_subdivision.fintype
+    (X : simplicial_complex α) [fintype X.simplices]
+    (s : finset α) [s_ne : nonempty s]
+    (x : α)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : fintype (σ(X, s, x; s_ne, s_in_X, x_nin_X)).simplices
+:= sorry
+
+instance stellar_subdivision.fintype_converse
+    (X : simplicial_complex α)
+    (s : finset α) [s_ne : nonempty s]
+    (x : α)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+    [fintype (σ(X, s, x; s_ne, s_in_X, x_nin_X)).simplices]
+  : fintype X.simplices
+:= sorry
+
+lemma stellar_subdiv_preserves_dim
+    (X : simplicial_complex α) [X_fin : fintype X.simplices]
+    (s : finset α) [s_ne : nonempty s]
+    (x : α)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : @dim_of_complex α X = @dim_of_complex α (σ(X, s, x; s_ne, s_in_X, x_nin_X))
+      (@stellar_subdivision.fintype α _ X X_fin s s_ne x s_in_X x_nin_X)
+:= sorry
 
 @[simp]
 def stellar_move
   : simplicial_complex α → simplicial_complex α → Prop
 := λ X Y : simplicial_complex α,
-    ∀ φ : simplicial_coe (α × ℕ) α,
       (∃ (t : finset α) (Ht : t ∈ Y.simplices) [Ht_ne : nonempty t]
         (y : α) (Hy : y ∉ vertices Y),
-        X ≅ @stellar_subdivision _ _ Y t Ht_ne y Ht Hy φ)
+        X ≅ @stellar_subdivision _ _ Y t Ht_ne y Ht Hy)
       ∨
       (∃ (s : finset α) (Hs : s ∈ X.simplices) [Hs_ne : nonempty s]
          (x : α) (Hx : x ∉ vertices X),
-        Y ≅ @stellar_subdivision _ _ X s Hs_ne x Hs Hx φ)
+        Y ≅ @stellar_subdivision _ _ X s Hs_ne x Hs Hx)
       ∨ (X ≅ Y)
+
+instance stellar_move.fintype
+    (X Y : simplicial_complex α) [fintype X.simplices]
+    (X_move_Y : stellar_move X Y)
+  : fintype Y.simplices
+:= sorry
+
+lemma stellar_move_preserves_dim
+    (X Y : simplicial_complex α) [X_fin : fintype X.simplices]
+    (X_move_Y : stellar_move X Y)
+  : @dim_of_complex α X = @dim_of_complex α Y (@stellar_move.fintype α _ X Y X_fin X_move_Y)
+:= sorry
 
 def stellar_equiv
     (X : simplicial_complex α)
   : simplicial_complex α → Prop
 := relation.refl_trans_gen stellar_move X
 infixl ` ≅ₛₜ `:50 := stellar_equiv
+
+instance stellar_equiv.fintype
+    (X Y : simplicial_complex α) [fintype X.simplices]
+    (X_eq_Y : X ≅ₛₜ Y)
+  : fintype Y.simplices
+:= sorry
+
+lemma stellar_equiv_preserves_dim
+    (X Y : simplicial_complex α) [X_fin : fintype X.simplices]
+    (X_eq_Y : X ≅ₛₜ Y)
+  : @dim_of_complex α X = @dim_of_complex α Y (@stellar_equiv.fintype α _ X Y X_fin X_eq_Y)
+:= sorry
 
 @[refl]
 lemma stellar_equiv_refl
@@ -63,8 +114,7 @@ lemma stellar_equiv_symm
     apply propext,
     split,
     
-    intros L_move_K φ,
-    specialize L_move_K φ,
+    intro L_move_K,
     cases L_move_K,
     
     right, left,
@@ -82,8 +132,7 @@ lemma stellar_equiv_symm
     rw [simplicial_iso_symm],
     assumption,
     
-    intros K_move_L φ,
-    specialize K_move_L φ,
+    intro K_move_L,
     cases K_move_L,
     
     right, left,
@@ -139,7 +188,6 @@ lemma stellar_equiv_preserves_iso
   simp only[stellar_equiv],
   apply relation.refl_trans_gen.single,
   simp only[stellar_move],
-  intro φ,
   right, right,
   assumption,
 end
@@ -163,15 +211,14 @@ lemma simplicial_join_stellar_equiv_right
 # Properties of Stellar Subdivision
 -/
 
+-- TODO: borked
 lemma stellar_subdiv_distr_join_left
     (X Y : simplicial_complex α)
     (s : finset α) [nonempty s]
     (x : α)
-    (φ : simplicial_coe (α × ℕ) α)
-    (ψ : simplicial_coe ((α × ℕ) × ℕ) (α × ℕ))
     (s_in_X : s ∈ X.simplices)
     (x_nin_X : x ∉ vertices X)
-  : σ(X, s; x, φ; sorry, sorry, sorry) ⋆ Y ≅ σ((X ⋆ Y), (s ⊔ₛ ∅); (x, 0), ψ; sorry, sorry, sorry)
+  : σ(X, s, x; sorry, sorry, sorry) ⋆ Y ≅ σ((X ⋆ Y), (s ⊔ₛ ∅), (x, 0); sorry, sorry, sorry)
 := begin
   unfold stellar_subdivision,
 
@@ -246,17 +293,14 @@ lemma stellar_subdiv_distr_join_right
     (X Y : simplicial_complex α)
     (t : finset α) [nonempty t]
     (y : α)
-    (φ : simplicial_coe (α × ℕ) α)
-    (ψ : simplicial_coe ((α × ℕ) × ℕ) (α × ℕ))
     (s_in_X : t ∈ Y.simplices)
     (x_nin_X : y ∉ vertices Y)
-  : X ⋆ σ(Y, t; y, φ; sorry, sorry, sorry) ≅ σ((X ⋆ Y), (∅ ⊔ₛ t); (y, 1), ψ; sorry, sorry, sorry)
+  : X ⋆ σ(Y, t, y; sorry, sorry, sorry) ≅ σ((X ⋆ Y), (∅ ⊔ₛ t), (y, 1); sorry, sorry, sorry)
 := sorry
 
 -- Lemma 3.1, p.10
 lemma join_comm_stellar_equiv
     (X Y Z W : simplicial_complex α)
-    (φ : simplicial_coe (α × ℕ) α)
   : X ≅ₛₜ Y → Z ≅ₛₜ W → (X ⋆ Z) ≅ₛₜ (Y ⋆ W)
 := begin
   intros X_eq_Y Z_eq_W,
@@ -270,8 +314,6 @@ lemma join_comm_stellar_equiv
   apply H_ind,
 
   simp only[stellar_move] at K_move_L ⊢,
-  intro ψ,
-  specialize K_move_L φ,
   cases K_move_L,
 
   left,
@@ -300,8 +342,8 @@ lemma join_comm_stellar_equiv
 
   rw [simplicial_iso_symm],
   apply simplicial_iso_trans
-    (@stellar_subdivision _ _ (L ⋆ Z) (t ⊔ₛ ∅) Ht_empty_ne (y, 0) Ht_empty Hy_0 ψ)
-    ((@stellar_subdivision _ _ L t Ht_ne y Ht Hy φ) ⋆ Z),
+    (@stellar_subdivision _ _ (L ⋆ Z) (t ⊔ₛ ∅) Ht_empty_ne (y, 0) Ht_empty Hy_0)
+    ((@stellar_subdivision _ _ L t Ht_ne y Ht Hy) ⋆ Z),
   rw [simplicial_iso_symm],
   apply @stellar_subdiv_distr_join_left _ _ _ _ _ Ht_ne;
   assumption,
@@ -337,8 +379,8 @@ lemma join_comm_stellar_equiv
 
   rw [simplicial_iso_symm],
   apply simplicial_iso_trans
-    (@stellar_subdivision _ _ (K ⋆ Z) (s ⊔ₛ ∅) Hs_empty_ne (x, 0) Hs_empty Hx_0 ψ)
-    ((@stellar_subdivision _ _ K s Hs_ne x Hs Hx φ) ⋆ Z),
+    (@stellar_subdivision _ _ (K ⋆ Z) (s ⊔ₛ ∅) Hs_empty_ne (x, 0) Hs_empty Hx_0)
+    ((@stellar_subdivision _ _ K s Hs_ne x Hs Hx) ⋆ Z),
   rw [simplicial_iso_symm],
   apply @stellar_subdiv_distr_join_left _ _ _ _ _ Hs_ne;
   assumption,
@@ -359,8 +401,6 @@ lemma join_comm_stellar_equiv
   apply H_ind,
 
   simp only[stellar_move] at K_move_L ⊢,
-  intro ψ,
-  specialize K_move_L φ,
   cases K_move_L,
 
   left,
@@ -389,8 +429,8 @@ lemma join_comm_stellar_equiv
 
   rw [simplicial_iso_symm],
   apply simplicial_iso_trans
-    (@stellar_subdivision _ _ (Y ⋆ L) (∅ ⊔ₛ t) Ht_empty_ne (y, 1) Ht_empty Hy_1 ψ)
-    (Y ⋆ @stellar_subdivision _ _ L t Ht_ne y Ht Hy φ),
+    (@stellar_subdivision _ _ (Y ⋆ L) (∅ ⊔ₛ t) Ht_empty_ne (y, 1) Ht_empty Hy_1)
+    (Y ⋆ @stellar_subdivision _ _ L t Ht_ne y Ht Hy),
   rw [simplicial_iso_symm],
   apply @stellar_subdiv_distr_join_right _ _ _ _ _ Ht_ne;
   assumption,
@@ -426,8 +466,8 @@ lemma join_comm_stellar_equiv
 
   rw [simplicial_iso_symm],
   apply simplicial_iso_trans
-    (@stellar_subdivision _ _ (Y ⋆ K) (∅ ⊔ₛ s) Hs_empty_ne (x, 1) Hs_empty Hx_1 ψ)
-    (Y ⋆ @stellar_subdivision _ _ K s Hs_ne x Hs Hx φ),
+    (@stellar_subdivision _ _ (Y ⋆ K) (∅ ⊔ₛ s) Hs_empty_ne (x, 1) Hs_empty Hx_1)
+    (Y ⋆ @stellar_subdivision _ _ K s Hs_ne x Hs Hx),
   rw [simplicial_iso_symm],
   apply @stellar_subdiv_distr_join_right _ _ _ _ _ Hs_ne;
   assumption,

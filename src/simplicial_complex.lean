@@ -443,6 +443,23 @@ def is_subcomplex
 @[reducible]
 instance : has_subset (simplicial_complex α) := ⟨is_subcomplex⟩
 
+lemma is_subcomplex_vertices
+    (X Y : simplicial_complex α)
+    (Y_subcomp_X : Y ⊆ X)
+  : vertices Y ⊆ vertices X
+:= begin
+  simp only [vertices, set.subset_def],
+  simp only [simplicial_complex.has_subset, is_subcomplex, set.subset_def] at Y_subcomp_X,
+
+  intros y y_in_vert_Y,
+  simp only [set.mem_Union] at y_in_vert_Y ⊢,
+  choose s Hs y_in_s using y_in_vert_Y,
+  specialize Y_subcomp_X s Hs,
+
+  use s, split, apply Y_subcomp_X,
+  apply y_in_s,
+end
+
 -- Equivalent, useful definition of a simplex as a subcomplex of the original.
 def is_simplex
     (s : finset α)

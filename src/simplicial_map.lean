@@ -46,7 +46,7 @@ def simplicial_map_lift
 def simplicial_image
     (X : simplicial_complex α)
     (f : α → β)
-    (f_inj : function.injective f)
+    (f_inj : set.inj_on f (vertices X))
   : simplicial_complex β
 := simplicial_complex.mk
     ({(finset.image f s) | s ∈ X.simplices})
@@ -67,8 +67,7 @@ def simplicial_image
 
       have Hf : set.inj_on f (f⁻¹' ↑t), from
       begin
-        apply function.injective.inj_on,
-        assumption,
+        sorry
       end,
       use (finset.preimage t f Hf),
       split,
@@ -83,10 +82,8 @@ def simplicial_image
       specialize u_img (f x),
       cases u_img,
       specialize u_img_mpr t_sset_s,
-      rw [function.injective.mem_finset_image] at u_img_mpr,
-      assumption,
-
-      assumption,
+      have Hu : set.inj_on f u, by sorry,
+      sorry,
 
       rw [finset.ext_iff],
       intro x,
@@ -114,7 +111,7 @@ def simplicial_image
 lemma map_is_simplicial_onto_image
     (X : simplicial_complex α)
     (f : α → β)
-    (f_inj : function.injective f)
+    (f_inj : set.inj_on f (vertices X))
   : is_simplicial_map X (simplicial_image X f f_inj) f
 := begin
   unfold is_simplicial_map,
@@ -389,6 +386,14 @@ begin
        by finish,
 end
 
+lemma iso_inv_is_iso
+    {X : simplicial_complex α}
+    {Y : simplicial_complex β}
+    (f : simplicial_map X Y)
+    (g : simplicial_map Y X)
+  : is_simplicial_iso f → is_inverse_simplicial_iso f g → is_simplicial_iso g
+:= sorry
+
 -- The composition of two isomorphisms gives an isomorphism.
 lemma iso_comp_is_iso
     {X : simplicial_complex α}
@@ -425,6 +430,24 @@ lemma iso_comp_is_iso
   assumption,
 end
 
+lemma iso_is_injective
+    {X : simplicial_complex α}
+    {Y : simplicial_complex β}
+    (f : simplicial_map X Y)
+    (f_iso : is_simplicial_iso f)
+  : set.inj_on f.map (vertices X)
+:= begin
+  sorry
+end
+
+lemma iso_is_surjective
+    {X : simplicial_complex α}
+    {Y : simplicial_complex β}
+    (f : simplicial_map X Y)
+    (f_iso : is_simplicial_iso f)
+  : set.surj_on f.map (vertices X) (vertices Y)
+:= sorry
+
 -- Defining isomorphy between simplicial complexes.
 @[simp]
 def is_simplicially_iso
@@ -433,6 +456,20 @@ def is_simplicially_iso
   : Prop
 := ∃ (f : simplicial_map X Y), is_simplicial_iso f
 infixr ` ≅ `:50 := is_simplicially_iso
+
+instance is_simplicially_iso.fintype
+    (X : simplicial_complex α) [fintype X.simplices]
+    (Y : simplicial_complex β)
+    (X_iso_Y : X ≅ Y)
+  : fintype Y.simplices
+:= sorry
+
+lemma simplicial_iso_preserves_dim
+    (X : simplicial_complex α) [X_fin : fintype X.simplices]
+    (Y : simplicial_complex β)
+    (X_iso_Y : X ≅ Y)
+  : @dim_of_complex α X = @dim_of_complex β Y (@is_simplicially_iso.fintype α β _ _ X X_fin Y X_iso_Y)
+:= sorry
 
 -- Being simplicially isomorphic is an equivalence relation.
 @[refl]
@@ -547,6 +584,21 @@ lemma simplicial_union_iso_right
   assumption,
 end
 
+lemma simplicial_iso_preserves_subcomplex
+    (X Y Z W : simplicial_complex α)
+  : X ≅ Z → Y ≅ W → X ⊆ Y → Z ⊆ W
+:= sorry
+
+lemma simplicial_union_eq_left_iff_subcomplex
+    (X Y : simplicial_complex α)
+  : (X ∪ Y).simplices = X.simplices ↔ Y ⊆ X
+:= sorry
+
+lemma simplicial_union_eq_right_iff_subcomplex
+    (X Y : simplicial_complex α)
+  : (X ∪ Y).simplices = Y.simplices ↔ X ⊆ Y
+:= sorry
+
 end isomorphism
 
 /-
@@ -557,33 +609,44 @@ section coercion
 
 variables [decidable_eq α] [decidable_eq β] [decidable_eq γ]
 
--- Define as map on simplicial complexes that's iso'ic onto image.
-structure simplicial_coe'
-    (α : Type*) [decidable_eq α]
-    (β : Type*) [decidable_eq β]
-:= mk :: (coe : simplicial_complex α → simplicial_complex β)
-         (iso_onto_image : ∀ X : simplicial_complex α, X ≅ coe X)
-
 -- Define as coercion on types that lifts to simplicial map.
+-- structure simplicial_coe'
+--     (α : Type*) [decidable_eq α]
+--     (β : Type*) [decidable_eq β]
+-- := mk :: (coe : α → β)
+--          (injective : set.inj_on coe (vertices X))
+--          (iso_onto_image : ∀ X : simplicial_complex α, X ≅ simplicial_image X coe injective)
+
 structure simplicial_coe
-    (α : Type*) [decidable_eq α]
+    (X : simplicial_complex α)
     (β : Type*) [decidable_eq β]
 := mk :: (coe : α → β)
-         (injective : coe.injective)
-         (iso_onto_image : ∀ X : simplicial_complex α, X ≅ simplicial_image X coe injective)
-
+         (injective : set.inj_on coe (vertices X))
 notation φ `[` X `]` := simplicial_image X φ.coe φ.injective
+
+instance simplicial_coe.fintype
+    (X : simplicial_complex α) [fintype X.simplices]
+    (φ : simplicial_coe X β)
+  : fintype (φ[X]).simplices
+:= sorry
+
+lemma simplicial_coe.iso_onto_image
+    {X : simplicial_complex α}
+    (φ : simplicial_coe X β)
+  : X ≅ φ[X]
+:= sorry
 
 lemma coe_is_iso
     (X : simplicial_complex α)
-    (φ : simplicial_coe α β)
+    (φ : simplicial_coe X β)
   : is_simplicial_iso (@simplicial_map.mk α β _ X (φ[X]) φ.coe (by { apply map_is_simplicial_onto_image, }))
 := sorry
 
 lemma coe_preserves_iso
     (X Y : simplicial_complex α)
-    (φ : simplicial_coe α β)
-  : X ≅ Y → φ[X] ≅ φ[Y]
+    (φ : simplicial_coe X β)
+    (ψ : simplicial_coe Y β)
+  : X ≅ Y → φ[X] ≅ ψ[Y]
 := begin
   intros X_iso_Y,
   apply simplicial_iso_trans (φ[X]) X,
@@ -591,28 +654,43 @@ lemma coe_preserves_iso
   apply φ.iso_onto_image,
 
   rw [simplicial_iso_symm],
-  apply simplicial_iso_trans (φ[Y]) Y,
+  apply simplicial_iso_trans (ψ[Y]) Y,
   rw [simplicial_iso_symm],
-  apply φ.iso_onto_image,
+  apply ψ.iso_onto_image,
 
   rw [simplicial_iso_symm],
   assumption,
 end
 
 lemma coe_comp_is_injective
-    (φ : simplicial_coe α β)
-    (ψ : simplicial_coe β γ)
-  : (ψ.coe ∘ φ.coe).injective
+    {X : simplicial_complex α}
+    (φ : simplicial_coe X β)
+    (ψ : simplicial_coe (φ[X]) γ)
+  : set.inj_on (ψ.coe ∘ φ.coe) (vertices X)
 := begin
-  apply function.injective.comp,
-  apply ψ.injective,
-  apply φ.injective,
+  apply set.inj_on.comp ψ.injective φ.injective,
+  simp only [set.maps_to],
+  intros x x_vert,
+  dsimp only [simplicial_image, vertices, simplicial_complex.simplices],
+  simp only [set.mem_Union],
+
+  use ({φ.coe x}),
+  split,
+
+  simp only [set.mem_set_of],
+  use ({x}),
+  split,
+  rw [←vertex_iff_singleton],
+  apply x_vert,
+  rw [finset.image_singleton],
+
+  rw [finset.mem_coe, finset.mem_singleton],
 end
 
 lemma coe_comp_image
     (X : simplicial_complex α)
-    (φ : simplicial_coe α β)
-    (ψ : simplicial_coe β γ)
+    (φ : simplicial_coe X β)
+    (ψ : simplicial_coe (φ[X]) γ)
   : (simplicial_image X (ψ.coe ∘ φ.coe) (coe_comp_is_injective φ ψ)).simplices = (simplicial_image (φ[X]) ψ.coe ψ.injective).simplices
 := begin
   dsimp only [simplicial_image, simplicial_complex.simplices],
@@ -646,32 +724,76 @@ lemma coe_comp_image
     assumption, },
 end
 
-lemma coe_comp_is_coe
-    (φ : simplicial_coe α β)
-    (ψ : simplicial_coe β γ)
-  : ∀ X : simplicial_complex α, X ≅ simplicial_image X (ψ.coe ∘ φ.coe) (coe_comp_is_injective φ ψ)
-:= begin
-  intro X,
-  apply simplicial_iso_trans X (φ[X]),
-  apply φ.iso_onto_image,
-  
-  rw [simplicial_iso_symm],
-  apply simplicial_iso_trans
-    (simplicial_image X (ψ.coe ∘ φ.coe) (coe_comp_is_injective φ ψ))
-    (simplicial_image (φ[X]) ψ.coe ψ.injective),
-  apply simplicial_iso_preserves_equiv,
-  apply coe_comp_image,
-  
-  rw [simplicial_iso_symm],
-  apply ψ.iso_onto_image,
-end
-
 @[simp]
 def simplicial_coe.comp
-    (φ : simplicial_coe α β)
-    (ψ : simplicial_coe β γ)
-  : simplicial_coe α γ
-:= simplicial_coe.mk (ψ.coe ∘ φ.coe) (coe_comp_is_injective φ ψ) (coe_comp_is_coe φ ψ)
+    {X : simplicial_complex α}
+    (φ : simplicial_coe X β)
+    (ψ : simplicial_coe (φ[X]) γ)
+  : simplicial_coe X γ
+:= simplicial_coe.mk (ψ.coe ∘ φ.coe) (coe_comp_is_injective φ ψ)
+
+-- Restriction of coe is coe.
+lemma coe_restrict_is_injective
+    (X Y : simplicial_complex α)
+    (φ : simplicial_coe X β)
+    (Y_subcomp_X : vertices Y ⊆ vertices X)
+  : set.inj_on φ.coe (vertices Y)
+:= sorry
+
+@[simp]
+def simplicial_coe.restrict
+    {X : simplicial_complex α}
+    (φ : simplicial_coe X β)
+    (Y : simplicial_complex α)
+    (Y_subcomp_X : vertices Y ⊆ vertices X)
+  : simplicial_coe Y β
+:= simplicial_coe.mk φ.coe (coe_restrict_is_injective X Y φ Y_subcomp_X)
+notation φ `[` Y `; ` H `]` := simplicial_image Y (simplicial_coe.restrict φ Y H).coe (simplicial_coe.restrict φ Y H).injective
+
+def simplicial_coe.restrict_coe
+    {X Y : simplicial_complex α}
+    {Y_subcomp_X : vertices Y ⊆ vertices X}
+  : has_coe (simplicial_coe X β) (simplicial_coe Y β)
+:= has_coe.mk (λ φ : simplicial_coe X β, φ.restrict Y Y_subcomp_X)
+
+-- Convert isomorphisms into coercions.
+def simplicial_map.coe
+    {X : simplicial_complex α}
+    {Y : simplicial_complex β}
+    (f : simplicial_map X Y)
+    (f_iso : is_simplicial_iso f)
+  : simplicial_coe X β
+:= simplicial_coe.mk f.map (iso_is_injective f f_iso)
+
+-- Coercion on images.
+--  g[Y] = X → φ[X]
+--  ↑     ↗ φ ∘ g
+--  Y
+def simplicial_coe_on_image
+    {X : simplicial_complex α}
+    {Y : simplicial_complex β}
+    (f : simplicial_map X Y)
+    (f_iso : is_simplicial_iso f)
+    (Y_img_X : Y.simplices = simplicial_map_lift f '' X.simplices)
+    (φ : simplicial_coe Y γ)
+  : simplicial_coe X γ
+:= simplicial_coe.mk (φ.coe ∘ f.map) sorry
+
+
+lemma simplicial_coe_union_simplices
+    (X Y : simplicial_complex α)
+    (φ : simplicial_coe (X ∪ Y) β)
+  : φ[X ∪ Y].simplices = (φ[X; sorry] ∪ φ[Y; sorry]).simplices
+:= sorry
+
+lemma simplicial_coe_union
+    (X Y : simplicial_complex α)
+    (φ : simplicial_coe (X ∪ Y) β)
+  : φ[X ∪ Y] ≅ φ[X; sorry] ∪ φ[Y; sorry]
+:= begin
+  apply simplicial_iso_preserves_equiv,
+  apply simplicial_coe_union_simplices,
+end
 
 end coercion
 
@@ -1893,8 +2015,9 @@ end
 
 lemma simplicial_join_assoc
     (X Y Z : simplicial_complex α)
-    (φ : simplicial_coe (α × ℕ) α)
-  : φ[(X ⋆ Y)] ⋆ Z ≅ X ⋆ φ[(Y ⋆ Z)]
+    (φ : simplicial_coe (X ⋆ Y) α)
+    (ψ : simplicial_coe (Y ⋆ Z) α)
+  : φ[(X ⋆ Y)] ⋆ Z ≅ X ⋆ ψ[(Y ⋆ Z)]
 := sorry
 
 lemma simplicial_join_comm
@@ -1925,6 +2048,27 @@ lemma simplicial_join_natural_incl_right
   : s ∈ X.simplices ↔ simplex s ⋆ Y ⊆ X ⋆ Y
 := sorry
 
+lemma simplicial_join_subcomplex
+    (X Y Z W : simplicial_complex α)
+    (X_subcomp_Z : X ⊆ Z)
+    (Y_subcomp_W : Y ⊆ W)
+  : X ⋆ Y ⊆ Z ⋆ W
+:= begin
+  simp only [simplicial_complex.has_subset, is_subcomplex] at *,
+  simp only [simplicial_join, simplicial_complex.simplices],
+  simp only [set.subset_def] at *,
+
+  intros s s_in_XY,
+  simp only [set.mem_set_of] at *,
+  choose t Ht u Hu tu_eq_s using s_in_XY,
+  specialize X_subcomp_Z t Ht,
+  specialize Y_subcomp_W u Hu,
+
+  use t, split, apply X_subcomp_Z,
+  use u, split, apply Y_subcomp_W,
+  apply tu_eq_s,
+end
+
 lemma simplicial_join_distr_union_left
     (X Y Z : simplicial_complex α)
   : X ⋆ (Y ∪ Z) ≅ (X ⋆ Y) ∪ (X ⋆ Z)
@@ -1937,8 +2081,7 @@ lemma simplicial_join_distr_union_right
 
 -- Lemma 2.1, p.5
 lemma dim_of_join
-    {a : Type*} [decidable_eq a]
-    (X Y : simplicial_complex a) [fintype X.simplices] [fintype Y.simplices]
+    (X Y : simplicial_complex α) [fintype X.simplices] [fintype Y.simplices]
   : dim_of_complex (X ⋆ Y) = (dim_of_complex X) + (dim_of_complex Y) + 1
 := begin
   intros,
@@ -1947,5 +2090,52 @@ lemma dim_of_join
   unfold dim_of_complex,
   sorry,
 end
+
+-- Show that, for disjoint complexes, projection to the first coordinate is a coercion.
+
+lemma join_fst_proj_is_coe
+    (X Y : simplicial_complex α)
+  : disjoint (vertices X) (vertices Y) → set.inj_on (prod.fst) (vertices (X ⋆ Y))
+:= sorry
+
+def join_fst
+    {X Y : simplicial_complex α}
+    (H : disjoint (vertices X) (vertices Y))
+  : simplicial_coe (X ⋆ Y) α
+:= simplicial_coe.mk (prod.fst) (join_fst_proj_is_coe X Y H)
+notation `π₁` := join_fst
+
+lemma join_proj_vertices_mem
+    (X Y : simplicial_complex α)
+    (x : α)
+    (H : disjoint (vertices X) (vertices Y))
+  : x ∈ vertices ((π₁ H)[(X ⋆ Y)]) ↔ x ∈ vertices X ∨ x ∈ vertices Y
+:= sorry
+
+-- General result on existence of coercion for complexes over ℕ
+@[simp]
+def finite_nat_complex_bound
+    (X : simplicial_complex ℕ) [fintype X.simplices]
+  : ℕ
+:= match (vertices X).to_finset.max with
+   | some n := n
+   | none   := 0
+   end
+
+def join_nat_proj_map
+    (X Y : simplicial_complex ℕ) [fintype X.simplices]
+  : ℕ × ℕ → ℕ
+:= λ x : ℕ × ℕ, if (x.snd = 0) then x.fst else (x.fst + (finite_nat_complex_bound X) + 1)
+
+lemma join_nat_proj_is_coe
+    (X Y : simplicial_complex ℕ) [fintype X.simplices]
+  : set.inj_on (join_nat_proj_map X Y) (vertices (X ⋆ Y))
+:= sorry
+
+def join_nat_proj
+    (X Y : simplicial_complex ℕ) [fintype X.simplices]
+  : simplicial_coe (X ⋆ Y) ℕ
+:= simplicial_coe.mk (join_nat_proj_map X Y) (join_nat_proj_is_coe X Y)
+notation `ν⟨` X `, ` Y `⟩` := join_nat_proj X Y
 
 end join
