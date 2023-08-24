@@ -910,6 +910,20 @@ lemma simplicial_complex_boundary_subcomplex_vertices_contra
   apply simplicial_complex_boundary_subcomplex_vertices,
 end
 
+lemma simplicial_complex_boundary_preserves_is_subcomplex
+    (X Y : simplicial_complex ℕ)
+    (Y_sub_X : Y ⊆ X)
+  : simplicial_complex_boundary Y ⊆ simplicial_complex_boundary X
+:= sorry
+
+lemma simplicial_complex_boundary_preserves_subcomplex
+    (X Y : simplicial_complex ℕ)
+    (s : finset ℕ)
+    (s_in_Y : s ∈ (simplicial_complex_boundary Y).simplices)
+    (Y_sub_X : Y ⊆ X)
+  : s ∈ (simplicial_complex_boundary X).simplices
+:= sorry
+
 /-
 # Closed Stellar Manifolds
 -/
@@ -1961,14 +1975,14 @@ lemma stellar_eq_preserves_stellar_mfd
   : X.complex ≅ₛₜ Y → is_stellar_n_manifold Y X.dim
 := begin
   intros X_eq_Y,
-  induction H_ind : X.dim,
+  destruct (X.dim),
 
   have X_fin := stellar_manifold.fintype X,
   have Y_fin := @stellar_equiv.fintype ℕ _ X.complex Y X_fin X_eq_Y,
 
   -- 0-dim case
+  intro H_ind,
   induction X_eq_Y with K L X_eq_K K_move_L K_mfd_ih,
-  rw [←H_ind],
   apply X.is_manifold,
 
   have K_fin : fintype K.simplices := @stellar_equiv.fintype ℕ _ X.complex K X_fin X_eq_K,
@@ -1986,6 +2000,7 @@ lemma stellar_eq_preserves_stellar_mfd
   unfold is_simplicial_iso at f_iso_cases,
   choose g fg_inv using f_iso_cases,
 
+  rw [H_ind] at *,
   let Km := stellar_manifold.mk K 0 K_mfd_ih,
   have L_dim : @dim_of_complex ℕ L Y_fin = 0, from
   begin
@@ -2051,6 +2066,7 @@ lemma stellar_eq_preserves_stellar_mfd
   unfold is_simplicial_iso at f_iso_cases,
   choose g fg_inv using f_iso_cases,
 
+  rw [H_ind] at *,
   let Km := stellar_manifold.mk K 0 K_mfd_ih,
   have K_dim : @dim_of_complex ℕ K K_fin = 0, from
   begin
@@ -2149,11 +2165,23 @@ lemma stellar_eq_preserves_stellar_mfd
 
   -- dim > 0 case
   induction X_eq_Y with K L X_eq_K K_move_L K_mfd_ih,
-  rw [←H_ind],
+  intros n H_ind,
   apply X.is_manifold,
 
+  intros n H_ind,
   unfold is_stellar_n_manifold,
   intros l l_in_L,
+
+  specialize K_mfd_ih n H_ind,
+
+  unfold stellar_move at K_move_L,
+  cases K_move_L with L_subdiv_K K_move_L,
+  choose t Ht Ht_ne y Hy L_subdiv_K using L_subdiv_K,
+
+  sorry, -- incomplete
+
+  cases K_move_L with K_subdiv_L K_iso_L,
+  choose s Hs Hs_ne x Hx K_subdiv_L using K_subdiv_L,
 end
 
 lemma link_not_stellar_sphere_imp_stellar_ball
@@ -2193,94 +2221,239 @@ lemma boundary_link_comm
     (s : finset ℕ)
     (s_in_bd_X : s ∈ (simplicial_complex_boundary X.complex).simplices)
   : 0 ≤ dim s → simplicial_complex_boundary (Lk(X.complex, s) (simplicial_complex_boundary_subcomplex X.complex s s_in_bd_X)) ≅ Lk(simplicial_complex_boundary X.complex, s) s_in_bd_X
-:= sorry
--- := begin
---   intro s_nontriv,
---   apply simplicial_iso_preserves_equiv,
---   dsimp only [simplicial_complex_boundary, simplicial_complex.simplices],
---   rw [set.ext_iff],
---   intro u,
---   split,
+:= begin
+  intro s_nontriv,
+  apply simplicial_iso_preserves_equiv,
+  dsimp only [simplicial_complex_boundary, simplicial_complex.simplices],
+  rw [set.ext_iff],
+  intro u,
+  split,
 
---   { intro s_in_bd,
---     simp only [set.mem_union, set.mem_sep_iff] at s_in_bd,
---     cases s_in_bd with u_in_link u_empty,
---     cases u_in_link with u_in_link_ne link_not_sphere,
---     have u_in_link := u_in_link_ne,
---     cases u_in_link with u_in_link u_ne,
---     specialize link_not_sphere u_in_link,
+  { intro s_in_bd,
+    have s_in_X : s ∈ X.complex.simplices := (simplicial_complex_boundary_subcomplex X.complex s s_in_bd_X),
+    have Xu_dim_non_deg : -1 ≤ ↑X.dim - dim u - 1 := sorry,
+    simp only [set.mem_union, set.mem_sep_iff] at s_in_bd,
+    cases s_in_bd with u_in_link u_empty,
+    cases u_in_link with u_in_link_ne link_not_sphere,
+    have u_in_link := u_in_link_ne,
+    cases u_in_link with u_in_link u_ne,
+    specialize link_not_sphere u_in_link,
     
---     simp only [link, simplicial_complex.simplices],
---     simp only [set.mem_sep_iff, set.mem_union],
---     split, left,
+    simp only [link, simplicial_complex.simplices],
+    simp only [set.mem_sep_iff, set.mem_union],
+    split, left,
     
---     split,
---     rw [set.mem_diff],
---     split,
---     apply link_subcomplex X.complex s u,
---     apply u_in_link,
---     assumption,
+    split,
+    rw [set.mem_diff],
+    split,
+    apply link_subcomplex X.complex s u,
+    apply u_in_link,
+    assumption,
     
---     intro u_in_X,
---     simp only [link, set.mem_sep_iff] at u_in_link,
---     choose u_in_X us_in_X us_empty using u_in_link,
+    intro u_in_X,
+    simp only [link, set.mem_sep_iff] at u_in_link,
+    choose u_in_X us_in_X us_empty using u_in_link,
 
---     have s_in_X : s ∈ X.complex.simplices := (boundary_simplex_in_complex X.complex s s_in_bd_X),
-
---     have X_mfd_u : is_stellar_sphere (Lk(X.complex, u) u_in_X) ∨ is_stellar_ball (Lk(X.complex, u) u_in_X), from
---     begin
---       simp only [is_stellar_sphere, is_stellar_ball],
---       rw [←exists_or_distrib],
---       use (X.dim - dim u - 1),
---       apply stellar_link_is_stellar_ball_or_sphere,
---       simp,
---       change (0 < u.card),
---       rw [finset.card_pos, finset.nonempty_iff_ne_empty],
---       rw [set.mem_singleton_iff] at u_ne,
---       assumption,
---     end,
-
---     have su_rw : u = (s ∪ u) \ s, from
---     begin
---       symmetry,
---       rw [finset.union_sdiff_left, finset.sdiff_eq_self_iff_disjoint, disjoint.comm, finset.disjoint_iff_inter_eq_empty],
---       assumption,
---     end,
-
---     have link_rw : Lk(Lk(X.complex, s) s_in_X, u) u_in_link
---                     ≅ Lk(Lk(X.complex, s) s_in_X, (s ∪ u) \ s) (by { rw [←su_rw], assumption }), from
---     begin
---       apply simplicial_iso_preserves_equiv,
---       conv_lhs {
---         congr, congr, skip, rw [su_rw],
---       },
---     end,
+    have X_mfd_u : is_stellar_sphere (Lk(X.complex, u) u_in_X) ∨ is_stellar_ball (Lk(X.complex, u) u_in_X), from
+    begin
+      simp only [is_stellar_sphere, is_stellar_ball],
+      rw [←exists_or_distrib],
+      use (X.dim - dim u - 1),
+      rw [←exists_or_distrib],
+      use Xu_dim_non_deg,
+      apply stellar_link_is_stellar_ball_or_sphere,
+      simp,
+      change (0 < u.card),
+      rw [finset.card_pos, finset.nonempty_iff_ne_empty],
+      rw [set.mem_singleton_iff] at u_ne,
+      assumption,
+    end,
     
---     have sphere_rw : Lk(X.complex, s ∪ u) us_in_X ≅ₛₜ Lk(Lk(X.complex, s) s_in_X, u) u_in_link, from
---     begin
---       apply stellar_equiv_preserves_iso,
---       rw [simplicial_iso_symm],
---       apply simplicial_iso_trans
---         (Lk(Lk(X.complex, s) s_in_X, u) u_in_link)
---         (Lk(Lk(X.complex, s) s_in_X, (s ∪ u) \ s) (by { rw [←su_rw], assumption })),
---       assumption,
---       rw [simplicial_iso_symm],
---       apply link_of_face_complement X.complex (s ∪ u) s,
---       apply finset.subset_union_left,
---     end,
-    
---     apply stellar_equiv_preserves_not_stellar_sphere (Lk(Lk(X.complex, s) s_in_X, u) u_in_link),
---     assumption,
---     apply stellar_equiv_trans
---       (Lk(Lk(X.complex, s) s_in_X, u) u_in_link)
---       (Lk(X.complex, s ∪ u) us_in_X),
---     rw [stellar_equiv_symm],
---     assumption,
-    
---      },
+    have u_in_bd_X : u ∈ (simplicial_complex_boundary X.complex).simplices, from
+    begin
+      -- TODO: lemma here just isn't true.
+      apply simplicial_complex_boundary_preserves_subcomplex X.complex (Lk(X.complex, s) s_in_X) u,
+      simp only [simplicial_complex_boundary, set.mem_union],
+      left,
 
---   {}
--- end
+      simp only [set.mem_sep_iff],
+      split, assumption,
+      intro u_in_link,
+      assumption,
+      simp only [is_subcomplex, set.subset_def],
+      intro x,
+      apply link_subcomplex,
+    end,
+    
+    simp only [simplicial_complex_boundary, set.mem_union] at u_in_bd_X,
+    cases u_in_bd_X with u_in_bd_X u_contra,
+    
+    simp only [set.mem_sep_iff] at u_in_bd_X,
+    cases u_in_bd_X with u_in_link u_not_sphere,
+    specialize u_not_sphere u_in_X,
+    assumption,
+    
+    contradiction,
+    
+    split, left, split,
+    simp only [link, simplicial_complex.simplices, set.mem_sep_iff] at u_in_link,
+    choose u_in_X su_in_X su_empty using u_in_link,
+    simp only [set.mem_diff],
+    split, assumption,
+    dsimp only [set.mem_singleton_iff, set.union_empty_iff],
+    sorry, -- TODO: stupid. set.union_empty_iff won't rw on negation.
+    
+    intro su_in_X,
+    simp only [link, set.mem_sep_iff] at u_in_link,
+    choose u_in_X su_in_X su_empty using u_in_link,
+
+    have su_rw : u = (s ∪ u) \ s, from
+    begin
+      symmetry,
+      rw [finset.union_sdiff_left, finset.sdiff_eq_self_iff_disjoint, disjoint.comm, finset.disjoint_iff_inter_eq_empty],
+      assumption,
+    end,
+
+    have link_rw : Lk(Lk(X.complex, s) s_in_X, u) u_in_link
+                    ≅ Lk(Lk(X.complex, s) s_in_X, (s ∪ u) \ s) (by { rw [←su_rw], assumption }), from
+    begin
+      apply simplicial_iso_preserves_equiv,
+      conv_lhs {
+        congr, congr, skip, rw [su_rw],
+      },
+    end,
+
+    have sphere_rw : Lk(X.complex, s ∪ u) su_in_X ≅ₛₜ Lk(Lk(X.complex, s) s_in_X, u) u_in_link, from
+    begin
+      apply stellar_equiv_preserves_iso,
+      rw [simplicial_iso_symm],
+      apply simplicial_iso_trans
+        (Lk(Lk(X.complex, s) s_in_X, u) u_in_link)
+        (Lk(Lk(X.complex, s) s_in_X, (s ∪ u) \ s) (by { rw [←su_rw], assumption })),
+      assumption,
+      rw [simplicial_iso_symm],
+      apply link_of_face_complement X.complex (s ∪ u) s,
+      apply finset.subset_union_left,
+    end,
+    
+    apply stellar_equiv_preserves_not_stellar_sphere (Lk(Lk(X.complex, s) s_in_X, u) u_in_link),
+    assumption,
+    rw [stellar_equiv_symm],
+    assumption,
+    
+    simp only [link, set.mem_sep_iff] at u_in_link,
+    choose u_in_X su_in_X su_empty using u_in_link,
+    assumption,
+    
+    dsimp only [link, simplicial_complex.simplices, set.mem_sep_iff],
+    split,
+    
+    simp only [set.mem_union],
+    right, assumption,
+    
+    split,
+    simp only [set.mem_union],
+    left,
+    simp only [set.mem_singleton_iff] at u_empty,
+    simp only [u_empty, finset.union_empty, set.mem_sep_iff],
+    split,
+    simp only [set.mem_diff],
+    split, assumption,
+    simp only [set.mem_singleton_iff],
+    rw [dim_geq_zero_iff_nonempty] at s_nontriv,
+    assumption,
+    
+    intro s_in_X,
+    simp only [simplicial_complex_boundary, set.mem_union] at s_in_bd_X,
+    cases s_in_bd_X with s_in_bd_X s_contra,
+    simp only [set.mem_sep_iff] at s_in_bd_X,
+    cases s_in_bd_X with s_in_X s_not_sphere,
+    simp only [set.mem_diff] at s_in_X,
+    cases s_in_X with s_in_X s_ne,
+    specialize s_not_sphere s_in_X,
+    assumption,
+    
+    simp only [set.mem_singleton_iff] at s_contra,
+    rw [dim_geq_zero_iff_nonempty] at s_nontriv,
+    contradiction,
+    
+    simp only [set.mem_singleton_iff] at u_empty,
+    simp only [u_empty, finset.inter_empty], },
+
+  { intro u_in_link_of_bd,
+    simp only [link, simplicial_complex.simplices, set.mem_sep_iff] at u_in_link_of_bd,
+    choose u_in_bd_X su_in_bd_X su_empty using u_in_link_of_bd,
+    simp only [set.mem_union] at u_in_bd_X su_in_bd_X ⊢,
+    cases u_in_bd_X with u_in_bd_X u_empty,
+    
+    -- u ≠ ∅
+    cases su_in_bd_X with su_in_bd_X su_contra,
+    
+    -- s ∪ u ≠ ∅
+    left,
+    simp only [set.mem_sep_iff, set.mem_diff] at u_in_bd_X su_in_bd_X ⊢,
+    cases u_in_bd_X with u_in_bd_X u_not_sphere,
+    cases u_in_bd_X with u_in_X u_ne,
+    cases su_in_bd_X with su_in_bd_X su_not_sphere,
+    cases su_in_bd_X with su_in_X su_ne,
+    specialize u_not_sphere u_in_X,
+    specialize su_not_sphere su_in_X,
+
+    split, split,
+    simp only [link, simplicial_complex.simplices, set.mem_sep_iff],
+    repeat { split };
+    assumption,
+
+    assumption,
+
+    intro u_in_link,
+    apply stellar_equiv_preserves_not_stellar_sphere (Lk(X.complex, s ∪ u) su_in_X),
+    assumption,
+
+    have su_rw : u = (s ∪ u) \ s, from
+    begin
+      symmetry,
+      rw [finset.union_sdiff_left, finset.sdiff_eq_self_iff_disjoint, disjoint.comm, finset.disjoint_iff_inter_eq_empty],
+      assumption,
+    end,
+
+    have link_rw : Lk(Lk(X.complex, s) _, u) u_in_link
+                    ≅ Lk(Lk(X.complex, s) _, (s ∪ u) \ s) (by { rw [←su_rw], assumption }), from
+    begin
+      apply simplicial_iso_preserves_equiv,
+      conv_lhs {
+        congr, congr, skip, rw [su_rw],
+      },
+    end,
+
+    have sphere_rw : Lk(X.complex, s ∪ u) su_in_X ≅ₛₜ Lk(Lk(X.complex, s) _, u) u_in_link, from
+    begin
+      apply stellar_equiv_preserves_iso,
+      rw [simplicial_iso_symm],
+      apply simplicial_iso_trans
+        (Lk(Lk(X.complex, s) _, u) u_in_link)
+        (Lk(Lk(X.complex, s) _, (s ∪ u) \ s) (by { rw [←su_rw], assumption })),
+      assumption,
+      rw [simplicial_iso_symm],
+      apply link_of_face_complement X.complex (s ∪ u) s,
+      apply finset.subset_union_left,
+    end,
+
+    assumption,
+
+    -- s ∪ u = ∅
+    simp only [set.mem_singleton_iff, finset.union_eq_empty_iff] at su_contra,
+    cases su_contra with s_contra u_contra,
+    simp only [set.mem_sep_iff, set.mem_diff] at u_in_bd_X,
+    cases u_in_bd_X with u_in_bd_X u_not_sphere,
+    cases u_in_bd_X with u_in_X u_ne,
+    simp only [set.mem_singleton_iff] at u_ne,
+    contradiction,
+    
+    -- u = ∅
+    right,
+    assumption, }
+end
 
 -- Lemma 3.8, p.17
 -- TODO: Julian's proof uses a link wrt subcomplex, not simplex.
@@ -3036,7 +3209,6 @@ lemma stellar_ball_boundary_distr_join_union_right
 end
 
 -- Proposition 3.11 (1), p.18
--- TODO: Fix to updated definitions of coercion.
 lemma stellar_ball_boundary_distr_join_union
     (X Y : stellar_manifold)
     (m n : ℕ)

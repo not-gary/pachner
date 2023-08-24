@@ -246,6 +246,11 @@ lemma dim_std_simplex
   show _, by exact ⟨dim_leq_n, dim_geq_n⟩,
 end
 
+lemma dim_geq_zero_iff_nonempty
+    (s : finset α)
+  : 0 ≤ dim s ↔ s ≠ ∅
+:= sorry
+
 lemma dim_neg_one_iff_empty
     (s : finset α)
   : dim s = -1 ↔ s = ∅
