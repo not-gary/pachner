@@ -1,7 +1,7 @@
 import tactic          -- standard proof tactics
-import data.set        -- basics on sets
+import data.set.basic        -- basics on sets
 import data.set.finite -- basics on finite sets
-import data.finset     -- type-level finite sets
+import data.finset.basic     -- type-level finite sets
 import .simplicial_complex
 import .simplicial_map
 
@@ -74,6 +74,18 @@ lemma simplex_boundary_subcomplex_vert
     (x : α)
     (s_in_X : s ∈ X.simplices)
   : x ∈ vertices (∂s) → x ∈ vertices X
+:= sorry
+
+lemma simplex_boundary_mem_iff_subset
+    (s t : finset α)
+  : t ∈ (∂s).simplices ↔ t ⊂ s
+:= begin
+  sorry
+end
+
+lemma subsimplex_boundary_subcomplex
+    (s t : finset α)
+  : s ⊆ t → ∂s ⊆ ∂t
 := sorry
 
 -- Star of a complex wrt a simplex.
@@ -256,6 +268,37 @@ lemma link_subcomplex
     (s_in_X : s ∈ X.simplices)
   : t ∈ (Lk(X, s) s_in_X).simplices → t ∈ X.simplices
 := sorry
+
+lemma link_fact_inter
+    (X Y : simplicial_complex α)
+    (s : finset α)
+    (s_in_XY : s ∈ (X ∩ Y).simplices)
+  : (Lk(X ∩ Y, s) s_in_XY).simplices = (Lk(X, s) (by { sorry })).simplices ∩ (Lk(Y, s) (by { sorry })).simplices
+:= sorry
+
+lemma link_fact_union_left
+    (X Y : simplicial_complex α)
+    (s : finset α)
+    (s_in_X : s ∈ X.simplices)
+    (s_nin_Y : s ∉ Y.simplices)
+  : (Lk(X ∪ Y, s) (by { sorry })).simplices = (Lk(X, s) s_in_X).simplices
+:= sorry
+
+lemma link_fact_union_right
+    (X Y : simplicial_complex α)
+    (s : finset α)
+    (s_nin_X : s ∉ X.simplices)
+    (s_in_Y : s ∈ Y.simplices)
+  : (Lk(X ∪ Y, s) (by { sorry })).simplices = (Lk(Y, s) s_in_Y).simplices
+
+lemma link_fact_union
+    (X Y : simplicial_complex α)
+    (s : finset α)
+    (s_in_XY : s ∈ (X ∩ Y).simplices)
+  : (Lk(X ∪ Y, s) (by { sorry })).simplices = (Lk(X, s) (by { sorry })).simplices ∪ (Lk(Y, s) (by { sorry })).simplices
+:= begin
+  sorry
+end
 
 -- Complement of the star of a complex wrt a simplex.
 @[simp]
@@ -962,3 +1005,32 @@ lemma barycenter_join_boundary_disjoint_link
   specialize t_empty y,
   contradiction,
 end
+
+lemma boundary_disjoint_link
+    (X : simplicial_complex α)
+    (s : finset α)
+    (s_in_X : s ∈ X.simplices)
+  : disjoint (vertices (Lk(X, s) s_in_X)) (vertices (∂s))
+:= begin
+  sorry
+end
+
+lemma barycenter_disjoint_link
+    (X : simplicial_complex α)
+    (s : finset α)
+    (x : α)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : disjoint (vertices (Lk(X, s) s_in_X)) (vertices (simplex {x}))
+:= begin
+  sorry
+end
+
+lemma disjoint_complexes_disjoint_simplices
+    (X Y : simplicial_complex α)
+    (s t : finset α)
+    (s_in_X : s ∈ X.simplices)
+    (t_in_Y : t ∈ Y.simplices)
+    (XY_disj : disjoint (vertices X) (vertices Y))
+  : disjoint s t
+:= sorry

@@ -1,7 +1,7 @@
 import tactic          -- standard proof tactics
-import data.set        -- basics on sets
+import data.set.basic        -- basics on sets
 import data.set.finite -- basics on finite sets
-import data.finset     -- type-level finite sets
+import data.finset.basic     -- type-level finite sets
 import .simplicial_complex
 import .simplicial_subcomplex
 import .simplicial_map

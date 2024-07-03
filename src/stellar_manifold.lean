@@ -1,7 +1,7 @@
 import tactic          -- standard proof tactics
-import data.set        -- basics on sets
+import data.set.basic        -- basics on sets
 import data.set.finite -- basics on finite sets
-import data.finset     -- type-level finite sets
+import data.finset.basic     -- type-level finite sets
 import .simplicial_complex
 import .simplicial_subcomplex
 import .stellar
@@ -823,6 +823,24 @@ end
 lemma manifold_dim_is_complex_dim
     (X : stellar_manifold)
   : ↑X.dim = dim_of_complex X.complex
+:= sorry
+
+lemma simplex_boundary_is_sphere
+    (s : finset ℕ)
+  : ∂s ≅ S(dim s)
+:= sorry
+
+lemma manifold_dim_mono
+    (X Y : stellar_manifold)
+    (Y_submfd_X : Y.complex ⊆ X.complex)
+  : Y.dim ≤ X.dim
+:= sorry
+
+lemma star_complement_is_mfd
+    (X : stellar_manifold)
+    (s : finset ℕ) [s_ne : nonempty s]
+    (s_in_X : s ∈ X.complex.simplices)
+  : is_stellar_n_manifold (star_complement X.complex s s_in_X) X.dim
 := sorry
 
 /-
@@ -2455,28 +2473,647 @@ lemma boundary_link_comm
     assumption, }
 end
 
--- Lemma 3.8, p.17
--- TODO: Julian's proof uses a link wrt subcomplex, not simplex.
---       Need to rework either the proof or def.
-lemma stellar_ball_boundary_ident
+lemma stellar_subdiv_link_of_star_complement_is_sphere
+    (X : simplicial_complex ℕ)
+    (s t : finset ℕ) [s_ne : nonempty s]
+    (x : ℕ)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : s ∉ (simplicial_complex_boundary X).simplices →
+      t ∉ (simplicial_complex_boundary X).simplices →
+        t ∈ (X\St(X, s) s_in_X).simplices →
+          t ∉ ((π₁ (boundary_disjoint_link X s s_in_X))[Lk(X, s) s_in_X ⋆ ∂s]).simplices →
+            is_stellar_sphere (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t) sorry)
+:= begin
+  intros s_nin_bd t_nin_bd t_in_star_comp t_nin_star_bd,
+  simp only[simplicial_complex_boundary, is_stellar_sphere] at s_nin_bd t_nin_bd,
+  simp only[set.mem_union, set.mem_sep_iff, set.mem_diff] at s_nin_bd t_nin_bd,
+  simp only[not_or_distrib, not_and_distrib, not_forall, not_not] at s_nin_bd t_nin_bd,
+
+  cases s_nin_bd with s_nin_bd s_ne,
+  cases s_nin_bd with contra link_s_sphere,
+  cases contra; contradiction,
+
+  choose s_in_X k k_ge_neg_one link_s_sphere using link_s_sphere,
+
+  let t_in_star_comp' := t_in_star_comp,
+  simp only[star_complement, set.mem_sep_iff] at t_in_star_comp,
+  choose t_in_X s_nss_t using t_in_star_comp,
+
+  cases t_nin_bd with t_nin_bd t_ne,
+  cases t_nin_bd with contra link_t_sphere,
+  cases contra; contradiction,
+
+  choose t_in_X n n_ge_neg_one link_t_sphere using link_t_sphere,
+  
+  apply stellar_equiv_preserves_stellar_sphere
+    (Lk(X, t) t_in_X),
+  simp only[is_stellar_sphere, is_stellar_n_sphere],
+  use n, split; assumption,
+
+  apply stellar_equiv_preserves_iso,
+  apply simplicial_iso_preserves_equiv,
+  symmetry,
+  apply stellar_subdiv_link_of_star_complement;
+  assumption,
+end
+
+lemma stellar_subdiv_link_of_star_is_sphere
+    (X : simplicial_complex ℕ)
+    (s t : finset ℕ) [s_ne : nonempty s]
+    (x : ℕ)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : s ∉ (simplicial_complex_boundary X).simplices →
+      (∃ (t₁ t₂ t₃ : finset ℕ),
+          nonempty t₁ ∧ t₁ ∈ (Lk(X, s) s_in_X).simplices ∧
+          nonempty t₂ ∧ t₂ ∈ (∂s).simplices ∧
+          nonempty t₃ ∧ t₃ ∈ (@simplex ℕ {x}).simplices ∧
+          t = t₁ ∪ t₂ ∪ t₃) →
+        is_stellar_sphere (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t) sorry)
+:= begin
+  intro s_nin_bd,
+  simp only[simplicial_complex_boundary, is_stellar_sphere] at s_nin_bd,
+  simp only[set.mem_union, set.mem_sep_iff, set.mem_diff] at s_nin_bd,
+  simp only[not_or_distrib, not_and_distrib, not_forall, not_not] at s_nin_bd,
+
+  cases s_nin_bd with s_nin_bd s_ne,
+  cases s_nin_bd with contra link_s_sphere,
+  cases contra; contradiction,
+
+  choose s_in_X k k_ge_neg_one link_s_sphere using link_s_sphere,
+
+  intro t_in_join,
+  choose t₁ t₂ t₃ t₁_ne t₁_in_link t₂_ne t₂_in_bd t₃_ne t₃_in_barycenter t_decomp using t_in_join,
+
+  apply stellar_equiv_preserves_stellar_sphere (@empty_sc ℕ),
+  simp only[is_stellar_sphere, is_stellar_n_sphere],
+  use -1, split,
+  trivial,
+  apply stellar_equiv_preserves_iso,
+  apply simplicial_iso_preserves_equiv,
+  have H_neg : -1 = int.neg_succ_of_nat 0, by tauto,
+  rw [H_neg],
+  unfold stellar_n_sphere,
+
+  apply stellar_equiv_preserves_iso,
+  apply simplicial_iso_preserves_equiv,
+  symmetry,
+  apply stellar_subdiv_link_of_star,
+  use t₁, use t₂, use t₃,
+  split, assumption,
+  split, assumption,
+  split, assumption,
+  split, assumption,
+  split, assumption,
+  split, assumption,
+  assumption,
+end
+
+lemma stellar_subdiv_link_of_link_barycenter_is_sphere
+    (X : simplicial_complex ℕ)
+    (s t : finset ℕ) [s_ne : nonempty s]
+    (x : ℕ)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : s ∉ (simplicial_complex_boundary X).simplices →
+      (∃ (t₁ t₂ : finset ℕ),
+          nonempty t₁ ∧ t₁ ∈ (Lk(X, s) s_in_X).simplices ∧
+          nonempty t₂ ∧ t₂ ∈ (@simplex ℕ {x}).simplices ∧
+          t = t₁ ∪ t₂) →
+        is_stellar_sphere (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t) sorry)
+:= begin
+  intro s_nin_bd,
+  simp only[simplicial_complex_boundary, is_stellar_sphere] at s_nin_bd,
+  simp only[set.mem_union, set.mem_sep_iff, set.mem_diff] at s_nin_bd,
+  simp only[not_or_distrib, not_and_distrib, not_forall, not_not] at s_nin_bd,
+
+  cases s_nin_bd with s_nin_bd s_ne,
+  cases s_nin_bd with contra link_s_sphere,
+  cases contra; contradiction,
+
+  choose s_in_X k k_ge_neg_one link_s_sphere using link_s_sphere,
+
+  intro t_in_join,
+  choose t₁ t₂ t₁_ne t₁_in_link t₂_ne t₂_in_barycenter t_decomp using t_in_join,
+
+  apply stellar_equiv_preserves_stellar_sphere (∂s),
+  simp only[is_stellar_sphere, is_stellar_n_sphere],
+  use (dim s), split,
+  sorry,
+  apply stellar_equiv_preserves_iso,
+  apply simplex_boundary_is_sphere s,
+
+  apply stellar_equiv_preserves_iso,
+  apply simplicial_iso_preserves_equiv,
+  symmetry,
+  apply stellar_subdiv_link_of_link_barycenter,
+  use t₁, use t₂,
+  split, assumption,
+  split, assumption,
+  split, assumption,
+  split, assumption,
+  assumption,
+end
+
+lemma stellar_subdiv_link_of_boundary_barycenter_is_sphere
+    (X : simplicial_complex ℕ)
+    (s t : finset ℕ) [s_ne : nonempty s]
+    (x : ℕ)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : s ∉ (simplicial_complex_boundary X).simplices →
+      (∃ (t₁ t₂ : finset ℕ),
+          nonempty t₁ ∧ t₁ ∈ (@simplex ℕ {x}).simplices ∧
+          nonempty t₂ ∧ t₂ ∈ (∂s).simplices ∧
+          t = t₁ ∪ t₂) →
+        is_stellar_sphere (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t) sorry)
+:= begin
+  intro s_nin_bd,
+  simp only[simplicial_complex_boundary, is_stellar_sphere] at s_nin_bd,
+  simp only[set.mem_union, set.mem_sep_iff, set.mem_diff] at s_nin_bd,
+  simp only[not_or_distrib, not_and_distrib, not_forall, not_not] at s_nin_bd,
+
+  cases s_nin_bd with s_nin_bd s_ne,
+  cases s_nin_bd with contra link_s_sphere,
+  cases contra; contradiction,
+
+  choose s_in_X k k_ge_neg_one link_s_sphere using link_s_sphere,
+
+  intro t_in_join,
+  choose t₁ t₂ t₁_ne t₁_in_barcenter t₂_ne t₂_in_bd t_decomp using t_in_join,
+
+  apply stellar_equiv_preserves_stellar_sphere
+    (Lk(X, s) s_in_X),
+  simp only[is_stellar_sphere, is_stellar_n_sphere],
+  use k, split; assumption,
+
+  apply stellar_equiv_preserves_iso,
+  apply simplicial_iso_preserves_equiv,
+  symmetry,
+  apply stellar_subdiv_link_of_boundary_barycenter,
+  use t₁, use t₂,
+  split, assumption,
+  split, assumption,
+  split, assumption,
+  split; assumption,
+end
+
+lemma stellar_subdiv_link_of_barycenter_is_sphere
     (X : simplicial_complex ℕ)
     (s : finset ℕ) [s_ne : nonempty s]
     (x : ℕ)
     (s_in_X : s ∈ X.simplices)
     (x_nin_X : x ∉ vertices X)
-  : is_stellar_ball X →
+  : s ∉ (simplicial_complex_boundary X).simplices →
+      is_stellar_sphere (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), {x}) sorry)
+:= begin
+  intro s_nin_bd,
+  simp only[simplicial_complex_boundary, is_stellar_sphere] at s_nin_bd,
+  simp only[set.mem_union, set.mem_sep_iff, set.mem_diff] at s_nin_bd,
+  simp only[not_or_distrib, not_and_distrib, not_forall, not_not] at s_nin_bd,
+
+  cases s_nin_bd with s_nin_bd s_ne,
+  cases s_nin_bd with contra link_s_sphere,
+  cases contra; contradiction,
+
+  choose s_in_X k k_ge_neg_one link_s_sphere using link_s_sphere,
+
+  apply stellar_equiv_preserves_stellar_sphere
+    ((π₁ (boundary_disjoint_link X s s_in_X))[Lk(X, s) s_in_X ⋆ ∂s]),
+  apply join_stellar_spheres_gen;
+  simp only[is_stellar_sphere, is_stellar_n_sphere],
+  use k, split; assumption,
+  use (dim s), split,
+  sorry,
+  apply stellar_equiv_preserves_iso,
+  apply simplex_boundary_is_sphere s,
+
+  apply stellar_equiv_preserves_iso,
+  apply simplicial_iso_preserves_equiv,
+  symmetry,
+  apply stellar_subdiv_link_of_barycenter,
+end
+
+lemma stellar_subdiv_star_comp_link_is_sphere
+    (X : simplicial_complex ℕ)
+    (s t : finset ℕ) [s_ne : nonempty s]
+    (x : ℕ)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : s ∉ (simplicial_complex_boundary X).simplices →
+      t ∉ (simplicial_complex_boundary X).simplices →
+        t ∈ (star_complement X s s_in_X).simplices →
+          is_stellar_sphere (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t) sorry)
+:= begin
+  intros s_nin_bd t_nin_bd t_in_star_comp,
+
+  let t_in_star_comp' := t_in_star_comp,
+  simp only[star_complement, set.mem_sep_iff] at t_in_star_comp',
+  choose t_in_X s_nss_t using t_in_star_comp',
+
+  let t_nin_bd' := t_nin_bd,
+  simp only[simplicial_complex_boundary] at t_nin_bd,
+  simp only[set.mem_union, set.mem_sep_iff, set.mem_diff] at t_nin_bd,
+  simp only[not_or_distrib, not_and_distrib, not_forall, not_not] at t_nin_bd,
+
+  choose link_t_sphere t_ne using t_nin_bd,
+  cases link_t_sphere with contra link_t_sphere,
+  cases contra; contradiction,
+
+  choose t_in_X link_t_sphere using link_t_sphere,
+
+  by_cases t_in_join : t ∈ ((π₁ (boundary_disjoint_link X s s_in_X))[Lk(X, s) s_in_X ⋆ ∂s]).simplices,
+
+  { apply stellar_equiv_preserves_stellar_sphere
+      (σ((Lk(X, t) t_in_X), s\t, x; sorry, sorry, sorry)),
+    apply stellar_equiv_preserves_stellar_sphere
+      (Lk(X, t) t_in_X),
+    assumption,
+    
+    apply relation.refl_trans_gen.single,
+    simp only[stellar_move],
+    right, left,
+    use (s \ t),
+    
+    have st_in_link : s \ t ∈ (Lk(X, t) t_in_X).simplices, by sorry,
+    use st_in_link,
+    
+    have st_ne : nonempty ↥(s \ t), by sorry,
+    use st_ne,
+    
+    use x,
+    
+    have x_nin_link : x ∉ vertices (Lk(X, t) t_in_X), by sorry,
+    use x_nin_link,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    symmetry,
+    apply stellar_subdiv_anticomm_link,
+    assumption, },
+
+  { apply stellar_equiv_preserves_stellar_sphere
+      (Lk(X, t) t_in_X),
+    assumption,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    symmetry,
+    apply stellar_subdiv_link_of_star_complement;
+    assumption, },
+end
+
+lemma stellar_subdiv_join_link_is_sphere
+    (X : simplicial_complex ℕ)
+    (s t : finset ℕ) [s_ne : nonempty s]
+    (x : ℕ)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : s ∉ (simplicial_complex_boundary X).simplices →
+      t ∉ (simplicial_complex_boundary X).simplices →
+        t ∈ ((π₁ (barycenter_join_boundary_disjoint_link X s x s_in_X x_nin_X))[((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X))[(simplex {x} ⋆ ∂s)] ⋆ Lk(X, s) s_in_X)]).simplices →
+          is_stellar_sphere (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t) sorry)
+:= begin
+  intros s_nin_bd t_nin_bd t_in_join,
+
+  let t_in_join' := t_in_join,
+  rw [join_proj_mem] at t_in_join',
+  choose t' t'_in_join t₁ t₁_in_link t_decomp using t_in_join',
+  rw [join_proj_mem] at t'_in_join,
+  choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp using t'_in_join,
+  subst t'_decomp,
+
+  let t_nin_bd' := t_nin_bd,
+  simp only[simplicial_complex_boundary] at t_nin_bd,
+  simp only[set.mem_union, set.mem_sep_iff, set.mem_diff] at t_nin_bd,
+  simp only[not_or_distrib, not_and_distrib, not_forall, not_not] at t_nin_bd,
+
+  by_cases t_in_star_comp : t ∈ (star_complement X s s_in_X).simplices,
+  { apply stellar_subdiv_star_comp_link_is_sphere;
+    assumption, },
+
+  { choose link_t_sphere t_ne using t_nin_bd,
+    cases link_t_sphere with contra link_t_sphere,
+    cases contra with t_nin_X contra,
+    
+    { by_cases t₃_ne : t₃ = ∅,
+      have contra : t₃ ≠ ∅, by sorry,
+      contradiction,
+
+      have t₃_eq_x : t₃ = {x}, by sorry,
+      by_cases t₁_ne : t₁ = ∅;
+      by_cases t₂_ne : t₂ = ∅,
+
+      -- t₁ = ∅, t₂ = ∅
+      rw [t₁_ne, t₂_ne, t₃_eq_x] at t_decomp,
+      simp only[finset.union_empty] at t_decomp,
+      simp only[t_decomp],
+      apply stellar_subdiv_link_of_barycenter_is_sphere,
+      assumption,
+
+      -- t₁ = ∅, t₂ ≠ ∅
+      rw [t₁_ne] at t_decomp,
+      simp only[finset.union_empty] at t_decomp,
+      rw [←ne.def, ←finset.nonempty_iff_ne_empty, ←finset.nonempty_coe_sort] at t₂_ne t₃_ne,
+      apply stellar_subdiv_link_of_boundary_barycenter_is_sphere,
+      assumption,
+      use t₃, use t₂,
+      split, assumption,
+      split, assumption,
+      split, assumption,
+      split; assumption,
+
+      -- t₁ ≠ ∅, t₂ = ∅
+      rw [t₂_ne] at t_decomp,
+      simp only[finset.union_empty] at t_decomp,
+      rw [←ne.def, ←finset.nonempty_iff_ne_empty, ←finset.nonempty_coe_sort] at t₁_ne t₃_ne,
+      apply stellar_subdiv_link_of_link_barycenter_is_sphere,
+      assumption,
+      use t₁, use t₃,
+      split, assumption,
+      split, assumption,
+      split, assumption,
+      split, assumption,
+      rw [finset.union_comm],
+      assumption,
+
+      -- t₁ ≠ ∅, t₂ ≠ ∅
+      rw [←ne.def, ←finset.nonempty_iff_ne_empty, ←finset.nonempty_coe_sort] at t₁_ne t₂_ne t₃_ne,
+      apply stellar_subdiv_link_of_star_is_sphere,
+      assumption,
+      use t₁, use t₂, use t₃,
+      split, assumption,
+      split, assumption,
+      split, assumption,
+      split, assumption,
+      split, assumption,
+      split, assumption,
+      rw [finset.union_comm, finset.union_comm t₁ t₂, ←finset.union_assoc],
+      assumption, },
+      
+    contradiction,
+    
+    choose t_in_X link_t_sphere using link_t_sphere,
+    have contra : t ∈ (star_complement X s s_in_X).simplices, from
+    begin
+      simp only[star_complement, set.mem_sep_iff],
+      split, assumption,
+
+      sorry,
+    end,
+    contradiction, },
+end
+
+lemma stellar_mfd_boundary_incl_left
+    (X : simplicial_complex ℕ)
+    (s : finset ℕ) [s_ne : nonempty s]
+    (x n : ℕ)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : is_stellar_n_manifold X n →
+      s ∉ (simplicial_complex_boundary X).simplices →
+        (simplicial_complex_boundary (@stellar_subdivision _ _ X s s_ne x s_in_X x_nin_X)).simplices
+          ⊆ (simplicial_complex_boundary X).simplices
+:= begin
+  intros X_mfd s_nin_bd,
+  rw [set.subset_def],
+  intros t,
+  contrapose,
+  intros t_nin_bd,
+
+  let t_nin_bd' := t_nin_bd,
+  simp only[simplicial_complex_boundary] at t_nin_bd' ⊢,
+  simp only[set.mem_union, set.mem_sep_iff, set.mem_diff] at t_nin_bd' ⊢,
+  simp only[not_or_distrib, not_and_distrib, not_forall, not_not] at t_nin_bd' ⊢,
+
+  cases t_nin_bd' with t_nin_bd' t_ne,
+  split,
+
+  by_cases t_in_subdiv : t ∉ (stellar_subdivision X s x s_in_X x_nin_X).simplices,
+
+  -- t ∉ σX 
+  left, left,
+  assumption,
+
+  -- t ∈ σX
+  simp only[not_not] at t_in_subdiv,
+  let t_in_subdiv' := t_in_subdiv,
+  simp only[stellar_subdivision, simplicial_union, set.mem_union] at t_in_subdiv',
+
+  cases t_in_subdiv' with t_in_star_comp t_in_join;
+  right; use t_in_subdiv,
+
+  apply stellar_subdiv_star_comp_link_is_sphere;
+  assumption,
+
+  apply stellar_subdiv_join_link_is_sphere;
+  assumption,
+
+  assumption,
+end
+
+lemma stellar_subdiv_star_comp_link_is_not_sphere
+    (X : simplicial_complex ℕ)
+    (s t : finset ℕ) [s_ne : nonempty s]
+    (x : ℕ)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : s ∉ (simplicial_complex_boundary X).simplices →
+      t ∈ (simplicial_complex_boundary X).simplices \ {∅} →
+        t ∈ (star_complement X s s_in_X).simplices →
+          ¬is_stellar_sphere (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t) sorry)
+:= begin
+  intros s_nin_bd t_in_bd t_in_star_comp,
+
+  let t_in_star_comp' := t_in_star_comp,
+  simp only[star_complement, set.mem_sep_iff] at t_in_star_comp',
+  choose t_in_X s_nss_t using t_in_star_comp',
+
+  let t_in_bd' := t_in_bd,
+  simp only[simplicial_complex_boundary] at t_in_bd',
+  simp only[set.mem_union, set.mem_sep_iff, set.mem_diff] at t_in_bd',
+  choose t_in_bd' t_ne using t_in_bd',
+
+  cases t_in_bd' with t_in_bd' contra,
+  choose t_in_X link_t_not_sphere using t_in_bd',
+  choose t_in_X t_ne using t_in_X,
+  specialize link_t_not_sphere t_in_X,
+
+  by_cases t_in_join : t ∈ ((π₁ (boundary_disjoint_link X s s_in_X))[Lk(X, s) s_in_X ⋆ ∂s]).simplices,
+
+  { apply stellar_equiv_preserves_not_stellar_sphere
+      (σ((Lk(X, t) t_in_X), s\t, x; sorry, sorry, sorry)),
+    apply stellar_equiv_preserves_not_stellar_sphere
+      (Lk(X, t) t_in_X),
+    assumption,
+    
+    apply relation.refl_trans_gen.single,
+    simp only[stellar_move],
+    right, left,
+    use (s \ t),
+    
+    have st_in_link : s \ t ∈ (Lk(X, t) t_in_X).simplices, by sorry,
+    use st_in_link,
+    
+    have st_ne : nonempty ↥(s \ t), by sorry,
+    use st_ne,
+    
+    use x,
+    
+    have x_nin_link : x ∉ vertices (Lk(X, t) t_in_X), by sorry,
+    use x_nin_link,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    symmetry,
+    apply stellar_subdiv_anticomm_link,
+    assumption, },
+
+  { apply stellar_equiv_preserves_not_stellar_sphere
+      (Lk(X, t) t_in_X),
+    assumption,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    symmetry,
+    apply stellar_subdiv_link_of_star_complement;
+    assumption, },
+
+  contradiction,
+end
+
+lemma stellar_subdiv_join_link_is_not_sphere
+    (X : simplicial_complex ℕ)
+    (s t : finset ℕ) [s_ne : nonempty s]
+    (x : ℕ)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : s ∉ (simplicial_complex_boundary X).simplices →
+      t ∈ (simplicial_complex_boundary X).simplices \ {∅} →
+        t ∈ ((π₁ (barycenter_join_boundary_disjoint_link X s x s_in_X x_nin_X))[((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X))[(simplex {x} ⋆ ∂s)] ⋆ Lk(X, s) s_in_X)]).simplices →
+          ¬is_stellar_sphere (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t) sorry)
+:= begin
+  intros s_nin_bd t_in_bd t_in_join,
+
+  let t_in_join' := t_in_join,
+  rw [join_proj_mem] at t_in_join',
+  choose t' t'_in_join t₁ t₁_in_link t_decomp using t_in_join',
+  rw [join_proj_mem] at t'_in_join,
+  choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp using t'_in_join,
+  subst t'_decomp,
+
+  let t_in_bd' := t_in_bd,
+  simp only[simplicial_complex_boundary] at t_in_bd',
+  simp only[set.mem_union, set.mem_sep_iff, set.mem_diff] at t_in_bd',
+  choose t_in_bd' t_ne using t_in_bd',
+  
+  cases t_in_bd' with t_in_bd' contra,
+  choose t_in_X link_t_not_sphere using t_in_bd',
+  choose t_in_X t_ne using t_in_X,
+  specialize link_t_not_sphere t_in_X,
+
+  by_cases t_in_star_comp : t ∈ (star_complement X s s_in_X).simplices,
+  { apply stellar_subdiv_star_comp_link_is_not_sphere;
+    assumption, },
+
+  { simp only[star_complement, set.mem_sep_iff, not_and_distrib, not_not] at t_in_star_comp,
+    cases t_in_star_comp with t_nin_X s_ss_t,
+    contradiction,
+    
+    have contra : s ∈ (simplicial_complex_boundary X).simplices, from
+    begin
+      simp only[set.mem_diff] at t_in_bd,
+      choose t_in_bd t_ne using t_in_bd,
+      apply (simplicial_complex_boundary X).subset_closed t;
+      assumption,
+    end,
+    contradiction, },
+
+  contradiction,
+end
+
+lemma stellar_mfd_boundary_incl_right
+    (X : simplicial_complex ℕ)
+    (s : finset ℕ) [s_ne : nonempty s]
+    (x n : ℕ)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : is_stellar_n_manifold X n →
+      s ∉ (simplicial_complex_boundary X).simplices →
+        (simplicial_complex_boundary X).simplices
+          ⊆ (simplicial_complex_boundary (@stellar_subdivision _ _ X s s_ne x s_in_X x_nin_X)).simplices
+:= begin
+  intros X_mfd s_nin_bd,
+  rw [set.subset_def],
+  intros t t_in_bd,
+
+  let t_in_bd' := t_in_bd,
+  simp only[simplicial_complex_boundary] at t_in_bd' ⊢,
+  simp only[set.mem_union, set.mem_sep_iff, set.mem_diff] at t_in_bd' ⊢,
+  cases t_in_bd' with link_t_sphere t_empty,
+
+  choose t_in_X link_t_sphere using link_t_sphere,
+  choose t_in_X t_ne using t_in_X,
+  specialize link_t_sphere t_in_X,
+
+  left, split, split,
+  sorry,
+  assumption,
+
+  intro t_in_subdiv,
+  let t_in_subdiv' := t_in_subdiv,
+  simp only[stellar_subdivision, simplicial_union, set.mem_union] at t_in_subdiv',
+
+  cases t_in_subdiv' with t_in_star_comp t_in_join,
+
+  apply stellar_subdiv_star_comp_link_is_not_sphere,
+  assumption,
+  simp only[set.mem_diff],
+  split; assumption,
+  assumption,
+
+  apply stellar_subdiv_join_link_is_not_sphere,
+  assumption,
+  simp only[set.mem_diff],
+  split; assumption,
+  assumption,
+
+  right, assumption,
+end
+
+-- Lemma 3.8, p.17
+lemma stellar_mfd_boundary_ident
+    (X : simplicial_complex ℕ)
+    (s : finset ℕ) [s_ne : nonempty s]
+    (x n : ℕ)
+    (s_in_X : s ∈ X.simplices)
+    (x_nin_X : x ∉ vertices X)
+  : is_stellar_n_manifold X n →
       s ∉ (simplicial_complex_boundary X).simplices →
         simplicial_complex_boundary (@stellar_subdivision _ _ X s s_ne x s_in_X x_nin_X)
           ≅ simplicial_complex_boundary X
 := begin
-  intros X_stellar_ball s_nin_bd,
+  intros X_mfd s_nin_bd,
   have s_link_sphere : is_stellar_sphere (Lk(X, s) s_in_X), from
   begin
     simp only [simplicial_complex_boundary] at s_nin_bd,
     simp only [set.mem_union, set.mem_sep_iff] at s_nin_bd,
+    simp only [not_or_distrib, not_and_distrib, not_forall, not_not] at s_nin_bd,
+    cases s_nin_bd with link_sphere s_ne,
+
+    cases link_sphere with contra link_sphere,
     finish,
+
+    choose s_in_X link_sphere using link_sphere,
+    assumption,
   end,
-  sorry,
+  
+  apply simplicial_iso_preserves_equiv,
+  rw [set.subset.antisymm_iff],
+  split,
+  apply (@stellar_mfd_boundary_incl_left X s s_ne x n s_in_X x_nin_X X_mfd s_nin_bd),
+  apply (@stellar_mfd_boundary_incl_right X s s_ne x n s_in_X x_nin_X X_mfd s_nin_bd),
 end
 
 lemma stellar_ball_boundary_comm
@@ -2496,8 +3133,6 @@ lemma disk_boundary_is_sphere
   : simplicial_complex_boundary D(n + 1) ≅ S(n)
 := sorry
 
--- TODO: Fill in proofs for boundary non-membership.
---       cf. proof of Cor. 3.12
 lemma stellar_equiv_factors_stellar_ball_boundary
     (X Y : simplicial_complex ℕ)
   : is_stellar_ball X → X ≅ₛₜ Y → simplicial_complex_boundary X ≅ₛₜ simplicial_complex_boundary Y
@@ -2572,8 +3207,12 @@ lemma stellar_equiv_factors_stellar_ball_boundary
   assumption,
 
   -- t ∉ ∂L case
+  simp only[is_stellar_ball] at L_ball,
+  choose l l_ge_neg_one L_ball using L_ball,
+  have L_mfd : is_stellar_n_manifold L l.to_nat, by sorry,
+
   apply stellar_equiv_preserves_iso,
-  apply stellar_ball_boundary_ident;
+  apply stellar_mfd_boundary_ident;
   assumption,
 
   cases K_subdiv_L with K_subdiv_L K_iso_L,
@@ -2622,8 +3261,12 @@ lemma stellar_equiv_factors_stellar_ball_boundary
   assumption,
 
   -- s ∉ ∂K case
+  simp only[is_stellar_ball] at K_ball,
+  choose k k_ge_neg_one K_ball using K_ball,
+  have K_mfd : is_stellar_n_manifold K k.to_nat, by sorry,
+
   apply stellar_equiv_preserves_iso,
-  apply stellar_ball_boundary_ident;
+  apply stellar_mfd_boundary_ident;
   assumption,
 
   apply stellar_equiv_preserves_iso,
@@ -3381,19 +4024,6 @@ lemma stellar_sphere_boundary_empty'
   : is_stellar_n_sphere X n → simplicial_complex_boundary X ≅ @empty_sc ℕ
 := sorry
 
--- Proposition 3.11 (2), p.18
-lemma stellar_sphere_ball_boundary_distr_join_left
-    (X Y : stellar_manifold)
-    (m n : ℕ)
-    (φ : simplicial_coe (X.complex ⋆ Y.complex) ℕ)
-  : is_stellar_n_sphere X.complex m →
-      is_stellar_n_ball Y.complex n →
-        simplicial_complex_boundary (φ[X.complex ⋆ Y.complex]) ≅ X.complex ⋆ (simplicial_complex_boundary Y.complex)
-:= begin
-  intros X_sphere Y_ball,
-  sorry,
-end
-
 lemma neg_one_ball_is_zero_disk {α : Type*} [decidable_eq α]
     (X : simplicial_complex α)
     (x : α)
@@ -3498,4 +4128,3 @@ lemma stellar_ball_boundary_comm_cone_union
   apply cone_is_zero_disk_join_boundary,
   apply ψ.iso_onto_image,
 end
-

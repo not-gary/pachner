@@ -5,9 +5,9 @@ Author: Clara Löh.
 -/
 
 import tactic          -- standard proof tactics
-import data.set        -- basics on sets
+import data.set.basic        -- basics on sets
 import data.set.finite -- basics on finite sets
-import data.finset     -- type-level finite sets
+import data.finset.basic     -- type-level finite sets
 import .simplicial_complex -- basics on simplicial complexes
 
 variables {α β γ : Type*}
@@ -2111,6 +2111,26 @@ lemma join_proj_vertices_mem
     (H : disjoint (vertices X) (vertices Y))
   : x ∈ vertices ((π₁ H)[(X ⋆ Y)]) ↔ x ∈ vertices X ∨ x ∈ vertices Y
 := sorry
+
+lemma join_proj_mem
+    (X Y : simplicial_complex α)
+    (s : finset α)
+    (H : disjoint (vertices X) (vertices Y))
+  : s ∈ ((π₁ H)[(X ⋆ Y)]).simplices ↔ ∃ (t ∈ X.simplices) (u ∈ Y.simplices), s = t ∪ u
+:= begin
+  sorry
+end
+
+lemma join_proj_disj_union_mem
+    (X Y : simplicial_complex α)
+    (s t : finset α)
+    (H : disjoint (vertices X) (vertices Y))
+  : s ∪ t ∈ ((π₁ H)[(X ⋆ Y)]).simplices ↔
+      ∃ (s₁ t₁ ∈ X.simplices) (s₂ t₂ ∈ Y.simplices),
+        s = s₁ ∪ s₂ ∧ t = t₁ ∪ t₂ ∧ (s₁ ∪ t₁ ∈ X.simplices) ∧ (s₂ ∪ t₂ ∈ Y.simplices)
+:= begin
+  sorry
+end
 
 -- General result on existence of coercion for complexes over ℕ
 @[simp]

@@ -5,9 +5,9 @@ Author: Clara Löh.
 -/
 
 import tactic          -- standard proof tactics
-import data.set        -- basics on sets
+import data.set.basic        -- basics on sets
 import data.set.finite -- basics on finite sets
-import data.finset     -- type-level finite sets
+import data.finset.basic     -- type-level finite sets
 
 open_locale big_operators
 
@@ -384,6 +384,13 @@ lemma simplicial_union_comm
 := begin
   simp,
   rw [set.union_comm],
+end
+
+lemma simplicial_union_simplices
+    (X Y : simplicial_complex α)
+  : (X ∪ Y).simplices = X.simplices ∪ Y.simplices
+:= begin
+  simp only[simplicial_union],
 end
 
 @[simp]
