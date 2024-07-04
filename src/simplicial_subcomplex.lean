@@ -290,6 +290,7 @@ lemma link_fact_union_right
     (s_nin_X : s ∉ X.simplices)
     (s_in_Y : s ∈ Y.simplices)
   : (Lk(X ∪ Y, s) (by { sorry })).simplices = (Lk(Y, s) s_in_Y).simplices
+:= sorry
 
 lemma link_fact_union
     (X Y : simplicial_complex α)

@@ -928,6 +928,7 @@ lemma simplicial_complex_boundary_subcomplex_vertices_contra
   apply simplicial_complex_boundary_subcomplex_vertices,
 end
 
+-- TODO: Absolutely not true.
 lemma simplicial_complex_boundary_preserves_is_subcomplex
     (X Y : simplicial_complex ℕ)
     (Y_sub_X : Y ⊆ X)
@@ -1993,215 +1994,227 @@ lemma stellar_eq_preserves_stellar_mfd
   : X.complex ≅ₛₜ Y → is_stellar_n_manifold Y X.dim
 := begin
   intros X_eq_Y,
-  destruct (X.dim),
-
-  have X_fin := stellar_manifold.fintype X,
-  have Y_fin := @stellar_equiv.fintype ℕ _ X.complex Y X_fin X_eq_Y,
-
-  -- 0-dim case
-  intro H_ind,
-  induction X_eq_Y with K L X_eq_K K_move_L K_mfd_ih,
+  induction X_eq_Y with K Y X_eq_K K_move_Y K_mfd,
   apply X.is_manifold,
 
-  have K_fin : fintype K.simplices := @stellar_equiv.fintype ℕ _ X.complex K X_fin X_eq_K,
-  specialize K_mfd_ih K_fin,
+  simp only[is_stellar_n_manifold] at K_mfd ⊢,
+  intros x x_in_Y,
 
-  intros l l_in_L,
-  unfold stellar_move at K_move_L,
-  cases K_move_L with K_subdiv_L K_move_L,
+  simp only[stellar_move] at K_move_Y,
+  cases K_move_Y with K_subdiv_Y Y_subdiv_K,
 
-  choose t Ht Ht_ne y Hy K_subdiv_L using K_subdiv_L,
-  let K_subdiv_L_cases := K_subdiv_L,
-  unfold is_simplicially_iso at K_subdiv_L_cases,
-  choose f f_iso using K_subdiv_L_cases,
-  have f_iso_cases := f_iso,
-  unfold is_simplicial_iso at f_iso_cases,
-  choose g fg_inv using f_iso_cases,
+  { choose t t_in_Y t_ne y y_nin_Y K_subdiv_Y using K_subdiv_Y,
+    unfold is_simplicially_iso at K_subdiv_Y,
+    choose f f_iso using K_subdiv_Y,
+    unfold is_simplicial_iso at f_iso,
+    choose g fg_inv using f_iso,
+    
+    specialize K_mfd (g.map x),
+    have gx_in_K : {g.map x} ∈ K.simplices, by sorry,
+    specialize K_mfd gx_in_K,
 
-  rw [H_ind] at *,
-  let Km := stellar_manifold.mk K 0 K_mfd_ih,
-  have L_dim : @dim_of_complex ℕ L Y_fin = 0, from
-  begin
-    rw [@stellar_subdiv_preserves_dim ℕ _ L Y_fin t Ht_ne y Ht Hy],
+    have K_link_iso_Y_link : Lk(K, {g.map x}) gx_in_K ≅ Lk(σ(Y, t, y; t_ne, t_in_Y, y_nin_Y), {x}) sorry, from
+    begin
+      rw [simplicial_iso_symm],
+      apply link_iso σ(Y, t, y; t_ne, t_in_Y, y_nin_Y) K {x} {g.map x} g,
+      apply iso_inv_is_iso f,
+      unfold is_simplicial_iso,
+      use g,
+      assumption,
+      assumption,
+      simp only[finset.image_singleton],
+    end,
+    
+    have x_in_star_comp : {x} ∈ (@star_complement _ _ Y t t_ne t_in_Y).simplices, by sorry,
+    cases K_mfd with link_gx_sphere link_gx_ball;
+    by_cases x_in_join : {x} ∈ ((π₁ (boundary_disjoint_link Y t t_in_Y))[Lk(Y, t) t_in_Y ⋆ ∂t]).simplices,
+    
+    -- Sphere, x ∈ Lk(Y, t) ⋆ ∂t case.
+    left,
+    apply stellar_equiv_preserves_stellar_n_sphere
+      (σ(Lk(Y, {x}) x_in_Y, t \ {x}, y; sorry, sorry, sorry)),
+    apply stellar_equiv_preserves_stellar_n_sphere
+      (Lk(σ(Y, t, y; t_ne, t_in_Y, y_nin_Y), {x}) sorry),
+    apply stellar_equiv_preserves_stellar_n_sphere
+      (Lk(K, {g.map x}) gx_in_K),
+    assumption,
+    
+    apply stellar_equiv_preserves_iso,
+    apply K_link_iso_Y_link,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    apply stellar_subdiv_anticomm_link,
+    assumption,
+    apply relation.refl_trans_gen.single,
+    unfold stellar_move,
+    left, use (t \ {x}),
     sorry,
-    -- rw [←@simplicial_iso_preserves_dim ℕ ℕ _ _ K K_fin (@stellar_subdivision ℕ _ L t Ht_ne y Ht Hy φ) K_subdiv_L],
-  end,
-
-  have subdiv_ident := @stellar_subdiv_zero_dim_ident L Y_fin t Ht_ne y Ht Hy L_dim,
-  have subdiv_ident_cases := subdiv_ident,
-
-  unfold is_simplicially_iso at subdiv_ident_cases,
-  choose fL fL_iso using subdiv_ident_cases,
-  have fL_iso_cases := fL_iso,
-  unfold is_simplicial_iso at fL_iso_cases,
-  choose gL fgL_inv using fL_iso_cases,
-
-  let g_comp := simplicial_map.comp gL g,
-  have g_comp_iso : is_simplicial_iso g_comp, from
-  begin
-    apply iso_comp_is_iso,
-    apply iso_inv_is_iso fL; assumption,
-    apply iso_inv_is_iso f; assumption,
-  end,
-
-  have k_in_K : {g_comp.map l} ∈ K.simplices, from
-  begin
-    rw [←finset.image_singleton],
-    apply g_comp.is_simplicial,
+    
+    -- Sphere, x ∉ Lk(Y, t) ⋆ ∂t case.
+    left,
+    apply stellar_equiv_preserves_stellar_n_sphere
+      (Lk(σ(Y, t, y; t_ne, t_in_Y, y_nin_Y), {x}) sorry),
+    apply stellar_equiv_preserves_stellar_n_sphere
+      (Lk(K, {g.map x}) gx_in_K),
     assumption,
-  end,
-
-  unfold is_stellar_n_manifold at K_mfd_ih,
-  specialize K_mfd_ih (g_comp.map l),
-  specialize K_mfd_ih k_in_K,
-  cases K_mfd_ih with K_sphere K_ball,
-
-  left,
-  apply stellar_equiv_preserves_stellar_n_sphere (Lk(K, {g_comp.map l}) k_in_K),
-  assumption,
-  apply stellar_equiv_preserves_iso,
-  rw [simplicial_iso_symm],
-  apply link_iso _ _ _ _ g_comp,
-  assumption,
-  rw [finset.image_singleton],
-
-  right,
-  apply stellar_equiv_preserves_stellar_n_ball (Lk(K, {g_comp.map l}) k_in_K),
-  assumption,
-  apply stellar_equiv_preserves_iso,
-  rw [simplicial_iso_symm],
-  apply link_iso _ _ _ _ g_comp,
-  assumption,
-  rw [finset.image_singleton],
-
-  cases K_move_L with L_subdiv_K K_iso_L,
-  choose s Hs Hs_ne x Hx L_subdiv_K using L_subdiv_K,
-
-  let L_subdiv_K_cases := L_subdiv_K,
-  unfold is_simplicially_iso at L_subdiv_K_cases,
-  choose f f_iso using L_subdiv_K_cases,
-  have f_iso_cases := f_iso,
-  unfold is_simplicial_iso at f_iso_cases,
-  choose g fg_inv using f_iso_cases,
-
-  rw [H_ind] at *,
-  let Km := stellar_manifold.mk K 0 K_mfd_ih,
-  have K_dim : @dim_of_complex ℕ K K_fin = 0, from
-  begin
-    have H : Km.complex = K, by refl,
+    
+    apply stellar_equiv_preserves_iso,
+    apply K_link_iso_Y_link,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    apply stellar_subdiv_link_of_star_complement;
+    assumption,
+    
+    -- Ball, x ∈ Lk(Y, t) ⋆ ∂t case.
+    right,
+    apply stellar_equiv_preserves_stellar_n_ball
+      (σ(Lk(Y, {x}) x_in_Y, t \ {x}, y; sorry, sorry, sorry)),
+    apply stellar_equiv_preserves_stellar_n_ball
+      (Lk(σ(Y, t, y; t_ne, t_in_Y, y_nin_Y), {x}) sorry),
+    apply stellar_equiv_preserves_stellar_n_ball
+      (Lk(K, {g.map x}) gx_in_K),
+    assumption,
+    
+    apply stellar_equiv_preserves_iso,
+    apply K_link_iso_Y_link,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    apply stellar_subdiv_anticomm_link,
+    assumption,
+    apply relation.refl_trans_gen.single,
+    unfold stellar_move,
+    left, use (t \ {x}),
     sorry,
-    -- rw [←H, ←manifold_dim_is_complex_dim Km],
-  end,
-  have subdiv_ident := @stellar_subdiv_zero_dim_ident K K_fin s Hs_ne x Hs Hx K_dim,
-  have subdiv_ident_cases := subdiv_ident,
-
-  unfold is_simplicially_iso at subdiv_ident_cases,
-  choose fL fL_iso using subdiv_ident_cases,
-  have fL_iso_cases := fL_iso,
-  unfold is_simplicial_iso at fL_iso_cases,
-  choose gL fgL_inv using fL_iso_cases,
-
-  let f_comp := simplicial_map.comp f fL,
-  have f_comp_iso : is_simplicial_iso f_comp, from
-  begin
-    apply iso_comp_is_iso;
+    
+    -- Ball, x ∉ Lk(Y, t) ⋆ ∂t case.
+    right,
+    apply stellar_equiv_preserves_stellar_n_ball
+      (Lk(σ(Y, t, y; t_ne, t_in_Y, y_nin_Y), {x}) sorry),
+    apply stellar_equiv_preserves_stellar_n_ball
+      (Lk(K, {g.map x}) gx_in_K),
     assumption,
-  end,
+    
+    apply stellar_equiv_preserves_iso,
+    apply K_link_iso_Y_link,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    apply stellar_subdiv_link_of_star_complement;
+    assumption, },
 
-  have k_in_K : {f_comp.map l} ∈ K.simplices, from
-  begin
-    rw [←finset.image_singleton],
-    apply f_comp.is_simplicial,
+  cases Y_subdiv_K with Y_subdiv_K K_eq_Y,
+
+  { choose s s_in_K s_ne y y_nin_K Y_subdiv_K using Y_subdiv_K,
+    unfold is_simplicially_iso at Y_subdiv_K,
+    choose f f_iso using Y_subdiv_K,
+    
+    specialize K_mfd (f.map x),
+    have fx_in_K : {f.map x} ∈ K.simplices, by sorry,
+    specialize K_mfd fx_in_K,
+
+    have K_link_iso_Y_link : Lk(σ(K, s, y; s_ne, s_in_K, y_nin_K), {f.map x}) sorry ≅ Lk(Y, {x}) x_in_Y, from
+    begin
+      rw [simplicial_iso_symm],
+      apply link_iso Y σ(K, s, y; s_ne, s_in_K, y_nin_K) {x} {f.map x} f,
+      assumption,
+      simp only[finset.image_singleton],
+    end,
+    
+    have x_in_star_comp : {f.map x} ∈ (@star_complement _ _ K s s_ne s_in_K).simplices, by sorry,
+    cases K_mfd with link_fx_sphere link_fx_ball;
+    by_cases x_in_join : {f.map x} ∈ ((π₁ (boundary_disjoint_link K s s_in_K))[Lk(K, s) s_in_K ⋆ ∂s]).simplices,
+    
+    -- Sphere, f(x) ∈ Lk(K, s) ⋆ ∂s case.
+    left,
+    apply stellar_equiv_preserves_stellar_n_sphere
+      (Lk(σ(K, s, y; s_ne, s_in_K, y_nin_K), {f.map x}) sorry),
+    apply stellar_equiv_preserves_stellar_n_sphere
+      (σ(Lk(K, {f.map x}) fx_in_K, s \ {f.map x}, y; sorry, sorry, sorry)),
+    apply stellar_equiv_preserves_stellar_n_sphere
+      (Lk(K, {f.map x}) fx_in_K),
     assumption,
-  end,
-
-  unfold is_stellar_n_manifold at K_mfd_ih,
-  specialize K_mfd_ih (f_comp.map l),
-  specialize K_mfd_ih k_in_K,
-  cases K_mfd_ih with K_sphere K_ball,
-
-  left,
-  apply stellar_equiv_preserves_stellar_n_sphere (Lk(K, {f_comp.map l}) k_in_K),
-  assumption,
-  apply stellar_equiv_preserves_iso,
-  rw [simplicial_iso_symm],
-  apply link_iso _ _ _ _ f_comp,
-  assumption,
-  rw [finset.image_singleton],
-
-  right,
-  apply stellar_equiv_preserves_stellar_n_ball (Lk(K, {f_comp.map l}) k_in_K),
-  assumption,
-  apply stellar_equiv_preserves_iso,
-  rw [simplicial_iso_symm],
-  apply link_iso _ _ _ _ f_comp,
-  assumption,
-  rw [finset.image_singleton],
-
-  have K_iso_L_cases := K_iso_L,
-  unfold is_simplicially_iso at K_iso_L_cases,
-  choose f f_iso using K_iso_L_cases,
-  have f_iso_cases := f_iso,
-  unfold is_simplicial_iso at f_iso_cases,
-  choose g fg_inv using f_iso_cases,
-
-  have g_iso : is_simplicial_iso g, from
-  begin
-    apply iso_inv_is_iso f;
+    
+    apply relation.refl_trans_gen.single,
+    unfold stellar_move,
+    right, left,
+    sorry,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    symmetry,
+    apply stellar_subdiv_anticomm_link;
     assumption,
-  end,
-
-  have k_in_K : {g.map l} ∈ K.simplices, from
-  begin
-    rw [←finset.image_singleton],
-    apply g.is_simplicial,
+    
+    apply stellar_equiv_preserves_iso,
+    apply K_link_iso_Y_link,
+    
+    -- Sphere, f(x) ∉ Lk(K, s) ⋆ ∂s case.
+    left,
+    apply stellar_equiv_preserves_stellar_n_sphere
+      (Lk(σ(K, s, y; s_ne, s_in_K, y_nin_K), {f.map x}) sorry),
+    apply stellar_equiv_preserves_stellar_n_sphere
+      (Lk(K, {f.map x}) fx_in_K),
     assumption,
-  end,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    symmetry,
+    apply stellar_subdiv_link_of_star_complement;
+    assumption,
+    
+    apply stellar_equiv_preserves_iso,
+    apply K_link_iso_Y_link,
+    
+    -- Ball, f(x) ∈ Lk(K, s) ⋆ ∂s case.
+    right,
+    apply stellar_equiv_preserves_stellar_n_ball
+      (Lk(σ(K, s, y; s_ne, s_in_K, y_nin_K), {f.map x}) sorry),
+    apply stellar_equiv_preserves_stellar_n_ball
+      (σ(Lk(K, {f.map x}) fx_in_K, s \ {f.map x}, y; sorry, sorry, sorry)),
+    apply stellar_equiv_preserves_stellar_n_ball
+      (Lk(K, {f.map x}) fx_in_K),
+    assumption,
+    
+    apply relation.refl_trans_gen.single,
+    unfold stellar_move,
+    right, left,
+    sorry,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    symmetry,
+    apply stellar_subdiv_anticomm_link;
+    assumption,
+    
+    apply stellar_equiv_preserves_iso,
+    apply K_link_iso_Y_link,
+    
+    -- Ball, f(x) ∉ Lk(K, s) ⋆ ∂s case.
+    right,
+    apply stellar_equiv_preserves_stellar_n_ball
+      (Lk(σ(K, s, y; s_ne, s_in_K, y_nin_K), {f.map x}) sorry),
+    apply stellar_equiv_preserves_stellar_n_ball
+      (Lk(K, {f.map x}) fx_in_K),
+    assumption,
+    
+    apply stellar_equiv_preserves_iso,
+    apply simplicial_iso_preserves_equiv,
+    symmetry,
+    apply stellar_subdiv_link_of_star_complement;
+    assumption,
+    
+    apply stellar_equiv_preserves_iso,
+    apply K_link_iso_Y_link, },
 
-  unfold is_stellar_n_manifold at K_mfd_ih,
-  specialize K_mfd_ih (g.map l),
-  specialize K_mfd_ih k_in_K,
-  cases K_mfd_ih with K_sphere K_ball,
-
-  left,
-  apply stellar_equiv_preserves_stellar_n_sphere (Lk(K, {g.map l}) k_in_K),
+  rw [←is_stellar_n_manifold] at K_mfd,
+  apply simplicial_iso_preserves_stellar_mfd K;
   assumption,
-  apply stellar_equiv_preserves_iso,
-  rw [simplicial_iso_symm],
-  apply link_iso _ _ _ _ g,
-  assumption,
-  rw [finset.image_singleton],
-
-  right,
-  apply stellar_equiv_preserves_stellar_n_ball (Lk(K, {g.map l}) k_in_K),
-  assumption,
-  apply stellar_equiv_preserves_iso,
-  rw [simplicial_iso_symm],
-  apply link_iso _ _ _ _ g,
-  assumption,
-  rw [finset.image_singleton],
-
-  -- dim > 0 case
-  induction X_eq_Y with K L X_eq_K K_move_L K_mfd_ih,
-  intros n H_ind,
-  apply X.is_manifold,
-
-  intros n H_ind,
-  unfold is_stellar_n_manifold,
-  intros l l_in_L,
-
-  specialize K_mfd_ih n H_ind,
-
-  unfold stellar_move at K_move_L,
-  cases K_move_L with L_subdiv_K K_move_L,
-  choose t Ht Ht_ne y Hy L_subdiv_K using L_subdiv_K,
-
-  sorry, -- incomplete
-
-  cases K_move_L with K_subdiv_L K_iso_L,
-  choose s Hs Hs_ne x Hx K_subdiv_L using K_subdiv_L,
 end
 
+-- TODO: 0 ≤ dim s assumption is not needed.
 lemma link_not_stellar_sphere_imp_stellar_ball
     (X : stellar_manifold)
     (s : finset ℕ)
@@ -3095,20 +3108,6 @@ lemma stellar_mfd_boundary_ident
           ≅ simplicial_complex_boundary X
 := begin
   intros X_mfd s_nin_bd,
-  have s_link_sphere : is_stellar_sphere (Lk(X, s) s_in_X), from
-  begin
-    simp only [simplicial_complex_boundary] at s_nin_bd,
-    simp only [set.mem_union, set.mem_sep_iff] at s_nin_bd,
-    simp only [not_or_distrib, not_and_distrib, not_forall, not_not] at s_nin_bd,
-    cases s_nin_bd with link_sphere s_ne,
-
-    cases link_sphere with contra link_sphere,
-    finish,
-
-    choose s_in_X link_sphere using link_sphere,
-    assumption,
-  end,
-  
   apply simplicial_iso_preserves_equiv,
   rw [set.subset.antisymm_iff],
   split,
