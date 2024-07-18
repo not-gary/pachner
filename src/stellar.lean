@@ -280,7 +280,7 @@ lemma stellar_subdiv_distr_join_left
         (φ[(φ[(simplex {x} ⋆ ∂s)] ⋆ (Lk(X, s)))])) ⋆ Y)
       (((star_complement X s) ⋆ Y) ∪
         (φ[(φ[(simplex {x} ⋆ ∂s)] ⋆ (Lk(X, s)))] ⋆ Y)),
-    apply simplicial_join_distr_union_right,
+    apply simplicial_join_distr_union_right_iso,
 
     apply simplicial_iso_union_right,
     sorry

@@ -394,7 +394,7 @@ lemma stellar_sphere_inductive
     (simplex {n.succ + 1} ⋆ ∂s ∪ simplex {n.succ + 2} ⋆ ∂s)
     ((simplex {n.succ + 1} ∪ simplex {n.succ + 2}) ⋆ ∂s),
   rw [simplicial_iso_symm],
-  apply simplicial_join_distr_union_right,
+  apply simplicial_join_distr_union_right_iso,
   apply simplicial_join_iso,
 
   apply stellar_zero_sphere_iso,

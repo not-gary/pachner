@@ -55,18 +55,227 @@ instance simplex_boundary.fintype
   apply set.fintype_union,
 end
 
+lemma simplex_boundary_subcomplex_simplex
+    (s : finset α)
+  : ∂s ⊆ simplex s
+:= begin
+  simp only [is_subcomplex, simplex, simplex_boundary, set.subset_def],
+  intros t t_in_bd,
+
+  simp only [set.mem_diff, set.mem_union, finset.mem_coe, finset.mem_powerset] at t_in_bd,
+  simp only [finset.mem_coe, finset.mem_powerset],
+  cases t_in_bd with t_ss_s t_empty,
+
+  choose t_ss_s t_ne_s using t_ss_s,
+  assumption,
+
+  rw [set.mem_singleton_iff] at t_empty,
+  rw [t_empty],
+  apply set.empty_subset,
+end
+
 lemma simplex_boundary_iso
     (s : finset α) [nonempty s]
     (t : finset β) [nonempty t]
   : simplex s ≅ simplex t → ∂s ≅ ∂t
-:= sorry
+:= begin
+  intro s_iso_t,
+  unfold is_simplicially_iso at s_iso_t ⊢,
+  choose f f_iso using s_iso_t,
+
+  let f_iso' := f_iso,
+  unfold is_simplicial_iso at f_iso',
+  choose g gf_inv using f_iso',
+
+  have g_iso : is_simplicial_iso g, by apply iso_inv_is_iso f g f_iso gf_inv,
+  unfold is_inverse_simplicial_iso at gf_inv,
+  simp only [set.restrict_eq_restrict_iff, set.eq_on, simplicial_map.comp, function.comp_app, id.def] at gf_inv,
+  choose gf_id fg_id using gf_inv,
+
+  have f_inj : set.inj_on f.map s, from
+  begin
+    apply @set.left_inv_on.inj_on _ _ _ _ g.map,
+    simp only [set.left_inv_on],
+    intros x x_in_s,
+    have x_in_vert : x ∈ vertices (simplex s), from
+    begin
+      rw [vertex_iff_in_simplex],
+      use s, split,
+      simp only [simplex, finset.mem_coe],
+      apply finset.mem_powerset_self,
+      rw [←finset.mem_coe],
+      assumption,
+    end,
+    specialize gf_id x_in_vert,
+    assumption,
+  end,
+
+  have g_inj : set.inj_on g.map t, from
+  begin
+    apply @set.left_inv_on.inj_on _ _ _ _ f.map,
+    simp only [set.left_inv_on],
+    intros x x_in_s,
+    have x_in_vert : x ∈ vertices (simplex t), from
+    begin
+      rw [vertex_iff_in_simplex],
+      use t, split,
+      simp only [simplex, finset.mem_coe],
+      apply finset.mem_powerset_self,
+      rw [←finset.mem_coe],
+      assumption,
+    end,
+    specialize fg_id x_in_vert,
+    assumption,
+  end,
+
+  have f_simp : is_simplicial_map (∂s) (∂t) f.map, from
+  begin
+    simp only [is_simplicial_map, simplex_boundary],
+    simp only [set.mem_union, set.mem_diff, set.mem_singleton_iff, finset.mem_coe, finset.mem_powerset],
+    intros u u_in_s,
+    cases u_in_s with u_ss_s u_empty,
+
+    left,
+    choose u_ss_s u_ne_s using u_ss_s,
+    simp only [←finset.coe_subset, ←finset.coe_inj, ←simplex_vertices t],
+    split,
+
+    apply simplex_subset_vertices,
+    apply f.is_simplicial,
+    simp only [simplex, finset.mem_coe, finset.mem_powerset],
+    assumption,
+
+    rw [simplicial_iso_vertices (simplex s) (simplex t) f, simplex_vertices s, finset.coe_image],
+    revert u_ne_s,
+    contrapose,
+    simp only [not_not, set.ext_iff, finset.ext_iff, set.mem_image],
+    intros fu_eq_fs a,
+    specialize fu_eq_fs (f.map a),
+    cases fu_eq_fs with fu_ss_fs fs_ss_fu,
+    split,
+
+    intro a_in_u,
+    rw [finset.subset_iff] at u_ss_s,
+    specialize u_ss_s a_in_u,
+    assumption,
+
+    intro a_in_s,
+    apply set.inj_on.mem_of_mem_image f_inj u_ss_s,
+    rw [finset.mem_coe],
+    assumption,
+    have Hs : ∃ x : α, x ∈ ↑s ∧ f.map x = f.map a, from
+    begin
+      use a, split,
+      rw [finset.mem_coe],
+      assumption,
+      refl,
+    end,
+    specialize fs_ss_fu Hs,
+    simp only [finset.mem_val, set.mem_image],
+    assumption,
+    assumption,
+
+    simp only [u_empty, finset.image_empty],
+    right, refl,
+  end,
+
+  have g_simp : is_simplicial_map (∂t) (∂s) g.map, from
+  begin
+    simp only [is_simplicial_map, simplex_boundary],
+    simp only [set.mem_union, set.mem_diff, set.mem_singleton_iff, finset.mem_coe, finset.mem_powerset],
+    intros u u_in_t,
+    cases u_in_t with u_ss_t u_empty,
+
+    left,
+    choose u_ss_t u_ne_t using u_ss_t,
+    simp only [←finset.coe_subset, ←finset.coe_inj, ←simplex_vertices s],
+    split,
+
+    apply simplex_subset_vertices,
+    apply g.is_simplicial,
+    simp only [simplex, finset.mem_coe, finset.mem_powerset],
+    assumption,
+
+    rw [simplicial_iso_vertices (simplex t) (simplex s) g, simplex_vertices t, finset.coe_image],
+    revert u_ne_t,
+    contrapose,
+    simp only [not_not, set.ext_iff, finset.ext_iff, set.mem_image],
+    intros gu_eq_gt a,
+    specialize gu_eq_gt (g.map a),
+    cases gu_eq_gt with gu_ss_gt gs_ss_gt,
+    split,
+
+    intro a_in_u,
+    rw [finset.subset_iff] at u_ss_t,
+    specialize u_ss_t a_in_u,
+    assumption,
+
+    intro a_in_t,
+    apply set.inj_on.mem_of_mem_image g_inj u_ss_t,
+    rw [finset.mem_coe],
+    assumption,
+    have Ht : ∃ x : β, x ∈ ↑t ∧ g.map x = g.map a, from
+    begin
+      use a, split,
+      rw [finset.mem_coe],
+      assumption,
+      refl,
+    end,
+    specialize gs_ss_gt Ht,
+    simp only [finset.mem_val, set.mem_image],
+    assumption,
+    assumption,
+
+    simp only [u_empty, finset.image_empty],
+    right, refl,
+  end,
+
+  let f_bd : simplicial_map (∂s) (∂t) := simplicial_map.mk f.map f_simp,
+  let g_bd : simplicial_map (∂t) (∂s) := simplicial_map.mk g.map g_simp,
+
+  use f_bd, use g_bd,
+  unfold is_inverse_simplicial_iso,
+  simp only [set.restrict_eq_restrict_iff, set.eq_on, simplicial_map.comp, function.comp_app, id.def],
+  split,
+
+  { intros x x_in_bd,
+    have x_in_s : x ∈ vertices (simplex s), from
+    begin
+      apply is_subcomplex_vertices _ (∂s),
+      apply simplex_boundary_subcomplex_simplex,
+      assumption,
+    end,
+    specialize gf_id x_in_s,
+    assumption, },
+
+  { intros x x_in_bd,
+    have x_in_t : x ∈ vertices (simplex t), from
+    begin
+      apply is_subcomplex_vertices _ (∂t),
+      apply simplex_boundary_subcomplex_simplex,
+      assumption,
+    end,
+    specialize fg_id x_in_t,
+    assumption, },
+end
 
 lemma simplex_boundary_subcomplex
     (X : simplicial_complex α)
     (s t : finset α)
     (s_in_X : s ∈ X.simplices)
   : t ∈ (∂s).simplices → t ∈ X.simplices
-:= sorry
+:= begin
+  intro t_in_bd,
+  simp only [simplex_boundary, set.mem_union, set.mem_diff, finset.mem_coe, finset.mem_powerset] at t_in_bd,
+  cases t_in_bd with t_ss_s t_empty,
+
+  choose t_ss_s t_ne_s using t_ss_s,
+  apply X.subset_closed; assumption,
+
+  rw [set.mem_singleton_iff] at t_empty,
+  rw [t_empty],
+  apply simplicial_complex_empty_simplex,
+end
 
 lemma simplex_boundary_subcomplex_vert
     (X : simplicial_complex α)
@@ -74,19 +283,75 @@ lemma simplex_boundary_subcomplex_vert
     (x : α)
     (s_in_X : s ∈ X.simplices)
   : x ∈ vertices (∂s) → x ∈ vertices X
-:= sorry
+:= begin
+  intro x_in_bd,
+  simp only [vertices_set_of, set.mem_set_of] at x_in_bd ⊢,
+  choose t t_in_bd x_in_t using x_in_bd,
+
+  use t, split,
+  apply simplex_boundary_subcomplex X s t s_in_X t_in_bd,
+  assumption,
+end
 
 lemma simplex_boundary_mem_iff_subset
-    (s t : finset α)
+    (s t : finset α) [nonempty s]
   : t ∈ (∂s).simplices ↔ t ⊂ s
 := begin
-  sorry
+  simp only [simplex_boundary, set.mem_union, set.mem_diff, finset.mem_coe, finset.mem_powerset, set.mem_singleton_iff, finset.ssubset_iff_subset_ne],
+  split,
+
+  intro t_in_bd,
+  cases t_in_bd with t_ss_s t_empty,
+  assumption,
+
+  rw [t_empty],
+  split,
+  apply set.empty_subset,
+  symmetry,
+  rw [←finset.nonempty_iff_ne_empty, ←finset.nonempty_coe_sort],
+  assumption,
+
+  intro t_ss_s,
+  rw [ne.def] at t_ss_s,
+  left, assumption,
 end
 
 lemma subsimplex_boundary_subcomplex
     (s t : finset α)
   : s ⊆ t → ∂s ⊆ ∂t
-:= sorry
+:= begin
+  simp only [is_subcomplex, simplex_boundary, set.subset_def, finset.subset_iff],
+  intros s_ss_t u u_in_bd_s,
+  simp only [set.mem_union, set.mem_diff, finset.mem_coe, finset.mem_powerset, set.mem_singleton_iff] at u_in_bd_s ⊢,
+  cases u_in_bd_s with u_ss_s u_empty,
+
+  left,
+  choose u_ss_s u_ne_s using u_ss_s,
+  simp only [finset.subset_iff] at u_ss_s ⊢,
+  split,
+
+  intros x x_in_u,
+  specialize u_ss_s x_in_u,
+  specialize s_ss_t u_ss_s,
+  assumption,
+
+  revert u_ne_s,
+  contrapose,
+  simp only [not_not],
+  intro u_eq_t,
+  subst u_eq_t,
+  rw [finset.ext_iff],
+  intro x, split,
+  intro x_in_u,
+  specialize u_ss_s x_in_u,
+  assumption,
+  intro x_in_s,
+  specialize s_ss_t x_in_s,
+  assumption,
+
+  right,
+  assumption,
+end
 
 -- Star of a complex wrt a simplex.
 @[simp]
@@ -150,6 +415,29 @@ instance star.fintype
   assumption,
 end
 
+lemma star_subcomplex_simplices
+    (X : simplicial_complex α)
+    (s t : finset α)
+    (s_in_X : s ∈ X.simplices)
+  : t ∈ (St(X, s) s_in_X).simplices → t ∈ X.simplices
+:= begin
+  intros t_in_star,
+  simp only [star, set.mem_sep_iff] at t_in_star,
+  choose t_in_X st_in_X using t_in_star,
+  assumption,
+end
+
+lemma star_subcomplex
+    (X : simplicial_complex α)
+    (s : finset α)
+    (s_in_X : s ∈ X.simplices)
+  : St(X, s) s_in_X ⊆ X
+:= begin
+  simp only [is_subcomplex, set.subset_def],
+  intro t,
+  apply star_subcomplex_simplices,
+end
+
 -- TODO: Potential problem with statement. Correctly, if f : X -> Y
 --       is iso'sm, then we want f(s) = t. But, maybe this is fine?
 --       Problem reflects in other constructions below.
@@ -163,7 +451,105 @@ lemma star_iso
     (t_in_Y : t ∈ Y.simplices)
     (f_iso : is_simplicial_iso f)
   : finset.image f.map s = t → St(X, s) s_in_X ≅ St(Y, t) t_in_Y
-:= sorry
+:= begin
+  intro fs_eq_t,
+  unfold is_simplicially_iso,
+
+  have f_simp : is_simplicial_map (St(X, s) s_in_X) (St(Y, t) t_in_Y) f.map, from
+  begin
+    simp only [is_simplicial_map, star, set.mem_sep_iff],
+    intros u u_in_X_star,
+    choose u_in_X su_in_X using u_in_X_star,
+    split,
+
+    apply f.is_simplicial,
+    assumption,
+
+    rw [←fs_eq_t, ←finset.image_union],
+    apply f.is_simplicial,
+    assumption,
+  end,
+  let f_star := simplicial_map.mk f.map f_simp,
+
+  unfold is_simplicial_iso at f_iso,
+  choose g gf_inv using f_iso,
+  unfold is_inverse_simplicial_iso at gf_inv,
+  choose gf_id fg_id using gf_inv,
+
+  simp only [set.restrict_eq_restrict_iff, set.eq_on, simplicial_map.comp, function.comp_app, id.def] at gf_id fg_id,
+
+  have gt_eq_s : finset.image g.map t = s, from
+  begin
+    rw [←fs_eq_t, finset.ext_iff, finset.image_image],
+    intro x,
+    split,
+
+    intro x_in_img,
+    simp only [finset.mem_image, function.comp_app] at x_in_img,
+    choose y y_in_s gfy_eq_x using x_in_img,
+    have y_in_X : y ∈ vertices X, from
+    begin
+      rw [vertex_iff_in_simplex],
+      use s, split; assumption,
+    end,
+    specialize gf_id y_in_X,
+    rw [←gfy_eq_x, gf_id],
+    assumption,
+
+    intro x_in_s,
+    simp only [finset.mem_image, function.comp_app],
+    use x, split, assumption,
+    have x_in_X : x ∈ vertices X, from
+    begin
+      rw [vertex_iff_in_simplex],
+      use s, split; assumption,
+    end,
+    specialize gf_id x_in_X,
+    assumption,
+  end,
+
+  have g_simp : is_simplicial_map (St(Y, t) t_in_Y) (St(X, s) s_in_X) g.map, from
+  begin
+    simp only [is_simplicial_map, star, set.mem_sep_iff],
+    intros u u_in_Y_star,
+    choose u_in_Y tu_in_Y using u_in_Y_star,
+    split,
+
+    apply g.is_simplicial,
+    assumption,
+
+    rw [←gt_eq_s, ←finset.image_union],
+    apply g.is_simplicial,
+    assumption,
+  end,
+  let g_star := simplicial_map.mk g.map g_simp,
+
+  use f_star,
+  unfold is_simplicial_iso,
+
+  use g_star,
+  unfold is_inverse_simplicial_iso,
+  simp only [set.restrict_eq_restrict_iff, set.eq_on, simplicial_map.comp, function.comp_app, id.def],
+  split,
+
+  { intros x x_in_star,
+    have x_in_X : x ∈ vertices X, from
+    begin
+      apply is_subcomplex_vertices X (St(X, s) s_in_X) (star_subcomplex X s s_in_X),
+      assumption,
+    end,
+    specialize gf_id x_in_X,
+    assumption, },
+
+  { intros x x_in_star,
+    have x_in_Y : x ∈ vertices Y, from
+    begin
+      apply is_subcomplex_vertices Y (St(Y, t) t_in_Y) (star_subcomplex Y t t_in_Y),
+      assumption,
+    end,
+    specialize fg_id x_in_Y,
+    assumption, },
+end
 
 -- Link of a complex wrt a simplex.
 @[simp]
@@ -250,6 +636,29 @@ instance link.fintype
   apply @set.fintype_inter _ _ _ _ fin_left fin_right,
 end
 
+lemma link_subcomplex_simplices
+    (X : simplicial_complex α)
+    (s t : finset α)
+    (s_in_X : s ∈ X.simplices)
+  : t ∈ (Lk(X, s) s_in_X).simplices → t ∈ X.simplices
+:= begin
+  intros t_in_link,
+  simp only [link, set.mem_sep_iff] at t_in_link,
+  choose t_in_X st_in_X st_disj using t_in_link,
+  assumption,
+end
+
+lemma link_subcomplex
+    (X : simplicial_complex α)
+    (s : finset α)
+    (s_in_X : s ∈ X.simplices)
+  : Lk(X, s) s_in_X ⊆ X
+:= begin
+  simp only [is_subcomplex, set.subset_def],
+  intro t,
+  apply link_subcomplex_simplices,
+end
+
 lemma link_iso
     (X : simplicial_complex α)
     (Y : simplicial_complex β)
@@ -260,45 +669,319 @@ lemma link_iso
     (t_in_Y : t ∈ Y.simplices)
     (f_iso : is_simplicial_iso f)
   : finset.image f.map s = t → Lk(X, s) s_in_X ≅ Lk(Y, t) t_in_Y
-:= sorry
+:= begin
+  intro fs_eq_t,
+  unfold is_simplicially_iso,
 
-lemma link_subcomplex
-    (X : simplicial_complex α)
-    (s t : finset α)
-    (s_in_X : s ∈ X.simplices)
-  : t ∈ (Lk(X, s) s_in_X).simplices → t ∈ X.simplices
-:= sorry
+  have f_simp : is_simplicial_map (Lk(X, s) s_in_X) (Lk(Y, t) t_in_Y) f.map, from
+  begin
+    simp only [is_simplicial_map, link, set.mem_sep_iff],
+    intros u u_in_X_link,
+    choose u_in_X su_in_X su_disj using u_in_X_link,
+    split,
+
+    apply f.is_simplicial,
+    assumption,
+
+    simp only [←fs_eq_t, ←finset.image_union],
+    split,
+    apply f.is_simplicial,
+    assumption,
+
+    rw [←finset.image_inter_of_inj_on, finset.image_eq_empty],
+    assumption,
+    rw [←finset.coe_union],
+    apply iso_is_injective_simplices f f_iso (s ∪ u),
+    assumption,
+  end,
+  let f_link := simplicial_map.mk f.map f_simp,
+
+  let f_iso' := f_iso,
+  unfold is_simplicial_iso at f_iso',
+  choose g gf_inv using f_iso',
+
+  let gf_inv' := gf_inv,
+  unfold is_inverse_simplicial_iso at gf_inv',
+  choose gf_id fg_id using gf_inv',
+
+  simp only [set.restrict_eq_restrict_iff, set.eq_on, simplicial_map.comp, function.comp_app, id.def] at gf_id fg_id,
+
+  have gt_eq_s : finset.image g.map t = s, from
+  begin
+    rw [←fs_eq_t, finset.ext_iff, finset.image_image],
+    intro x,
+    split,
+
+    intro x_in_img,
+    simp only [finset.mem_image, function.comp_app] at x_in_img,
+    choose y y_in_s gfy_eq_x using x_in_img,
+    have y_in_X : y ∈ vertices X, from
+    begin
+      rw [vertex_iff_in_simplex],
+      use s, split; assumption,
+    end,
+    specialize gf_id y_in_X,
+    rw [←gfy_eq_x, gf_id],
+    assumption,
+
+    intro x_in_s,
+    simp only [finset.mem_image, function.comp_app],
+    use x, split, assumption,
+    have x_in_X : x ∈ vertices X, from
+    begin
+      rw [vertex_iff_in_simplex],
+      use s, split; assumption,
+    end,
+    specialize gf_id x_in_X,
+    assumption,
+  end,
+
+  have g_simp : is_simplicial_map (Lk(Y, t) t_in_Y) (Lk(X, s) s_in_X) g.map, from
+  begin
+    simp only [is_simplicial_map, link, set.mem_sep_iff],
+    intros u u_in_Y_link,
+    choose u_in_Y su_in_Y su_disj using u_in_Y_link,
+    split,
+
+    apply g.is_simplicial,
+    assumption,
+
+    simp only [←gt_eq_s, ←finset.image_union],
+    split,
+    apply g.is_simplicial,
+    assumption,
+
+    rw [←finset.image_inter_of_inj_on, finset.image_eq_empty],
+    assumption,
+    rw [←finset.coe_union],
+    apply iso_is_injective_simplices g,
+
+    apply iso_inv_is_iso f;
+    assumption,
+
+    assumption,
+  end,
+  let g_link := simplicial_map.mk g.map g_simp,
+
+  use f_link,
+  unfold is_simplicial_iso,
+
+  use g_link,
+  unfold is_inverse_simplicial_iso,
+  simp only [set.restrict_eq_restrict_iff, set.eq_on, simplicial_map.comp, function.comp_app, id.def],
+  split,
+
+  { intros x x_in_X_link,
+    have x_in_X : x ∈ vertices X, from
+    begin
+      apply is_subcomplex_vertices X (Lk(X, s) s_in_X),
+      apply link_subcomplex,
+      assumption,
+    end,
+    specialize gf_id x_in_X,
+    assumption, },
+
+  { intros x x_in_Y_link,
+    have x_in_Y : x ∈ vertices Y, from
+    begin
+      apply is_subcomplex_vertices Y (Lk(Y, t) t_in_Y),
+      apply link_subcomplex,
+      assumption,
+    end,
+    specialize fg_id x_in_Y,
+    assumption, },
+end
 
 lemma link_fact_inter
     (X Y : simplicial_complex α)
     (s : finset α)
     (s_in_XY : s ∈ (X ∩ Y).simplices)
-  : (Lk(X ∩ Y, s) s_in_XY).simplices = (Lk(X, s) (by { sorry })).simplices ∩ (Lk(Y, s) (by { sorry })).simplices
-:= sorry
+  : (Lk(X ∩ Y, s) s_in_XY).simplices =
+      (Lk(X, s) (subcomplex_simplicial_inter_left_simplices X Y s s_in_XY)).simplices
+        ∩ (Lk(Y, s) (subcomplex_simplicial_inter_right_simplices X Y s s_in_XY)).simplices
+:= begin
+  simp only [link, simplicial_inter, set.ext_iff, set.mem_inter_iff, set.mem_sep_iff],
+  intro t,
+  split,
+
+  { intro t_in_link,
+    choose t_in_XY st_in_XY st_disj using t_in_link,
+    choose t_in_X t_in_Y using t_in_XY,
+    choose st_in_X st_in_Y using st_in_XY,
+    
+    split, split,
+    assumption,
+    
+    split; assumption,
+    
+    split, assumption,
+    split; assumption, },
+
+  { intro t_in_inter,
+    choose t_in_X t_in_Y using t_in_inter,
+    choose t_in_X st_in_X st_disj using t_in_X,
+    choose t_in_Y st_in_Y st_disj using t_in_Y,
+    
+    split, split; assumption,
+    split, split; assumption,
+    assumption, },
+end
 
 lemma link_fact_union_left
     (X Y : simplicial_complex α)
     (s : finset α)
     (s_in_X : s ∈ X.simplices)
     (s_nin_Y : s ∉ Y.simplices)
-  : (Lk(X ∪ Y, s) (by { sorry })).simplices = (Lk(X, s) s_in_X).simplices
-:= sorry
+  : (Lk(X ∪ Y, s) (subcomplex_simplicial_union_left_simplices X Y s s_in_X)).simplices
+      = (Lk(X, s) s_in_X).simplices
+:= begin
+  simp only [link, simplicial_union, set.ext_iff, set.mem_sep_iff, set.mem_union],
+  intro t,
+  split,
+
+  { intro t_in_XY,
+    choose t_in_XY st_in_XY st_disj using t_in_XY,
+    cases t_in_XY with t_in_X contra;
+    cases st_in_XY with st_in_X contra,
+    
+    split, assumption,
+    split; assumption,
+    
+    have s_in_Y : s ∈ Y.simplices, from
+    begin
+      apply Y.subset_closed (s ∪ t),
+      assumption,
+      apply finset.subset_union_left,
+    end,
+    contradiction,
+    
+    split,
+    apply X.subset_closed (s ∪ t),
+    assumption,
+    apply finset.subset_union_right,
+    split; assumption,
+    
+    have s_in_Y : s ∈ Y.simplices, from
+    begin
+      apply Y.subset_closed (s ∪ t),
+      assumption,
+      apply finset.subset_union_left,
+    end,
+    contradiction, },
+
+  { intro t_in_X,
+    choose t_in_X st_in_X st_disj using t_in_X,
+    
+    split, left, assumption,
+    split, left, assumption,
+    assumption, },
+end
 
 lemma link_fact_union_right
     (X Y : simplicial_complex α)
     (s : finset α)
     (s_nin_X : s ∉ X.simplices)
     (s_in_Y : s ∈ Y.simplices)
-  : (Lk(X ∪ Y, s) (by { sorry })).simplices = (Lk(Y, s) s_in_Y).simplices
-:= sorry
+  : (Lk(X ∪ Y, s) (subcomplex_simplicial_union_right_simplices X Y s s_in_Y)).simplices
+      = (Lk(Y, s) s_in_Y).simplices
+:= begin
+  simp only [link, simplicial_union, set.ext_iff, set.mem_sep_iff, set.mem_union],
+  intro t,
+  split,
+
+  { intro t_in_XY,
+    choose t_in_XY st_in_XY st_disj using t_in_XY,
+    cases t_in_XY with contra t_in_Y;
+    cases st_in_XY with contra st_in_X,
+
+    have s_in_X : s ∈ X.simplices, from
+    begin
+      apply X.subset_closed (s ∪ t),
+      assumption,
+      apply finset.subset_union_left,
+    end,
+    contradiction,
+
+    split,
+    apply Y.subset_closed (s ∪ t),
+    assumption,
+    apply finset.subset_union_right,
+    split; assumption,
+
+    have s_in_X : s ∈ X.simplices, from
+    begin
+      apply X.subset_closed (s ∪ t),
+      assumption,
+      apply finset.subset_union_left,
+    end,
+    contradiction,
+    
+    split, assumption,
+    split; assumption, },
+
+  { intro t_in_Y,
+    choose t_in_Y st_in_Y st_disj using t_in_Y,
+    
+    split, right, assumption,
+    split, right, assumption,
+    assumption, },
+end
 
 lemma link_fact_union
     (X Y : simplicial_complex α)
     (s : finset α)
     (s_in_XY : s ∈ (X ∩ Y).simplices)
-  : (Lk(X ∪ Y, s) (by { sorry })).simplices = (Lk(X, s) (by { sorry })).simplices ∪ (Lk(Y, s) (by { sorry })).simplices
+  : (Lk(X ∪ Y, s) (by { apply simplex_if_in_subcomplex (X ∩ Y),
+                        assumption,
+                        simp only [is_subcomplex, simplicial_inter, simplicial_union],
+                        apply set.subset_union_of_subset_left,
+                        apply set.inter_subset_left, })).simplices
+        = (Lk(X, s) (by { apply subcomplex_simplicial_inter_left_simplices X Y s s_in_XY, })).simplices
+          ∪ (Lk(Y, s) (by { apply subcomplex_simplicial_inter_right_simplices X Y s s_in_XY, })).simplices
 := begin
-  sorry
+  simp only [link, simplicial_union, set.ext_iff, set.mem_sep_iff, set.mem_union],
+  intro t,
+  split,
+
+  { intro t_in_XY,
+    choose t_in_XY st_in_XY st_disj using t_in_XY,
+    cases t_in_XY with t_in_X t_in_Y;
+    cases st_in_XY with st_in_X st_in_Y,
+    
+    left,
+    split, assumption,
+    split; assumption,
+    
+    right,
+    split,
+    apply Y.subset_closed (s ∪ t),
+    assumption,
+    apply finset.subset_union_right,
+    split; assumption,
+    
+    left,
+    split,
+    apply X.subset_closed (s ∪ t),
+    assumption,
+    apply finset.subset_union_right,
+    split; assumption,
+    
+    right,
+    split, assumption,
+    split; assumption, },
+
+  { intro t_in_inter,
+    cases t_in_inter with t_in_X t_in_Y,
+    
+    choose t_in_X st_in_X st_disj using t_in_X,
+    split, left, assumption,
+    split, left, assumption,
+    assumption,
+    
+    choose t_in_Y st_in_Y st_disj using t_in_Y,
+    split, right, assumption,
+    split, right, assumption,
+    assumption, },
 end
 
 -- Complement of the star of a complex wrt a simplex.
@@ -354,11 +1037,35 @@ instance star_complement.fintype
   begin
     unfold decidable_pred,
     intro t,
-    sorry,
+    simp only [finset.subset_iff, not_forall],
+    apply finset.decidable_dexists_finset,
   end,
 
   apply @set.fintype_sep _ _ _ _ H_dec,
   assumption,
+end
+
+lemma star_complement_subcomplex_simplices
+    (X : simplicial_complex α)
+    (s t : finset α) [nonempty s]
+    (s_in_X : s ∈ X.simplices)
+  : t ∈ (X\St(X, s) s_in_X).simplices → t ∈ X.simplices
+:= begin
+  simp only [star_complement, set.mem_sep_iff],
+  intro t_in_star_comp,
+  choose t_in_X s_nss_t using t_in_star_comp,
+  assumption,
+end
+
+lemma star_complement_subcomplex
+    (X : simplicial_complex α)
+    (s : finset α) [nonempty s]
+    (s_in_X : s ∈ X.simplices)
+  : X\St(X, s) s_in_X ⊆ X
+:= begin
+  simp only [is_subcomplex, set.subset_def],
+  intro t,
+  apply star_complement_subcomplex_simplices,
 end
 
 lemma star_complement_iso
@@ -371,7 +1078,151 @@ lemma star_complement_iso
     (t_in_Y : t ∈ Y.simplices)
     (f_iso : is_simplicial_iso f)
   : finset.image f.map s = t → (X\St(X, s) s_in_X) ≅ (Y\St(Y, t) t_in_Y)
-:= sorry
+:= begin
+  intro fs_eq_t,
+  unfold is_simplicially_iso,
+
+  have f_simp : is_simplicial_map (X\St(X, s) s_in_X) (Y\St(Y, t) t_in_Y) f.map, from
+  begin
+    simp only [is_simplicial_map, star_complement, set.mem_sep_iff],
+    intros u u_in_X_comp,
+    choose u_in_X s_nss_u using u_in_X_comp,
+    split,
+
+    apply f.is_simplicial,
+    assumption,
+
+    simp only [←fs_eq_t, finset.image_subset_iff, not_forall, finset.mem_image, not_exists],
+    simp only [finset.subset_iff, not_forall] at s_nss_u,
+    choose x x_in_s x_nin_u using s_nss_u,
+    use x, split,
+    use x_in_s,
+
+    intros y y_in_u,
+    rw [@set.inj_on.eq_iff _ _ (vertices X)],
+    revert y_in_u x_nin_u,
+    contrapose,
+    simp only [not_forall, not_not, exists_prop, and_imp],
+    intros x_nin_u y_eq_x,
+    rw [y_eq_x],
+    assumption,
+
+    apply iso_is_injective_vertices,
+    assumption,
+
+    rw [vertex_iff_in_simplex],
+    use u, split; assumption,
+
+    rw [vertex_iff_in_simplex],
+    use s, split; assumption,
+  end,
+  let f_comp := simplicial_map.mk f.map f_simp,
+
+  let f_iso' := f_iso,
+  unfold is_simplicial_iso at f_iso',
+  choose g gf_inv using f_iso',
+
+  let gf_inv' := gf_inv,
+  unfold is_inverse_simplicial_iso at gf_inv',
+  choose gf_id fg_id using gf_inv',
+
+  simp only [set.restrict_eq_restrict_iff, set.eq_on, simplicial_map.comp, function.comp_app, id.def] at gf_id fg_id,
+
+  have gt_eq_s : finset.image g.map t = s, from
+  begin
+    rw [←fs_eq_t, finset.ext_iff, finset.image_image],
+    intro x,
+    split,
+
+    intro x_in_img,
+    simp only [finset.mem_image, function.comp_app] at x_in_img,
+    choose y y_in_s gfy_eq_x using x_in_img,
+    have y_in_X : y ∈ vertices X, from
+    begin
+      rw [vertex_iff_in_simplex],
+      use s, split; assumption,
+    end,
+    specialize gf_id y_in_X,
+    rw [←gfy_eq_x, gf_id],
+    assumption,
+
+    intro x_in_s,
+    simp only [finset.mem_image, function.comp_app],
+    use x, split, assumption,
+    have x_in_X : x ∈ vertices X, from
+    begin
+      rw [vertex_iff_in_simplex],
+      use s, split; assumption,
+    end,
+    specialize gf_id x_in_X,
+    assumption,
+  end,
+
+  have g_simp : is_simplicial_map (Y\St(Y, t) t_in_Y) (X\St(X, s) s_in_X) g.map, from
+  begin
+    simp only [is_simplicial_map, star_complement, set.mem_sep_iff],
+    intros u u_in_Y_comp,
+    choose u_in_X t_nss_u using u_in_Y_comp,
+    split,
+
+    apply g.is_simplicial,
+    assumption,
+
+    simp only [←gt_eq_s, finset.image_subset_iff, not_forall, finset.mem_image, not_exists],
+    simp only [finset.subset_iff, not_forall] at t_nss_u,
+    choose x x_in_t x_nin_u using t_nss_u,
+    use x, split,
+    use x_in_t,
+
+    intros y y_in_u,
+    rw [@set.inj_on.eq_iff _ _ (vertices Y)],
+    revert y_in_u x_nin_u,
+    contrapose,
+    simp only [not_forall, not_not, exists_prop, and_imp],
+    intros x_nin_u y_eq_x,
+    rw [y_eq_x],
+    assumption,
+
+    apply iso_is_injective_vertices,
+    apply iso_inv_is_iso f;
+    assumption,
+
+    rw [vertex_iff_in_simplex],
+    use u, split; assumption,
+
+    rw [vertex_iff_in_simplex],
+    use t, split; assumption,
+  end,
+  let g_comp := simplicial_map.mk g.map g_simp,
+
+  use f_comp,
+  unfold is_simplicial_iso,
+
+  use g_comp,
+  unfold is_inverse_simplicial_iso,
+  simp only [set.restrict_eq_restrict_iff, set.eq_on, simplicial_map.comp, function.comp_app, id.def],
+  split,
+
+  { intros x x_in_X_comp,
+    have x_in_X : x ∈ vertices X, from
+    begin
+      apply is_subcomplex_vertices X (X\St(X, s) s_in_X),
+      apply star_complement_subcomplex,
+      assumption,
+    end,
+    specialize gf_id x_in_X,
+    assumption, },
+
+  { intros x x_in_Y_comp,
+    have x_in_Y : x ∈ vertices Y, from
+    begin
+      apply is_subcomplex_vertices Y (Y\St(Y, t) t_in_Y),
+      apply star_complement_subcomplex,
+      assumption,
+    end,
+    specialize fg_id x_in_Y,
+    assumption, },
+end
 
 @[simp]
 def is_neg_one_sphere
@@ -403,24 +1254,29 @@ def neg_one_ball
       tauto,
     end)
 
-def is_m_sphere
-    (Y : simplicial_complex α) [fintype Y.simplices]
-    (m : ℕ)
-  : Prop
-:= ∃ (X : simplicial_complex α) (s : finset α) (s_in_X : s ∈ X.simplices),
-    (Y = Lk(X, s) s_in_X) →
-      (finset.card (vertices Y).to_finset = m + 2) ∧
-        (Y.simplices = (finset.powerset (vertices Y).to_finset) \ {(vertices Y).to_finset}) ∧
-        ¬((vertices Y).to_finset ∈ X.simplices)
+instance neg_one_ball.fintype
+    {X : simplicial_complex α}
+    (x : α)
+    (x_nin_X : x ∉ vertices X)
+  : fintype (neg_one_ball x x_nin_X).simplices
+:= begin
+  simp only [neg_one_ball],
+  apply set.fintype_insert {x} {∅},
+  apply finset.has_decidable_eq,
+  apply set.fintype_singleton,
+end
 
-lemma m_sphere_iso
-    (X Y : simplicial_complex α) [fintype X.simplices]
-    (Z W : simplicial_complex β) [fintype Y.simplices]
-    (s ∈ X.simplices)
-    (t ∈ X.simplices)
-    (m : ℕ)
-  : is_m_sphere X m → X ≅ Y → is_m_sphere Y m
-:= sorry
+lemma dim_of_neg_one_ball
+    {X : simplicial_complex α}
+    (x : α)
+    (x_nin_X : x ∉ vertices X)
+  : dim_of_complex (neg_one_ball x x_nin_X) = 0
+:= begin
+  simp only [dim_of_complex, neg_one_ball, dim, set.to_finset_insert, set.to_finset_singleton, finset.image_insert, finset.card_singleton, nat.cast_one, sub_self],
+  simp only [dim, finset.image_singleton, finset.card_empty, nat.cast_zero, zero_sub],
+  unfold finset.max',
+  simp only [finset.singleton_nonempty, id.def, finset.sup'_insert, finset.sup'_singleton, sup_of_le_left, right.neg_nonpos_iff, zero_le_one],
+end
 
 -- The ball around a simplex.
 def m_ball
@@ -436,7 +1292,10 @@ def m_ball
       apply finset.empty_mem_powerset,
     end)
     (begin
-      sorry,
+      unfold is_subset_closed,
+      intros t t_in_link u u_ss_t,
+      simp only [finset.mem_coe, finset.mem_powerset] at t_in_link ⊢,
+      apply finset.subset.trans u_ss_t t_in_link,
     end)
 notation `B(` X `, ` s `)` := m_ball X s
 
@@ -449,18 +1308,6 @@ instance ball.fintype
   simp only[m_ball, simplicial_complex.simplices],
   apply finset_coe.fintype,
 end
-
-lemma m_ball_iso
-    (X : simplicial_complex α) [fintype X.simplices]
-    (Y : simplicial_complex β) [fintype Y.simplices]
-    (s : finset α)
-    (t : finset β)
-    (f : simplicial_map X Y)
-    (s_in_X : s ∈ X.simplices)
-    (t_in_Y : t ∈ Y.simplices)
-    (f_iso : is_simplicial_iso f)
-  : finset.image f.map s = t → B(X, s) s_in_X ≅ B(Y, t) t_in_Y
-:= sorry
 
 -- The cone of a complex.
 @[simp]
@@ -478,8 +1325,147 @@ instance cone.fintype
     (x_nin_X : x ∉ vertices X)
   : fintype (Cone(X, x) x_nin_X).simplices
 := begin
-  dsimp only[cone, neg_one_ball, simplicial_join, simplicial_complex.simplices],
-  sorry,
+  simp only [cone],
+  apply simplicial_join.fintype,
+end
+
+def cone_iso_map
+    (y : β)
+    (f : α → β)
+  : α × ℕ → β × ℕ
+:= λ x : α × ℕ, if (x.snd = 0) then (y, 0) else (f x.fst, x.snd)
+
+lemma cone_iso_simplicial
+    (X : simplicial_complex α)
+    (Y : simplicial_complex β)
+    (x : α)
+    (y : β)
+    (x_nin_X : x ∉ vertices X)
+    (y_nin_Y : y ∉ vertices Y)
+    (f : simplicial_map X Y)
+  : is_simplicial_map (Cone(X, x) x_nin_X) (Cone(Y, y) y_nin_Y) (cone_iso_map y f.map)
+:= begin
+  simp only [is_simplicial_map, cone, neg_one_ball, simplicial_join_mem],
+  intros u u_in_X_cone,
+  choose s s_in_ball t t_in_X u_eq_st using u_in_X_cone,
+  rw [set.mem_insert_iff, set.mem_singleton_iff] at s_in_ball,
+  cases s_in_ball with s_eq_x s_empty,
+
+  -- s = {x} case.
+  use {y}, split,
+  rw [set.mem_insert_iff],
+  left, refl,
+
+  use (finset.image f.map t), split,
+  apply f.is_simplicial,
+  assumption,
+
+  simp only [u_eq_st, s_eq_x, simplex_disjoint_union, finset.image_union, cone_iso_map, finset.ext_iff],
+  intro v,
+  simp only [finset.mem_union, finset.mem_image, finset.mem_product, finset.mem_singleton],
+  split,
+
+  { intro v_in_img,
+    cases v_in_img with v_in_lhs v_in_rhs,
+    
+    choose w w_in_lhs w_eq_v using v_in_lhs,
+    choose w_eq_x w_zero using w_in_lhs,
+    revert w_eq_v,
+    split_ifs,
+    
+    intro y_eq_v,
+    simp only [prod.ext_iff] at y_eq_v,
+    choose y_eq_v v_zero using y_eq_v,
+    rw [@comm _ eq] at y_eq_v v_zero,
+    left, split; assumption,
+    
+    choose w w_in_rhs w_eq_v using v_in_rhs,
+    choose w_in_t w_one using w_in_rhs,
+    revert w_eq_v,
+    split_ifs,
+    
+    have contra : w.snd ≠ 0, by omega,
+    contradiction,
+    
+    intro w_eq_v,
+    simp only [prod.ext_iff] at w_eq_v,
+    choose w_eq_v v_one using w_eq_v,
+    rw [w_one, @comm _ eq] at v_one,
+    right, use w.fst, split; assumption,
+    assumption, },
+
+  { intro v_in_union,
+    cases v_in_union with v_in_lhs v_in_rhs,
+    
+    choose v_eq_y v_zero using v_in_lhs,
+    left, use (x, 0), split,
+    simp only [prod.fst, prod.snd],
+    split; refl,
+    
+    simp only [eq_self_iff_true, if_true, prod.ext_iff],
+    rw [@comm _ eq] at v_eq_y v_zero,
+    split; assumption,
+    
+    choose w_eq_v v_one using v_in_rhs,
+    choose w w_in_t w_eq_v using w_eq_v,
+    right, use (w, 1), split,
+    simp only [prod.fst, prod.snd],
+    split, assumption, refl,
+    
+    simp only [nat.one_ne_zero, if_false, prod.ext_iff],
+    rw [@comm _ eq] at v_one,
+    split; assumption, },
+
+  -- s = ∅ case.
+  use ∅, split, apply simplicial_complex_empty_simplex,
+  use (finset.image f.map t), split,
+  apply f.is_simplicial,
+  assumption,
+
+  simp only [u_eq_st, s_empty, simplex_disjoint_union, finset.image_union, cone_iso_map, finset.ext_iff],
+  intro v,
+  simp only [finset.mem_union, finset.mem_image, finset.mem_product, finset.mem_singleton],
+  split,
+
+  { intro v_in_img,
+    cases v_in_img with v_empty v_in_t,
+
+    choose w contra w_eq_v using v_empty,
+    choose contra w_zero using contra,
+    have H : w.fst ∉ ∅, by apply set.not_mem_empty,
+    contradiction,
+    
+    choose w w_in_t w_eq_v using v_in_t,
+    choose w_in_t w_one using w_in_t,
+    revert w_eq_v,
+    split_ifs,
+    
+    have contra : w.snd ≠ 0, by omega,
+    contradiction,
+    
+    intro w_eq_v,
+    simp only [prod.ext_iff] at w_eq_v,
+    choose w_eq_v v_one using w_eq_v,
+    rw [w_one, @comm _ eq] at v_one,
+    right, use w.fst, split; assumption,
+    assumption, },
+
+  { intro v_in_union,
+    cases v_in_union with contra v_in_t,
+    
+    choose contra v_zero using contra,
+    have H : v.fst ∉ ∅, by apply set.not_mem_empty,
+    contradiction,
+    
+    choose w_eq_v v_one using v_in_t,
+    choose w w_in_t w_eq_v using w_eq_v,
+    right, use (w, 1), split,
+    simp only [prod.fst, prod.snd],
+    split, assumption, refl,
+    
+    simp only [nat.one_ne_zero, if_false, prod.ext_iff],
+    rw [@comm _ eq] at v_one,
+    split; assumption, },
 end
 
 lemma cone_iso
@@ -490,14 +1476,102 @@ lemma cone_iso
     (x_nin_X : x ∉ vertices X)
     (y_nin_Y : y ∉ vertices Y)
   : X ≅ Y → Cone(X, x) x_nin_X ≅ Cone(Y, y) y_nin_Y
-:= sorry
+:= begin
+  intro X_iso_Y,
+  unfold is_simplicially_iso at X_iso_Y ⊢,
+  choose f f_iso using X_iso_Y,
+  unfold is_simplicial_iso at f_iso ⊢,
+  choose g gf_inv using f_iso,
+
+  let f_cone : simplicial_map (Cone(X, x) x_nin_X) (Cone(Y, y) y_nin_Y) :=
+    simplicial_map.mk (cone_iso_map y f.map) (cone_iso_simplicial X Y x y x_nin_X y_nin_Y f),
+
+  let g_cone : simplicial_map (Cone(Y, y) y_nin_Y) (Cone(X, x) x_nin_X) :=
+    simplicial_map.mk (cone_iso_map x g.map) (cone_iso_simplicial Y X y x y_nin_Y x_nin_X g),
+
+  use f_cone, use g_cone,
+  unfold is_inverse_simplicial_iso at gf_inv ⊢,
+  simp only [set.restrict_eq_restrict_iff, set.eq_on, simplicial_map.comp, function.comp_app, id.def] at gf_inv ⊢,
+  choose gf_id fg_id using gf_inv,
+  split,
+
+  { intros z z_in_X_cone,
+    rw [vertex_iff_in_simplex] at z_in_X_cone,
+    choose u u_in_cone z_in_u using z_in_X_cone,
+    
+    simp only [cone, neg_one_ball, simplicial_join] at u_in_cone,
+    simp only [set.mem_set_of, set.mem_insert_iff, set.mem_singleton_iff] at u_in_cone,
+    choose s s_in_ball t t_in_x st_eq_u using u_in_cone,
+    rw [←st_eq_u, simplex_disjoint_mem] at z_in_u,
+    cases z_in_u with z_in_ball z_in_t,
+    
+    cases s_in_ball with s_eq_x contra,
+    rw [s_eq_x, finset.mem_singleton] at z_in_ball,
+    choose z_eq_x z_zero using z_in_ball,
+    simp only [cone_iso_map, prod.ext_iff, z_zero, eq_self_iff_true, if_true],
+    split, symmetry, assumption,
+    trivial,
+    
+    rw [contra] at z_in_ball,
+    choose contra z_zero using z_in_ball,
+    have H : z.fst ∉ ∅, by apply set.not_mem_empty,
+    contradiction,
+    
+    choose z_in_t z_one using z_in_t,
+    have z_in_X : z.fst ∈ vertices X, from
+    begin
+      rw [vertex_iff_in_simplex],
+      use t, split; assumption,
+    end,
+    specialize gf_id z_in_X,
+    
+    simp only [cone_iso_map, z_one, nat.one_ne_zero, if_false, prod.ext_iff],
+    split, assumption, refl, },
+
+  { intros z z_in_Y_cone,
+    rw [vertex_iff_in_simplex] at z_in_Y_cone,
+    choose u u_in_cone z_in_u using z_in_Y_cone,
+    
+    simp only [cone, neg_one_ball, simplicial_join] at u_in_cone,
+    simp only [set.mem_set_of, set.mem_insert_iff, set.mem_singleton_iff] at u_in_cone,
+    choose s s_in_ball t t_in_x st_eq_u using u_in_cone,
+    rw [←st_eq_u, simplex_disjoint_mem] at z_in_u,
+    cases z_in_u with z_in_ball z_in_t,
+    
+    cases s_in_ball with s_eq_x contra,
+    rw [s_eq_x, finset.mem_singleton] at z_in_ball,
+    choose z_eq_x z_zero using z_in_ball,
+    simp only [cone_iso_map, prod.ext_iff, z_zero, eq_self_iff_true, if_true],
+    split, symmetry, assumption,
+    trivial,
+    
+    rw [contra] at z_in_ball,
+    choose contra z_zero using z_in_ball,
+    have H : z.fst ∉ ∅, by apply set.not_mem_empty,
+    contradiction,
+    
+    choose z_in_t z_one using z_in_t,
+    have z_in_Y : z.fst ∈ vertices Y, from
+    begin
+      rw [vertex_iff_in_simplex],
+      use t, split; assumption,
+    end,
+    specialize fg_id z_in_Y,
+    
+    simp only [cone_iso_map, z_one, nat.one_ne_zero, if_false, prod.ext_iff],
+    split, assumption, refl, },
+end
 
 lemma dim_of_cone
     (X : simplicial_complex α) [fintype X.simplices]
     (x : α)
     (x_nin_X : x ∉ vertices X)
   : dim_of_complex (cone X x x_nin_X) = dim_of_complex X + 1
-:= sorry
+:= begin
+  dsimp only [cone],
+  rw [dim_of_join, dim_of_neg_one_ball],
+  simp only [zero_add],
+end
 
 /-
 # Subcomplexes Under Simplicial Join
@@ -799,15 +1873,35 @@ end
 
 lemma link_ident
     (X : simplicial_complex α)
+  : (Lk(X, ∅) (by { apply simplicial_complex_empty_simplex })).simplices
+      = X.simplices
+:= begin
+  simp only [link, set.ext_iff, set.mem_sep_iff],
+  simp only [finset.empty_union, finset.empty_inter],
+  simp only [eq_self_iff_true, and_true, and_self, iff_self, forall_const],
+end
+
+lemma link_ident_iso
+    (X : simplicial_complex α)
   : Lk(X, ∅) (by { apply simplicial_complex_empty_simplex }) ≅ X
-:= sorry
+:= begin
+  apply simplicial_iso_preserves_equiv,
+  apply link_ident,
+end
 
 lemma link_disjoint_base
     (X : simplicial_complex α)
     (s t : finset α)
     (s_in_X : s ∈ X.simplices)
   : t ∈ (Lk(X, s) s_in_X).simplices → disjoint s t
-:= sorry
+:= begin
+  intro t_in_link,
+  simp only [link, set.mem_sep_iff] at t_in_link,
+  choose t_in_X st_in_X st_disj using t_in_link,
+
+  rw [finset.disjoint_iff_inter_eq_empty],
+  assumption,
+end
 
 lemma face_in_link_of_complement
     (X : simplicial_complex α)
@@ -815,7 +1909,20 @@ lemma face_in_link_of_complement
     (s_in_X : s ∈ X.simplices)
     (t_sset_s : t ⊆ s)
   : s \ t ∈ (Lk(X, t) (by { apply X.subset_closed s; assumption, })).simplices
-:= sorry 
+:= begin
+  simp only [link, set.mem_sep_iff],
+  split,
+
+  apply X.subset_closed s,
+  assumption,
+  apply finset.sdiff_subset,
+
+  split,
+  rw [finset.union_comm, finset.sdiff_union_self_eq_union, finset.union_eq_left_iff_subset.mpr];
+  assumption,
+
+  apply finset.inter_sdiff_self,
+end
 
 -- Lemma 3.5, p.14
 lemma link_of_face_complement
@@ -829,7 +1936,7 @@ lemma link_of_face_complement
 
   simp only [h, finset.sdiff_self],
   rw [simplicial_iso_symm],
-  apply link_ident,
+  apply link_ident_iso,
 
   apply simplicial_iso_preserves_equiv,
   simp only [link, set.ext_iff],
@@ -1013,7 +2120,40 @@ lemma boundary_disjoint_link
     (s_in_X : s ∈ X.simplices)
   : disjoint (vertices (Lk(X, s) s_in_X)) (vertices (∂s))
 := begin
-  sorry
+  rw [set.disjoint_iff_inter_eq_empty, set.eq_empty_iff_forall_not_mem],
+  intro x,
+  simp only [set.mem_inter_iff, not_and, vertex_iff_in_simplex, not_exists],
+  intros t_in_link u u_in_bd,
+
+  simp only [link, set.mem_sep_iff] at t_in_link,
+  choose t t_in_link x_in_t using t_in_link,
+  choose t_in_X st_in_X st_disj using t_in_link,
+  
+  simp only [simplex_boundary, set.mem_union, set.mem_diff, finset.mem_coe, finset.mem_powerset] at u_in_bd,
+  cases u_in_bd with u_in_bd u_empty,
+
+  choose u_ss_s u_ne_s using u_in_bd,
+  have ut_disj : u ∩ t = ∅, from
+  begin
+    rw [←finset.subset_empty],
+    apply @finset.subset.trans _ _ (s ∩ t),
+    apply finset.inter_subset_inter_right u_ss_s,
+
+    rw [finset.subset_empty],
+    assumption,
+  end,
+  rw [finset.eq_empty_iff_forall_not_mem] at ut_disj,
+  specialize ut_disj x,
+  rw [finset.mem_inter, not_and] at ut_disj,
+
+  by_cases x_in_u : x ∈ u,
+  specialize ut_disj x_in_u,
+  contradiction,
+  assumption,
+
+  rw [set.mem_singleton_iff] at u_empty,
+  rw [u_empty],
+  apply finset.not_mem_empty,
 end
 
 lemma barycenter_disjoint_link
@@ -1024,7 +2164,46 @@ lemma barycenter_disjoint_link
     (x_nin_X : x ∉ vertices X)
   : disjoint (vertices (Lk(X, s) s_in_X)) (vertices (simplex {x}))
 := begin
-  sorry
+  rw [set.disjoint_iff_inter_eq_empty, set.eq_empty_iff_forall_not_mem],
+  intro y,
+  simp only [set.mem_inter_iff, not_and, vertex_iff_in_simplex, not_exists],
+  intros t_in_link u u_in_barycenter,
+
+  simp only [link, set.mem_sep_iff] at t_in_link,
+  choose t t_in_link y_in_t using t_in_link,
+  choose t_in_X st_in_X st_disj using t_in_link,
+
+  simp only [simplex, finset.mem_coe, finset.mem_powerset, finset.subset_singleton_iff] at u_in_barycenter,
+  cases u_in_barycenter with u_empty u_eq_x,
+
+  rw [u_empty],
+  apply finset.not_mem_empty,
+
+  have ut_disj : u ∩ t = ∅, from
+  begin
+    rw [←finset.coe_inj, finset.coe_empty, ←set.subset_empty_iff, finset.coe_inter],
+    apply @set.subset.trans _ _ ({x} ∩ (vertices X)),
+
+    apply set.inter_subset_inter,
+    simp only [u_eq_x, finset.coe_singleton],
+    apply simplex_subset_vertices,
+    assumption,
+
+    rw [set.subset_empty_iff, set.eq_empty_iff_forall_not_mem],
+    intro y,
+    simp only [set.mem_inter_iff, set.mem_singleton_iff, not_and],
+    intro y_eq_x,
+    subst y_eq_x,
+    assumption,
+  end,
+
+  simp only [finset.eq_empty_iff_forall_not_mem, finset.mem_inter, not_and] at ut_disj,
+  specialize ut_disj y,
+
+  by_cases y_in_u : y ∈ u,
+  specialize ut_disj y_in_u,
+  contradiction,
+  assumption,
 end
 
 lemma disjoint_complexes_disjoint_simplices
@@ -1034,4 +2213,15 @@ lemma disjoint_complexes_disjoint_simplices
     (t_in_Y : t ∈ Y.simplices)
     (XY_disj : disjoint (vertices X) (vertices Y))
   : disjoint s t
-:= sorry
+:= begin
+  rw [←finset.disjoint_coe],
+  apply @set.disjoint_of_subset _ _ (vertices X) _ (vertices Y),
+
+  apply simplex_subset_vertices,
+  assumption,
+
+  apply simplex_subset_vertices,
+  assumption,
+
+  assumption,
+end
