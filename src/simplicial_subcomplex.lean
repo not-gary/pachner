@@ -259,7 +259,216 @@ lemma simplex_boundary_iso
     assumption, },
 end
 
-lemma simplex_boundary_subcomplex
+lemma simplex_boundary_coe_image_left
+    [nonempty α]
+    (X : simplicial_complex α)
+    (s : finset α)
+    (s_in_X : s ∈ X.simplices)
+    (φ : simplicial_coe X β)
+  : (∂(finset.image φ.coe s)).simplices ⊆ (simplicial_image (∂s) φ.coe).simplices
+:= begin
+  simp only [simplex_boundary, simplicial_image, set.subset_def],
+  simp only [set.mem_set_of, set.mem_union, set.mem_diff, set.mem_singleton_iff, finset.mem_coe, finset.mem_powerset],
+  intros t t_in_bd,
+  cases t_in_bd with t_in_bd t_empty,
+    
+  choose t_ss_φs t_ne_φs using t_in_bd,
+  have inv_t : finset.image φ.coe (finset.image (φ⁻ᶜ.map) t) = t, from
+  begin
+    simp only [←finset.coe_inj, finset.coe_image, set.ext_iff, set.mem_image],
+    intros y,
+    split,
+
+    intros y_in_img,
+    choose a a_in_img φa_y using y_in_img,
+    choose b b_in_t φb_a using a_in_img,
+    subst φb_a,
+    subst φa_y,
+
+    have inv_b : φ.coe ((φ⁻ᶜ.map) b) = b, from
+    begin
+      apply set.inj_on.right_inv_on_of_left_inv_on,
+      apply simplicial_coe_inv_inj,
+      apply set.inj_on.left_inv_on_inv_fun_on,
+      apply φ.injective,
+      apply set.surj_on.maps_to_inv_fun_on,
+      apply simplicial_coe_surjective_vertices,
+      apply simplicial_coe_maps_to_vertices,
+
+      rw [vertex_iff_in_simplex],
+      use t, split,
+      apply (φ[X]).subset_closed (finset.image φ.coe s),
+      apply map_is_simplicial_onto_image,
+      assumption,
+      assumption,
+
+      rw [←finset.mem_coe],
+      assumption,
+    end,
+    rw [inv_b],
+    assumption,
+
+    intros y_in_t,
+    use ((φ⁻ᶜ.map) y), split,
+    use y, split,
+    assumption,
+    refl,
+
+    apply set.inj_on.right_inv_on_of_left_inv_on,
+    apply simplicial_coe_inv_inj,
+    apply set.inj_on.left_inv_on_inv_fun_on,
+    apply φ.injective,
+    apply set.surj_on.maps_to_inv_fun_on,
+    apply simplicial_coe_surjective_vertices,
+    apply simplicial_coe_maps_to_vertices,
+
+    rw [vertex_iff_in_simplex],
+    use t, split,
+    apply (φ[X]).subset_closed (finset.image φ.coe s),
+    apply map_is_simplicial_onto_image,
+    assumption,
+    assumption,
+
+    rw [←finset.mem_coe],
+    assumption,
+  end,
+
+  use (finset.image (φ⁻ᶜ.map) t), split,
+
+  have inv_s : finset.image (φ⁻ᶜ.map) (finset.image φ.coe s) = s, from
+  begin
+    simp only [←finset.coe_inj, finset.coe_image],
+    apply set.inj_on.inv_fun_on_image,
+    apply φ.injective,
+    apply simplex_subset_vertices,
+    assumption,
+  end,
+
+  left, split,
+  have inv_t_ss_φs : finset.image (φ⁻ᶜ.map) t ⊆ finset.image (φ⁻ᶜ.map) (finset.image φ.coe s), from
+  begin
+    apply finset.image_subset_image,
+    assumption,
+  end,
+  rw [inv_s] at inv_t_ss_φs,
+  assumption,
+
+  revert t_ne_φs,
+  contrapose,
+  simp only [not_not],
+  intros φt_s,
+
+  rw [←φt_s],
+  symmetry,
+  assumption,
+
+  assumption,
+
+  use ∅, split,
+  right, refl,
+  rw [t_empty],
+  apply finset.image_empty,
+end
+
+lemma simplex_boundary_coe_image_right
+    (X : simplicial_complex α)
+    (s : finset α)
+    (s_in_X : s ∈ X.simplices)
+    (φ : simplicial_coe X β)
+  : (simplicial_image (∂s) φ.coe).simplices ⊆ (∂(finset.image φ.coe s)).simplices
+:= begin
+  simp only [simplex_boundary, simplicial_image, set.subset_def],
+  simp only [set.mem_set_of, set.mem_union, set.mem_diff, set.mem_singleton_iff, finset.mem_coe, finset.mem_powerset],
+  intros t t_in_img,
+  choose u u_in_bd φu_t using t_in_img,
+  cases u_in_bd with u_in_bd u_empty,
+
+  choose u_ss_s u_ne_s using u_in_bd,
+  left, split,
+  
+  rw [←φu_t],
+  apply finset.image_subset_image,
+  assumption,
+
+  rw [←φu_t],
+  revert u_ne_s,
+  contrapose,
+  simp only [not_not],
+  intros φu_eq_φs,
+
+  simp only [←finset.coe_inj, finset.coe_image, set.ext_iff] at φu_eq_φs ⊢,
+  intros a,
+  specialize φu_eq_φs (φ.coe a),
+  cases φu_eq_φs with φu_ss_φs φs_ss_φu,
+  split,
+
+  intros a_in_u,
+  have a_in_X : a ∈ vertices X, from
+  begin
+    rw [vertex_iff_in_simplex],
+    use u, split,
+    apply X.subset_closed s;
+    assumption,
+    rw [←finset.mem_coe],
+    assumption,
+  end,
+  rw [←set.inj_on.mem_image_iff φ.injective] at a_in_u ⊢,
+  specialize φu_ss_φs a_in_u,
+  assumption,
+
+  apply simplex_subset_vertices,
+  assumption,
+  assumption,
+
+  apply simplex_subset_vertices,
+  apply X.subset_closed s;
+  assumption,
+  assumption,
+
+  intros a_in_s,
+  have a_in_X : a ∈ vertices X, from
+  begin
+    rw [vertex_iff_in_simplex],
+    use s, split; assumption,
+  end,
+  rw [←set.inj_on.mem_image_iff φ.injective] at a_in_s ⊢,
+  specialize φs_ss_φu a_in_s,
+  assumption,
+
+  apply simplex_subset_vertices,
+  apply X.subset_closed s;
+  assumption,
+  assumption,
+
+  apply simplex_subset_vertices,
+  assumption,
+  assumption,
+
+  right,
+  rw [u_empty, finset.image_empty] at φu_t,
+  symmetry,
+  assumption,
+end
+
+lemma simplex_boundary_coe_image
+    [nonempty α]
+    (X : simplicial_complex α)
+    (s : finset α)
+    (s_in_X : s ∈ X.simplices)
+    (φ : simplicial_coe X β)
+  : (∂(finset.image φ.coe s)).simplices = (simplicial_image (∂s) φ.coe).simplices
+:= begin
+  rw [set.subset.antisymm_iff],
+  split,
+
+  apply simplex_boundary_coe_image_left,
+  assumption,
+
+  apply simplex_boundary_coe_image_right,
+  assumption,
+end
+
+lemma simplex_boundary_subcomplex_simplices
     (X : simplicial_complex α)
     (s t : finset α)
     (s_in_X : s ∈ X.simplices)
@@ -277,6 +486,18 @@ lemma simplex_boundary_subcomplex
   apply simplicial_complex_empty_simplex,
 end
 
+lemma simplex_boundary_subcomplex
+    (X : simplicial_complex α)
+    (s : finset α)
+    (s_in_X : s ∈ X.simplices)
+  : ∂s ⊆ X
+:= begin
+  simp only [is_subcomplex, set.subset_def],
+  intro u,
+  apply simplex_boundary_subcomplex_simplices,
+  assumption,
+end
+
 lemma simplex_boundary_subcomplex_vert
     (X : simplicial_complex α)
     (s : finset α)
@@ -289,7 +510,7 @@ lemma simplex_boundary_subcomplex_vert
   choose t t_in_bd x_in_t using x_in_bd,
 
   use t, split,
-  apply simplex_boundary_subcomplex X s t s_in_X t_in_bd,
+  apply simplex_boundary_subcomplex_simplices X s t s_in_X t_in_bd,
   assumption,
 end
 
@@ -634,6 +855,142 @@ instance link.fintype
   end,
 
   apply @set.fintype_inter _ _ _ _ fin_left fin_right,
+end
+
+lemma link_coe_image_left
+    (X : simplicial_complex α)
+    (s : finset α)
+    (s_in_X : s ∈ X.simplices)
+    (φ : simplicial_coe X β)
+  : (Lk(φ[X], finset.image φ.coe s) (by { apply map_is_simplicial_onto_image, assumption, })).simplices
+      ⊆ (simplicial_image (Lk(X, s) s_in_X) φ.coe).simplices
+:= begin
+  simp only [link, simplicial_image, set.subset_def],
+  simp only [set.mem_sep_iff, set.mem_set_of],
+  intros t t_in_link,
+  choose t_in_φX st_in_φX st_disj using t_in_link,
+  choose u u_in_X φu_t using t_in_φX,
+  choose v v_in_X φv_st using st_in_φX,
+
+  use u, split, split,
+  assumption,
+
+  split,
+  rw [←φu_t, ←finset.image_union] at φv_st,
+  have v_su : v = s ∪ u, from
+  begin
+    simp only [←finset.coe_inj, finset.coe_image, set.ext_iff] at φv_st ⊢,
+    intros a,
+    specialize φv_st (φ.coe a),
+    cases φv_st with φv_ss_φsu φsu_ss_φv,
+    split,
+
+    intros a_in_v,
+    have a_in_X : a ∈ vertices X, from
+    begin
+      rw [vertex_iff_in_simplex],
+      use v, split; assumption,
+    end,
+    rw [←set.inj_on.mem_image_iff φ.injective] at a_in_v ⊢,
+    specialize φv_ss_φsu a_in_v,
+    assumption,
+
+    rw [finset.coe_union],
+    apply set.union_subset;
+    { apply simplex_subset_vertices,
+      assumption, },
+    assumption,
+
+    apply simplex_subset_vertices,
+    assumption,
+    assumption,
+
+    intros a_in_su,
+    have a_in_X : a ∈ vertices X, from
+    begin
+      rw [finset.coe_union, set.mem_union] at a_in_su,
+      cases a_in_su with a_in_s a_in_u,
+
+      rw [vertex_iff_in_simplex],
+      use s, split; assumption,
+
+      rw [vertex_iff_in_simplex],
+      use u, split; assumption,
+    end,
+    rw [←set.inj_on.mem_image_iff φ.injective] at a_in_su ⊢,
+    specialize φsu_ss_φv a_in_su,
+    assumption,
+
+    apply simplex_subset_vertices,
+    assumption,
+    assumption,
+
+    rw [finset.coe_union],
+    apply set.union_subset;
+    { apply simplex_subset_vertices,
+      assumption, },
+    assumption,
+  end,
+  rw [←v_su],
+  assumption,
+
+  simp only [←φu_t, ←finset.coe_inj, finset.coe_image, finset.coe_inter] at st_disj,
+  rw [←set.inj_on.image_inter, ←finset.coe_inter, ←finset.coe_image, finset.coe_inj, finset.image_eq_empty] at st_disj,
+  assumption,
+
+  apply φ.injective,
+  apply simplex_subset_vertices,
+  assumption,
+  apply simplex_subset_vertices,
+  assumption,
+
+  assumption,
+end
+
+lemma link_coe_image_right
+    (X : simplicial_complex α)
+    (s : finset α)
+    (s_in_X : s ∈ X.simplices)
+    (φ : simplicial_coe X β)
+  : (simplicial_image (Lk(X, s) s_in_X) φ.coe).simplices
+      ⊆ (Lk(φ[X], finset.image φ.coe s) (by { apply map_is_simplicial_onto_image, assumption, })).simplices
+:= begin
+  simp only [link, simplicial_image, set.subset_def],
+  simp only [set.mem_sep_iff, set.mem_set_of],
+  intros t t_in_img,
+  choose u u_in_link φu_t using t_in_img,
+  choose u_in_X su_in_X su_disj using u_in_link,
+
+  split,
+  use u, split; assumption,
+
+  use (s ∪ u), split, assumption,
+  rw [←φu_t, finset.image_union],
+
+  simp only [←φu_t, ←finset.coe_inj, finset.coe_image, finset.coe_inter],
+  rw [←set.inj_on.image_inter, ←finset.coe_inter, ←finset.coe_image, finset.coe_inj, finset.image_eq_empty],
+  assumption,
+
+  apply φ.injective,
+  apply simplex_subset_vertices,
+  assumption,
+  apply simplex_subset_vertices,
+  assumption,
+end
+
+lemma link_coe_image
+    (X : simplicial_complex α)
+    (s : finset α)
+    (s_in_X : s ∈ X.simplices)
+    (φ : simplicial_coe X β)
+  : (Lk(φ[X], finset.image φ.coe s) (by { apply map_is_simplicial_onto_image, assumption, })).simplices
+      = (simplicial_image (Lk(X, s) s_in_X) φ.coe).simplices
+:= begin
+  rw [set.subset.antisymm_iff],
+  split,
+
+  apply link_coe_image_left,
+  apply link_coe_image_right,
 end
 
 lemma link_subcomplex_simplices
@@ -1224,6 +1581,90 @@ lemma star_complement_iso
     assumption, },
 end
 
+lemma star_complement_coe_image_left
+    (X : simplicial_complex α)
+    (s : finset α) [nonempty s]
+    (s_in_X : s ∈ X.simplices)
+    (φ : simplicial_coe X β)
+  : (star_complement (φ[X]) (finset.image φ.coe s) (by { apply map_is_simplicial_onto_image, assumption, })).simplices
+      ⊆ (simplicial_image (X\St(X, s) s_in_X) φ.coe).simplices
+:= begin
+  simp only [star_complement, simplicial_image, set.subset_def],
+  simp only [set.mem_sep_iff, set.mem_set_of],
+  intros t t_in_star_comp,
+  choose t_in_φX φs_nss_t using t_in_star_comp,
+  choose u u_in_X φu_t using t_in_φX,
+
+  use u, split, split,
+  assumption,
+
+  rw [←φu_t] at φs_nss_t,
+  revert φs_nss_t,
+  contrapose,
+  simp only [not_not],
+  intros s_ss_u,
+  apply finset.image_subset_image,
+  assumption,
+
+  assumption,
+end
+
+lemma star_complement_coe_image_right
+    (X : simplicial_complex α)
+    (s : finset α) [nonempty s]
+    (s_in_X : s ∈ X.simplices)
+    (φ : simplicial_coe X β)
+  : (simplicial_image (X\St(X, s) s_in_X) φ.coe).simplices
+      ⊆ (star_complement (φ[X]) (finset.image φ.coe s) (by { apply map_is_simplicial_onto_image, assumption, })).simplices
+:= begin
+  simp only [star_complement, simplicial_image, set.subset_def],
+  simp only [set.mem_sep_iff, set.mem_set_of],
+  intros t t_in_img,
+  choose u u_in_star_comp φu_t using t_in_img,
+  choose u_in_X s_nss_u using u_in_star_comp,
+
+  split,
+  use u, split; assumption,
+
+  rw [←φu_t],
+  revert s_nss_u,
+  contrapose,
+  simp only [not_not, finset.subset_iff],
+  intros φs_ss_φu x x_in_s,
+
+  have φx_in_φs : φ.coe x ∈ finset.image φ.coe s, from
+  begin
+    apply finset.mem_image_of_mem,
+    assumption,
+  end,
+  specialize φs_ss_φu φx_in_φs,
+
+  rw [←finset.mem_coe, finset.coe_image, set.inj_on.mem_image_iff, finset.mem_coe] at φs_ss_φu,
+  assumption,
+
+  apply φ.injective,
+  apply simplex_subset_vertices,
+  assumption,
+
+  rw [vertex_iff_in_simplex],
+  use s, split; assumption,
+end
+
+lemma star_complement_coe_image
+    (X : simplicial_complex α)
+    (s : finset α) [nonempty s]
+    (s_in_X : s ∈ X.simplices)
+    (φ : simplicial_coe X β)
+  : (star_complement (φ[X]) (finset.image φ.coe s) (by { apply map_is_simplicial_onto_image, assumption, })).simplices =
+      (simplicial_image (X\St(X, s) s_in_X) φ.coe).simplices
+:= begin
+  rw [set.subset.antisymm_iff],
+  split,
+
+  apply star_complement_coe_image_left,
+  apply star_complement_coe_image_right,
+end
+
 @[simp]
 def is_neg_one_sphere
     {X : simplicial_complex α}
@@ -1684,17 +2125,13 @@ lemma join_distl_star
     use u', split; tauto, }
 end
 
--- Lemma 2.2 (3), p.7
-lemma join_distl_star_complement
+lemma join_distr_star_complement_simplices
     (X Y : simplicial_complex α)
     (s : finset α) [nonempty s]
     (s_in_X : s ∈ X.simplices)
-  : Y ⋆ (star_complement X s s_in_X) ≅ star_complement (X ⋆ Y) (s ⊔ₛ ∅) (by { apply simplicial_join_incl_left, assumption })
+  : ((star_complement X s s_in_X) ⋆ Y).simplices
+      = (star_complement (X ⋆ Y) (s ⊔ₛ ∅) (by { apply simplicial_join_incl_left, assumption })).simplices
 := begin
-  apply simplicial_iso_trans (Y ⋆ (star_complement X s s_in_X)) ((star_complement X s s_in_X) ⋆ Y),
-  apply simplicial_join_comm,
-
-  apply simplicial_iso_preserves_equiv,
   dsimp only[simplicial_join, star_complement, simplicial_complex.simplices],
 
   rw [set.ext_iff],
@@ -1725,6 +2162,29 @@ lemma join_distl_star_complement
     use t, split,
     rw [set.mem_sep_iff], tauto,
     use u, split; tauto, }
+end
+
+lemma join_distr_star_complement
+    (X Y : simplicial_complex α)
+    (s : finset α) [nonempty s]
+    (s_in_X : s ∈ X.simplices)
+  : (star_complement X s s_in_X) ⋆ Y
+      ≅ star_complement (X ⋆ Y) (s ⊔ₛ ∅) (by { apply simplicial_join_incl_left, assumption })
+:= begin
+  apply simplicial_iso_preserves_equiv,
+  apply join_distr_star_complement_simplices,
+end
+
+-- Lemma 2.2 (3), p.7
+lemma join_distl_star_complement
+    (X Y : simplicial_complex α)
+    (s : finset α) [nonempty s]
+    (s_in_X : s ∈ X.simplices)
+  : Y ⋆ (star_complement X s s_in_X) ≅ star_complement (X ⋆ Y) (s ⊔ₛ ∅) (by { apply simplicial_join_incl_left, assumption })
+:= begin
+  apply simplicial_iso_trans (Y ⋆ (star_complement X s s_in_X)) ((star_complement X s s_in_X) ⋆ Y),
+  apply simplicial_join_comm,
+  apply join_distr_star_complement,
 end
 
 -- Lemma 2.3, p.8

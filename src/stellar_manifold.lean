@@ -250,7 +250,7 @@ lemma stellar_sphere_inductive
     (n : ℕ)
   : S(n) ≅ₛₜ (φˢ⟨0, n - 1⟩[S(0) ⋆ S(n - 1)])
 := begin
-  apply @stellar_equiv_iso _ _ _ _ (S(↑n) ⋆ empty_sc) (S(↑0) ⋆ S(↑n - 1)),
+  apply @stellar_equiv_iso _ _ _ _ _ (S(↑n) ⋆ empty_sc) (S(↑0) ⋆ S(↑n - 1)),
   apply simplicial_join_id_left,
   apply (φˢ⟨0, n - 1⟩).iso_onto_image,
 
@@ -1595,7 +1595,7 @@ lemma join_stellar_ball_and_sphere
   apply simplicial_join_id_left,
   
   apply stellar_equiv_trans (X ⋆ Y) (D(m) ⋆ S(n)),
-  apply join_comm_stellar_equiv;
+  apply simplicial_join_stellar_equiv;
   assumption,
 
   apply stellar_equiv_trans (D(m) ⋆ S(n)) (φᵈ⟨0, ↑m - 1⟩[D(0) ⋆ D(↑m - 1)] ⋆ S(n)),
@@ -3429,7 +3429,7 @@ lemma stellar_ball_boundary_distr_join_union_left
     apply simplicial_join_iso_left,
     simp only [h],
     rw [simplicial_iso_symm],
-    apply link_ident, },
+    apply link_ident_iso, },
   
   -- t ≠ ∅ ↔ 0 ≤ dim t
   { have t_dim : 0 ≤ dim t, by sorry,
@@ -3666,7 +3666,7 @@ lemma stellar_ball_boundary_distr_join_union_left
   rw [set.mem_singleton_iff] at u_empty,
   simp only [u_empty],
   apply stellar_equiv_preserves_iso,
-  apply link_ident,
+  apply link_ident_iso,
   apply Y_ball,
   
   apply simplicial_join_stellar_equiv_left,
@@ -3743,7 +3743,7 @@ lemma stellar_ball_boundary_distr_join_union_left
   rw [set.mem_singleton_iff] at u_empty,
   simp only [u_empty],
   apply stellar_equiv_preserves_iso,
-  apply link_ident,
+  apply link_ident_iso,
   apply Y_ball,
   
   apply simplicial_join_stellar_equiv_left,

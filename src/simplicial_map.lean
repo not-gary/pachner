@@ -98,6 +98,44 @@ def simplicial_image
       assumption,
     end)
 
+lemma simplicial_image_congr
+    {X : simplicial_complex α}
+    (f g : α → β)
+  : set.eq_on f g (vertices X) →
+      (simplicial_image X f).simplices = (simplicial_image X g).simplices
+:= begin
+  simp only [set.ext_iff, simplicial_image, set.mem_set_of],
+  intros f_eq_g t,
+  split,
+
+  { intros s_in_fX,
+    choose s s_in_X fs_t using s_in_fX,
+    use s, split, assumption,
+    
+    simp only [←fs_t, ←finset.coe_inj, finset.coe_image],
+    apply set.eq_on.image_eq,
+    apply set.eq_on.symm,
+    apply @set.eq_on.mono _ _ _ (vertices X),
+    
+    apply simplex_subset_vertices,
+    assumption,
+    
+    assumption, },
+
+  { intros s_in_fX,
+    choose s s_in_X fs_t using s_in_fX,
+    use s, split, assumption,
+    
+    simp only [←fs_t, ←finset.coe_inj, finset.coe_image],
+    apply set.eq_on.image_eq,
+    apply @set.eq_on.mono _ _ _ (vertices X),
+    
+    apply simplex_subset_vertices,
+    assumption,
+    
+    assumption, },
+end
+
 lemma map_is_simplicial_onto_image
     (X : simplicial_complex α)
     (f : α → β)
@@ -1153,6 +1191,36 @@ lemma coe_is_iso
   apply coe_inv_is_inverse_simplicial_iso,
 end
 
+lemma simplicial_coe_inv_inj
+    [nonempty α]
+    {X : simplicial_complex α}
+    (φ : simplicial_coe X β)
+  : set.inj_on (φ⁻ᶜ.map) (vertices (φ[X]))
+:= begin
+  simp only [set.inj_on, simplicial_image_vertices, set.mem_image],
+  intros y₁ y₁_in_φX y₂ y₂_in_φX φy₁_eq_φy₂,
+  choose x₁ x₁_in_X φx₁_y₁ using y₁_in_φX,
+  choose x₂ x₂_in_X φx₂_y₂ using y₂_in_φX,
+
+  have inv_x₁ : (φ⁻ᶜ.map) (φ.coe x₁) = x₁, from
+  begin
+    apply set.inj_on.left_inv_on_inv_fun_on,
+    apply φ.injective,
+    assumption,
+  end,
+
+  have inv_x₂ : (φ⁻ᶜ.map) (φ.coe x₂) = x₂, from
+  begin
+    apply set.inj_on.left_inv_on_inv_fun_on,
+    apply φ.injective,
+    assumption,
+  end,
+
+  rw [←φx₁_y₁, ←φx₂_y₂, inv_x₁, inv_x₂] at φy₁_eq_φy₂,
+  rw [←φy₁_eq_φy₂, φx₁_y₁] at φx₂_y₂,
+  assumption,
+end
+
 lemma simplicial_coe.iso_onto_image
     [nonempty α]
     {X : simplicial_complex α}
@@ -1301,7 +1369,6 @@ def simplicial_coe_on_image
     {Y : simplicial_complex β}
     (f : simplicial_map X Y)
     (f_iso : is_simplicial_iso f)
-    (Y_img_X : Y.simplices = simplicial_map_lift f '' X.simplices)
     (φ : simplicial_coe Y γ)
   : simplicial_coe X γ
 := simplicial_coe.mk
@@ -1312,7 +1379,7 @@ def simplicial_coe_on_image
 
       unfold set.maps_to,
       intros x x_in_X,
-      simp only [vertex_iff_singleton, Y_img_X, simplicial_map_lift, set.image, set.mem_set_of],
+      simp only [vertex_iff_singleton, simplicial_iso_implies_lift_bij X Y f f_iso, simplicial_map_lift, set.image, set.mem_set_of],
       use {x}, split,
 
       rw [←vertex_iff_singleton],
@@ -1320,7 +1387,6 @@ def simplicial_coe_on_image
 
       apply finset.image_singleton,
     end)
-
 
 lemma simplicial_coe_union_simplices
     (X Y : simplicial_complex α)
@@ -1341,6 +1407,46 @@ lemma simplicial_coe_union
 := begin
   apply simplicial_iso_preserves_equiv,
   apply simplicial_coe_union_simplices,
+end
+
+lemma simplicial_coe_injective_vertices
+    {X : simplicial_complex α}
+    (φ : simplicial_coe X β)
+  : set.inj_on φ.coe (vertices X)
+:= begin
+  apply φ.injective,
+end
+
+lemma simplicial_coe_surjective_vertices
+    {X : simplicial_complex α}
+    (φ : simplicial_coe X β)
+  : set.surj_on φ.coe (vertices X) (vertices (φ[X]))
+:= begin
+  simp only [set.surj_on, simplicial_image_vertices],
+end
+
+lemma simplicial_coe_maps_to_vertices
+    {X : simplicial_complex α}
+    (φ : simplicial_coe X β)
+  : set.maps_to φ.coe (vertices X) (vertices (φ[X]))
+:= begin
+  simp only [set.maps_to, simplicial_image_vertices],
+  intros x x_in_X,
+  apply set.mem_image_of_mem,
+  assumption,
+end
+
+lemma simplicial_coe_bijective_vertices
+    {X : simplicial_complex α}
+    (φ : simplicial_coe X β)
+  : set.bij_on φ.coe (vertices X) (vertices (φ[X]))
+:= begin
+  simp only [set.bij_on],
+  split,
+  apply simplicial_coe_maps_to_vertices,
+  split,
+  apply simplicial_coe_injective_vertices,
+  apply simplicial_coe_surjective_vertices,
 end
 
 end coercion
@@ -2440,8 +2546,6 @@ def simplicial_join_assoc_forward_map
 := λ x : α × ℕ, if (x.snd = 0)
     then ((simplicial_join_assoc_forward_aux X Y Z ψ) (f.map x.fst))
     else (ψ.coe x, x.snd)
-
--- set_option profiler true
 
 lemma simplicial_join_assoc_forward_simplicial_left
     (X Y Z : simplicial_complex α)
