@@ -659,9 +659,6 @@ lemma star_subcomplex
   apply star_subcomplex_simplices,
 end
 
--- TODO: Potential problem with statement. Correctly, if f : X -> Y
---       is iso'sm, then we want f(s) = t. But, maybe this is fine?
---       Problem reflects in other constructions below.
 lemma star_iso
     (X : simplicial_complex α)
     (Y : simplicial_complex β)

@@ -1,9 +1,3 @@
-/-
-Copyright (c) 2022 Clara Löh. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.txt.
-Author: Clara Löh.
--/
-
 import tactic          -- standard proof tactics
 import data.set.basic        -- basics on sets
 import data.set.finite -- basics on finite sets
@@ -2389,8 +2383,6 @@ def simplicial_join_iso_inverse_map
   : β × ℕ → α × ℕ
 := λ x : β × ℕ, if (x.snd = 0) then (f x.fst, x.snd) else (g x.fst, x.snd)
 
--- TODO: Fix the proofs that f, g are simplicial.
---       Perhaps, move the function def's outside + proofs.
 lemma simplicial_join_iso
     (X Y : simplicial_complex α)
     (Z W : simplicial_complex β)

@@ -1,4 +1,5 @@
 *.olean
 /_target
 /leanpkg.path
-/src/textbook
+/src/textbook/.lake
+.lake/

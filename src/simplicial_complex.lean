@@ -1,9 +1,3 @@
-/-
-Copyright (c) 2022 Clara Löh. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.txt.
-Author: Clara Löh.
--/
-
 import tactic          -- standard proof tactics
 import data.set.basic        -- basics on sets
 import data.set.finite -- basics on finite sets
@@ -25,7 +19,7 @@ variables {α : Type*}
 @[simp]
 def is_subset_closed
     (S : set (finset α))
-:= ∀ s ∈ S, ∀ t, t ⊆ s → t ∈ S    
+:= ∀ s ∈ S, ∀ t, t ⊆ s → t ∈ S
 
 structure simplicial_complex (α : Type*)
 := mk :: (simplices : set (finset α))
@@ -430,7 +424,6 @@ lemma dim_zero_iff_vertex
   simp,
 end
 
--- TODO: Do we want a nonempty result on t as well?
 lemma simplex_decomp [decidable_eq α]
     (s : finset α)
   : 0 < dim s → ∃ (x ∈ s) (t : finset α), t = s \ {x}
@@ -489,16 +482,6 @@ end
 
 -- The dimension of a finite complex is the maximum
 -- dimension of its simplices.
-
--- TODO: Remove or make a lemma for equivalence to below.
-@[simp]
-def dim_of_complex'
-    (X : simplicial_complex α) [fintype X.simplices]
-  : int
-:= match finset.max (finset.bUnion X.simplices.to_finset (λ s, {dim s})) with
-    | option.none := -1   -- degenerate ∅ case
-    | option.some z := z
-  end
 
 instance dim_set.fintype
     (X : simplicial_complex α) [fintype X.simplices]

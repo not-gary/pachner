@@ -2144,7 +2144,7 @@ lemma stellar_coe_image
     assumption,
   end,
 
-  simp only [stellar_coe_simplex_image s x y φ.coe x_nin_s], -- Borked: introducing proofs means Lean doesn't know how to do the rw.
+  simp only [stellar_coe_simplex_image s x y φ.coe x_nin_s],
   simp only [stellar_coe_map, eq_self_iff_true, if_true],
   apply stellar_subdiv_congr_simplices,
   apply simplicial_image_congr,
