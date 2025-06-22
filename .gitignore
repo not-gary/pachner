@@ -3,3 +3,4 @@
 /leanpkg.path
 /src/textbook/.lake
 .lake/
+.DS_Store
