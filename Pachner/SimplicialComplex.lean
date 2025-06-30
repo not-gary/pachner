@@ -1,111 +1,58 @@
 -- standard proof tactics
 -- standard proof tactics
 import Mathlib.Tactic
--- import Set.Basic
--- import Data.Set.Finite
--- import Data.Finset.Basic
+import Mathlib.Analysis.Convex.SimplicialComplex.Basic
 
--- basics on sets
--- basics on sets
--- basics on finite sets
--- basics on finite sets
--- type-level finite sets
--- type-level finite sets
 open scoped BigOperators
 
-variable {α : Type _}
+variable {𝕜 E : Type _}
+variable [Ring 𝕜] [PartialOrder 𝕜] [AddCommGroup E] [Module 𝕜 E]
 
-/-
-# Simplicial complexes
--/
-/- A simplicial complex is a set of finite sets
-   that is closed under taking subsets;
-   we use finsets to model these finite sets
--/
-@[simp]
-def IsSubsetClosed (S : Set (Finset α)) :=
-  ∀ s ∈ S, ∀ t, t ⊆ s → t ∈ S
-
-structure SimplicialComplex (α : Type _) where mk ::
-  simplices : Set (Finset α)
-  Nonempty : Nonempty simplices
-  subset_closed : IsSubsetClosed simplices
-
-theorem eq_simplices_subset_closed (S T : Set (Finset α)) :
-    S = T → IsSubsetClosed S → IsSubsetClosed T :=
-  by
-  intro S_eq_T subset_closed_S
-  subst S_eq_T
-  exact subset_closed_S
-
-theorem simplicialComplex_empty_simplex (X : SimplicialComplex α) : ∅ ∈ X.simplices :=
-  by
-  have H : Nonempty X.simplices := by apply X.Nonempty
-  rw [Set.nonempty_coe_sort, Set.nonempty_def] at H
-  choose s Hs using H
-  apply X.subset_closed s <;> tauto
-
--- The empty simplicial complex
-def emptySc {a : Type _} : SimplicialComplex a :=
-  SimplicialComplex.mk ({∅} : Set (Finset a))
-    (by rw [Set.nonempty_coe_sort, Set.nonempty_def]; use∅; simp)
-    (by
-      unfold IsSubsetClosed
-      intro s H_empty t t_sset_s
-      rw [Set.mem_singleton_iff] at H_empty
-      rw [H_empty, Finset.subset_empty] at t_sset_s
-      tauto)
-
-theorem empty_type_implies_empty_complex {α : Type _} [IsEmpty α] :
-    ∀ X : SimplicialComplex α, X.simplices = {∅} :=
-  by
-  intro X
-  rw [Set.eq_singleton_iff_unique_mem]
+theorem vertices_setOf (X : Geometry.SimplicialComplex 𝕜 E) :
+    X.vertices = {x : E | ∃ s ∈ X.faces, x ∈ s} :=
+by
+  simp only [Set.ext_iff, Set.mem_setOf]
+  intros v
   constructor
-  apply simplicialComplex_empty_simplex
-  intro s s_in_X
-  apply Finset.eq_empty_of_isEmpty
+  { intros v_in_X
+    use {v}
+    constructor
+    assumption
+    rw [Finset.mem_singleton] }
+  { intros v_in_s
+    choose s s_in_X v_in_s using v_in_s
+    have v_set_in_s : {v} ∈ X.faces :=
+    by
+      apply X.down_closed s_in_X
+      rw [Finset.singleton_subset_iff]
+      assumption
+      simp only [ne_eq, Finset.singleton_ne_empty, not_false_eq_true]
+    assumption }
 
-instance SimplexImage.nonempty {β : Type _} [DecidableEq β] (s : Finset α) [Nonempty s]
-    (f : α → β) : Nonempty ↥(Finset.image f s) :=
-  by
-  apply Finset.Nonempty.coe_sort
-  apply Finset.Nonempty.image
-  apply Finset.nonempty_coe_sort.mp
-  assumption
+instance vertices.Finite [DecidableEq E]
+    (X : Geometry.SimplicialComplex 𝕜 E) [Finite X.faces]
+  : Finite X.vertices :=
+by
+  rw [Geometry.SimplicialComplex.vertices_eq]
+  rw [Set.biUnion_eq_iUnion]
+  apply Set.finite_iUnion
+  intros s_in_X
+  simp only [Finset.finite_toSet]
 
-/- The set of vertices of a simplicial complex is
-   the set of all elements
-   that occur in at least one of the simplices.
--/
-def vertices (X : SimplicialComplex α) : Set α :=
-  ⋃ (s : Finset α) (H : s ∈ X.simplices), s
-
-theorem vertices_setOf (X : SimplicialComplex α) :
-    vertices X = {x : α | ∃ s ∈ X.simplices, x ∈ s} :=
-  by
-  simp only [vertices, Set.ext_iff, Set.mem_iUnion, Set.mem_setOf]
-  intro x
-  tauto
-
-instance vertices.fintype [DecidableEq α] (X : SimplicialComplex α) [Fintype X.simplices] :
-    Fintype (vertices X) := by
-  unfold vertices
-  apply Set.fintypeBiUnion
-  intro s s_in_X
-  apply FinsetCoe.fintype
-
-theorem simplex_subset_vertices (X : SimplicialComplex α) (s : Finset α) :
-    s ∈ X.simplices → ↑s ⊆ vertices X := by
+theorem simplex_subset_vertices
+    (X : Geometry.SimplicialComplex 𝕜 E) (s : Finset E) :
+      s ∈ X.faces → ↑s ⊆ X.vertices :=
+by
   intro s_in_X
   rw [vertices_setOf, Set.subset_def]
   intro x x_in_s
   rw [Set.mem_setOf]
   use s; constructor <;> assumption
 
-instance vertices.fintypeConverse [DecidableEq α] (X : SimplicialComplex α)
-    [X_dec : DecidablePred fun s => s ∈ X.simplices] : Fintype (vertices X) → Fintype X.simplices :=
-  by
+instance vertices.FiniteConverse [DecidableEq E]
+    (X : Geometry.SimplicialComplex 𝕜 E) [X_dec : DecidablePred fun s => s ∈ X.faces]
+  : Fintype (X.vertices) → Fintype X.faces :=
+by
   intro fin_vert_X
   apply Set.fintypeSubset ↑(Finset.powerset (@Set.toFinset _ (vertices X) fin_vert_X))
   rw [Set.subset_def]
@@ -114,73 +61,70 @@ instance vertices.fintypeConverse [DecidableEq α] (X : SimplicialComplex α)
   apply simplex_subset_vertices
   assumption
 
-theorem vertex_iff_singleton (X : SimplicialComplex α) (x : α) :
-    x ∈ vertices X ↔ {x} ∈ X.simplices := by
-  constructor
-  intro x_vert
-  simp only [vertices, Set.mem_iUnion] at x_vert
-  choose s Hs x_in_s using x_vert
-  apply X.subset_closed s
-  assumption
-  rw [Finset.subset_iff]
-  intro y y_eq_x
-  rw [Finset.mem_singleton] at y_eq_x
-  rw [y_eq_x] at *
-  tauto
-  intro x_simpl
-  simp only [vertices, Set.mem_iUnion]
-  use{x}
-  constructor
-  rw [Finset.mem_coe, Finset.mem_singleton]
-  assumption
-
-theorem simplex_mem_is_vertex (X : SimplicialComplex α) (s : Finset α) (x : α)
-    (s_in_X : s ∈ X.simplices) (x_in_s : x ∈ s) : x ∈ vertices X :=
-  by
+theorem simplex_mem_is_vertex
+    (X : Geometry.SimplicialComplex 𝕜 E)
+    (s : Finset E) (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_in_s : x ∈ s)
+  : x ∈ X.vertices :=
+by
   rw [vertices_setOf, Set.mem_setOf]
   use s
 
-theorem vertex_iff_in_simplex (X : SimplicialComplex α) (x : α) :
-    x ∈ vertices X ↔ ∃ s ∈ X.simplices, x ∈ s := by rw [vertices_setOf, Set.mem_setOf]
+theorem vertex_iff_in_simplex
+    (X : Geometry.SimplicialComplex 𝕜 E) (x : E)
+  : x ∈ X.vertices ↔ ∃ s ∈ X.faces, x ∈ s := by rw [vertices_setOf, Set.mem_setOf]
 
-theorem emptySc_vertices : vertices (@emptySc α) = ∅ :=
-  by
+theorem vertices_bot : (⊥ : Geometry.SimplicialComplex 𝕜 E).vertices = ∅ :=
+by
   rw [vertices_setOf, Set.eq_empty_iff_forall_notMem]
   intro x
-  simp only [Set.mem_setOf, not_exists, emptySc, Set.mem_singleton_iff]
+  simp only [Set.mem_setOf, not_exists, Set.mem_singleton_iff]
   intro s
   rw [not_and]
   intro s_empty
-  rw [s_empty]
-  simp only [Finset.notMem_empty, not_false_eq_true]
+  rw [Geometry.SimplicialComplex.faces_bot] at s_empty
+  contradiction
 
-theorem vertices_congr (X Y : SimplicialComplex α) :
-    X.simplices = Y.simplices → vertices X = vertices Y :=
-  by
+theorem vertices_congr
+    (X Y : Geometry.SimplicialComplex 𝕜 E)
+  : X.faces = Y.faces → X.vertices = Y.vertices :=
+by
   intro X_eq_Y
   simp only [vertices_setOf, X_eq_Y]
 
 -- The simplex generated by a finset
 @[simp]
-def simplex (V : Finset α) : SimplicialComplex α :=
-  SimplicialComplex.mk (Finset.powerset V)
-    (by
-      rw [Set.nonempty_coe_sort]
-      apply Finset.powerset_nonempty)
-    (by simp; tauto)
+def simplex
+    (V : Finset E)
+  : Geometry.SimplicialComplex 𝕜 E :=
+Geometry.SimplicialComplex.mk
+  (V.powerset.toSet \ {∅})
+  (by
+    rw [Set.mem_diff, not_and]
+    intros empty_in_power
+    tauto)
+  (by
+    intros s s_simplex
+    sorry)
+  (by
+    intros s t s_simplex t_sset_s t_nonempty
+    rw [Set.mem_diff] at ⊢ s_simplex
+    choose s_in_power s_nin_empty using s_simplex
+    constructor
 
-instance simplex.fintype (s : Finset α) : Fintype (simplex s).simplices :=
-  by
-  simp only [simplex, SimplicialComplex.simplices]
+    rw [Finset.mem_coe, Finset.mem_powerset] at ⊢ s_in_power
+    transitivity s <;> assumption
+
+    rw [Set.mem_singleton_iff]
+    assumption)
+  (by
+    sorry)
+
+instance simplex.Finite (s : Finset E) : Finite (@simplex 𝕜 E _ _ _ _ s).faces :=
+by
+  simp only [simplex]
   apply FinsetCoe.fintype
-
-instance simplex.finite (s : Finset α) : Finite (simplex s).simplices :=
-  by
-  simp only [simplex, SimplicialComplex.simplices]
-  rw [Set.finite_coe_iff]
-  sorry
-  -- apply Set.Finite.intro
-  -- apply FinsetCoe.fintype
 
 theorem simplex_vertices (s : Finset α) : vertices (@simplex α s) = s :=
   by

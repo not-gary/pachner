@@ -8,9 +8,8 @@ package «pachner» where
   ]
   -- add any additional package configuration options here
 
-require "leanprover-community" / "mathlib" @ git "v3-eol"
--- require mathlib from git
---   "https://github.com/leanprover-community/mathlib4.git"
+require mathlib from git
+  "https://github.com/leanprover-community/mathlib4.git"
 
 @[default_target]
 lean_lib «Pachner» where
