@@ -123,26 +123,32 @@ Geometry.SimplicialComplex.mk
 
 instance simplex.Finite (s : Finset E) : Finite (@simplex 𝕜 E _ _ _ _ s).faces :=
 by
-  simp only [simplex]
-  apply FinsetCoe.fintype
+  simp only [simplex, Finite.Set.finite_diff]
 
-theorem simplex_vertices (s : Finset α) : vertices (@simplex α s) = s :=
-  by
+theorem simplex_vertices
+    (s : Finset E)
+  : (@simplex 𝕜 E _ _ _ _ s).vertices = s :=
+by
   rw [vertices_setOf]
   simp only [Set.ext_iff, Set.mem_setOf, simplex, Set.mem_singleton_iff]
   intro y
   constructor
   intro y_in_union
   choose t t_in_simplex y_in_t using y_in_union
-  simp only [Finset.mem_coe, Finset.mem_powerset, Finset.subset_iff] at t_in_simplex
+  simp only [Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_iff] at t_in_simplex
+  choose t_in_simplex t_nonempty using t_in_simplex
   specialize t_in_simplex y_in_t
   rw [Finset.mem_coe]
   assumption
   intro y_in_s
   use s; constructor
-  rw [Finset.mem_coe]
+  rw [Set.mem_diff, Finset.mem_coe]
+  constructor
   apply Finset.mem_powerset_self
+  simp only [Set.mem_singleton_iff]
+  simp only[Finset.eq_empty_iff_forall_notMem, not_forall, not_not]
   rw [Finset.mem_coe] at y_in_s
+  use y
   assumption
 
 -- #print stdSimplex
@@ -156,72 +162,36 @@ theorem simplex_vertices (s : Finset α) : vertices (@simplex α s) = s :=
 -/
 -- The dimension of a simplex is just its cardinality - 1.
 @[simp]
-def dim (s : Finset α) : ℤ :=
+def face_dim (s : Finset E) : ℤ :=
   Finset.card s - 1
 
 @[simp]
-def IsKSimplex (s : Finset α) (k : ℕ) :=
-  dim s = k
-
-#eval dim (Finset.range 5)
-
--- 4
-#eval dim (Finset.range 0)
+def IsKSimplex (s : Finset E) (k : ℕ) :=
+  face_dim s = k
 
 -- -1
 -- A simplicial complex has dimension n
 -- if n is the maximal dimension of all simplices.
 @[simp]
-def HasDimensionLeq (X : SimplicialComplex α) (n : ℕ) :=
-  ∀ s ∈ X.simplices, dim s ≤ n
+def HasDimensionLeq
+    (X : Geometry.SimplicialComplex 𝕜 E) (n : ℕ) :=
+  ∀ s ∈ X.faces, face_dim s ≤ n
 
 @[simp]
-def HasDimensionGeq (X : SimplicialComplex α) (n : ℕ) :=
-  ∃ s ∈ X.simplices, dim s ≥ n
+def HasDimensionGeq
+    (X : Geometry.SimplicialComplex 𝕜 E) (n : ℕ) :=
+  ∃ s ∈ X.faces, face_dim s ≥ n
 
 @[simp]
-def HasDimension (X : SimplicialComplex α) (n : ℕ) :=
+def HasDimension
+    (X : Geometry.SimplicialComplex 𝕜 E) (n : ℕ) :=
   HasDimensionLeq X n ∧ HasDimensionGeq X n
 
--- The standard n-simplex has dimension n
--- theorem dim_stdSimplex (n : ℕ) : HasDimension (stdSimplex n) n :=
---   by
---   let Dn := stdSimplex n
---   -- dim ≤ n
---   have dim_leq_n : HasDimensionLeq Dn n :=
---     by
---     intro (s : Finset Nat)
---     intro (s_in_Dn : s ∈ Dn.simplices)
---     -- By definition, s ⊆ {0,...,n}.
---     have s_sub_n : s ⊆ Finset.range (n + 1) := finset.mem_powerset.mp s_in_Dn
---     -- Thus, s has cardinality at most n + 1.
---     have card_s_leq_n1 : Finset.card s ≤ n + 1 := by
---       calc
---         Finset.card s ≤ Finset.card (Finset.range (n + 1)) := Finset.card_le_card s_sub_n
---         _ ≤ n + 1 := by finish
---     -- Whence, s has dimension at most n
---     show dim s ≤ n;
---     exact by
---       calc
---         dim s = Finset.card s - 1 := by simp only [dim]
---         _ ≤ n + 1 - 1 := by linarith
---         _ ≤ n := by linarith
---   -- dim ≥ n
---   have dim_geq_n : HasDimensionGeq Dn n :=
---     by
---     -- We use {0,...,n} as a witness
---     let s := Finset.range (n + 1)
---     use s
---     have s_in_Dn : s ∈ (stdSimplex n).simplices := by simp
---     have dim_s : dim s ≥ n := by finish
---     show _; · exact ⟨s_in_Dn, dim_s⟩
---   -- alternatively: and.intro ...
---   show _;
---   · exact ⟨dim_leq_n, dim_geq_n⟩
-
-theorem dim_geq_zero_iff_nonempty (s : Finset α) : 0 ≤ dim s ↔ s ≠ ∅ :=
-  by
-  unfold dim
+theorem dim_geq_zero_iff_nonempty
+    (s : Finset E)
+  : 0 ≤ face_dim s ↔ s ≠ ∅ :=
+by
+  unfold face_dim
   rw [Ne, ← Finset.card_eq_zero]
   constructor
   contrapose
@@ -233,9 +203,11 @@ theorem dim_geq_zero_iff_nonempty (s : Finset α) : 0 ≤ dim s ↔ s ≠ ∅ :=
   have s_card_pos : s.card > 0 := by omega
   linarith
 
-theorem dim_neg_one_iff_empty (s : Finset α) : dim s = -1 ↔ s = ∅ :=
-  by
-  unfold dim
+theorem dim_neg_one_iff_empty
+    (s : Finset E)
+  : face_dim s = -1 ↔ s = ∅ :=
+by
+  unfold face_dim
   rw [← Finset.card_eq_zero]
   constructor
   intro s_card_neg_one
@@ -245,9 +217,11 @@ theorem dim_neg_one_iff_empty (s : Finset α) : dim s = -1 ↔ s = ∅ :=
   rw [s_card_zero]
   simp
 
-theorem dim_zero_iff_vertex (s : Finset α) : dim s = 0 ↔ ∃ x : α, s = {x} :=
-  by
-  unfold dim
+theorem dim_zero_iff_vertex
+    (s : Finset E)
+  : face_dim s = 0 ↔ ∃ x : E, s = {x} :=
+by
+  unfold face_dim
   constructor
   intro s_card_minus_one
   have s_card_one : s.card = 1 := by linarith
@@ -258,10 +232,11 @@ theorem dim_zero_iff_vertex (s : Finset α) : dim s = 0 ↔ ∃ x : α, s = {x} 
   rw [exists_x]
   simp
 
-theorem simplex_decomp [DecidableEq α] (s : Finset α) :
-    0 < dim s → ∃ x ∈ s, ∃ t : Finset α, t = s \ {x} :=
-  by
-  unfold dim
+theorem simplex_decomp [DecidableEq E]
+    (s : Finset E)
+  : 0 < face_dim s → ∃ x ∈ s, ∃ t : Finset E, t = s \ {x} :=
+by
+  unfold face_dim
   intro s_card_pos
   have s_card_gt_one : 1 < s.card := by linarith
   rw [Finset.one_lt_card] at s_card_gt_one
@@ -269,9 +244,13 @@ theorem simplex_decomp [DecidableEq α] (s : Finset α) :
   use a; constructor; assumption
   use s \ {a}
 
-theorem simplex_decomp_dim [DecidableEq α] (s : Finset α) (x : α) (x_in_s : x ∈ s) :
-    0 < dim s → 0 ≤ dim (s \ {x}) := by
-  unfold dim
+theorem simplex_decomp_dim [DecidableEq E]
+    (s : Finset E)
+    (x : E)
+    (x_in_s : x ∈ s)
+  : 0 < face_dim s → 0 ≤ face_dim (s \ {x}) :=
+by
+  unfold face_dim
   intro s_card_pos
   have s_card_gt_one : 1 < s.card := by linarith
   rw [Finset.card_sdiff, Finset.card_singleton]
@@ -284,10 +263,13 @@ theorem simplex_decomp_dim [DecidableEq α] (s : Finset α) (x : α) (x_in_s : x
   rw [Finset.singleton_subset_iff]
   assumption
 
-theorem simplex_decomp_dim_eq [DecidableEq α] (s : Finset α) (x : α) (x_in_s : x ∈ s) :
-    0 < dim s → dim (s \ {x}) = dim s - 1 :=
-  by
-  unfold dim
+theorem simplex_decomp_dim_eq [DecidableEq E]
+    (s : Finset E)
+    (x : E)
+    (x_in_s : x ∈ s)
+  : 0 < face_dim s → face_dim (s \ {x}) = face_dim s - 1 :=
+by
+  unfold face_dim
   intro s_card_pos
   rw [Finset.card_sdiff, Finset.card_singleton]
   rw [sub_left_inj, Int.ofNat_sub, Int.ofNat_one]
@@ -297,21 +279,34 @@ theorem simplex_decomp_dim_eq [DecidableEq α] (s : Finset α) (x : α) (x_in_s 
 
 -- The dimension of a finite complex is the maximum
 -- dimension of its simplices.
-instance DimSet.fintype (X : SimplicialComplex α) [Fintype X.simplices] :
-    Fintype (Finset.image dim X.simplices.toFinset) := by apply Set.fintypeMemFinset
+instance DimSet.Finite
+    (X : Geometry.SimplicialComplex 𝕜 E) [Fintype X.faces]
+  : Finite (Finset.image face_dim X.faces.toFinset) :=
+by
+  apply Set.finite_mem_finset
 
-theorem dim_set_nonempty (X : SimplicialComplex α) [Fintype X.simplices] :
-    (Finset.image dim X.simplices.toFinset).Nonempty :=
-  by
-  apply Finset.Nonempty.image
-  unfold Finset.Nonempty
-  use∅
-  rw [← Finset.mem_coe, Set.coe_toFinset]
-  apply simplicialComplex_empty_simplex
+-- theorem dim_set_nonempty
+--     (X : Geometry.SimplicialComplex 𝕜 E)
+--     [Fintype X.faces] [Nonempty X.faces]
+--   : (Finset.image dim (X.faces.toFinset).Nonempty :=
+-- by
+--   apply Finset.Nonempty.image
+--   unfold Finset.Nonempty
+--   use ∅
+--   rw [← Finset.mem_coe, Set.coe_toFinset]
+--   apply simplicialComplex_empty_simplex
 
 @[simp]
-def dimOfComplex (X : SimplicialComplex α) [Fintype X.simplices] : ℤ :=
-  Finset.max' (Finset.image dim X.simplices.toFinset) (dim_set_nonempty X)
+def Geometry.SimplicialComplex.dim
+    (X : Geometry.SimplicialComplex 𝕜 E)
+    [Fintype X.faces] : ℤ :=
+  Finset.max' ((Finset.image face_dim X.faces.toFinset) ∪ {-1})
+  (by
+    unfold Finset.Nonempty
+    use -1
+    rw [Finset.mem_union]
+    right
+    rw [Finset.mem_singleton])
 
 /-
 # Disjointness of simplicial complexes.
@@ -321,28 +316,36 @@ section Disjoint
 variable [DecidableEq α]
 
 -- Define when two simplicial complexes are disjoint via disjointness of vertices.
-def DisjointComplexes (X Y : SimplicialComplex α) : Prop :=
-  Disjoint (vertices X) (vertices Y)
+def DisjointComplexes
+    (X Y : Geometry.SimplicialComplex 𝕜 E) : Prop :=
+  Disjoint (X.vertices) (Y.vertices)
 
 -- Indeed, this implies simplices are disjoint, too.
-theorem disjoint_simplices_iff_disj_vertices (X Y : SimplicialComplex α) (s t : Finset α)
-    (s_in_X : s ∈ X.simplices) (t_in_Y : t ∈ Y.simplices) : DisjointComplexes X Y → Disjoint s t :=
-  by
-  simp only [DisjointComplexes, vertices]
+theorem disjoint_simplices_iff_disj_vertices [DecidableEq E]
+    (X Y : Geometry.SimplicialComplex 𝕜 E)
+    (s t : Finset E)
+    (s_in_X : s ∈ X.faces)
+    (t_in_Y : t ∈ Y.faces)
+  : DisjointComplexes X Y → Disjoint s t :=
+by
+  simp only [DisjointComplexes, Geometry.SimplicialComplex.vertices_eq]
   intro XY_disj
   rw [Set.disjoint_iff_inter_eq_empty, ← Set.subset_empty_iff] at XY_disj
   rw [Finset.disjoint_iff_inter_eq_empty, ← Finset.subset_empty, ← Finset.coe_subset,
     Finset.coe_empty, Finset.coe_inter]
   apply
     @Set.Subset.trans _ _
-      ((⋃ (s : Finset α) (H : s ∈ X.simplices), ↑s) ∩ ⋃ (s : Finset α) (H : s ∈ Y.simplices), ↑s)
+      ((⋃ (s : Finset E) (H : s ∈ X.faces), ↑s) ∩ ⋃ (s : Finset E) (H : s ∈ Y.faces), ↑s)
   apply Set.inter_subset_inter <;> apply Set.subset_biUnion_of_mem <;> assumption
+  simp only [Set.subset_empty_iff] at ⊢ XY_disj
   assumption
 
 -- Disjoint singletons are also disjoint.
-theorem disjoint_singleton (X : SimplicialComplex α) (x : α) :
-    x ∉ vertices X → DisjointComplexes X (simplex {x}) :=
-  by
+theorem disjoint_singleton
+    (X : Geometry.SimplicialComplex 𝕜 E)
+    (x : E)
+  : x ∉ X.vertices → DisjointComplexes X (simplex {x}) :=
+by
   simp only [DisjointComplexes, simplex_vertices {x}]
   intro x_nin_X
   rw [Set.disjoint_iff_inter_eq_empty, Finset.coe_singleton, Set.inter_singleton_eq_empty]
@@ -355,36 +358,44 @@ end Disjoint
 -/
 section Operators
 
-variable [DecidableEq α]
+variable [DecidableEq E]
 
 @[simp]
-def simplicialUnion (X Y : SimplicialComplex α) : SimplicialComplex α :=
-  SimplicialComplex.mk (X.simplices ∪ Y.simplices)
+def simplicialUnion
+    (X Y : Geometry.SimplicialComplex 𝕜 E)
+  : Geometry.SimplicialComplex 𝕜 E :=
+    Geometry.SimplicialComplex.mk
+    (X.faces ∪ Y.faces)
     (by
-      rw [Set.nonempty_coe_sort]
-      rw [Set.union_nonempty]
-      left
-      rw [← Set.nonempty_coe_sort]
-      apply X.Nonempty)
+      rw [Set.mem_union, not_or]
+      constructor
+      apply X.empty_notMem
+      apply Y.empty_notMem)
     (by
-      unfold IsSubsetClosed
-      intro s s_in_XY t t_sset_s
+      sorry)
+    (by
+      intro s t s_in_XY t t_sset_s
       rw [Set.mem_union] at *
       cases' s_in_XY with s_in_X s_in_Y
       left
-      apply X.subset_closed s <;> assumption
+      apply X.down_closed <;> assumption
       right
-      apply Y.subset_closed s <;> assumption)
+      apply Y.down_closed <;> assumption)
+    (by
+      sorry)
 
 @[reducible]
-instance : Union (SimplicialComplex α) :=
+instance Geometry.SimplicialComplex.instHasUnion : Union (Geometry.SimplicialComplex 𝕜 E) :=
   ⟨simplicialUnion⟩
 
-instance simplicialUnion.fintype (X Y : SimplicialComplex α) [Fintype X.simplices]
-    [Fintype Y.simplices] : Fintype (X ∪ Y).simplices :=
-  by
-  simp only [instUnionSimplicialComplex, simplicialUnion, SimplicialComplex.mk.injEq]
-  apply Set.fintypeUnion
+instance simplicialUnion.Finite
+    (X Y : Geometry.SimplicialComplex 𝕜 E)
+    [Finite X.faces] [Finite Y.faces]
+  : Finite (X ∪ Y).faces :=
+by
+  simp only [Geometry.SimplicialComplex.instHasUnion, simplicialUnion, Geometry.SimplicialComplex.mk.injEq]
+  rw [Set.finite_coe_iff, Set.finite_union, ← Set.finite_coe_iff]
+  constructor <;> assumption
 
 theorem simplicial_union_assoc (X Y Z : SimplicialComplex α) : X ∪ Y ∪ Z = X ∪ (Y ∪ Z) :=
   by
