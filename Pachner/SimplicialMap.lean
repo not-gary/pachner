@@ -515,15 +515,22 @@ variable [DecidableEq E] [DecidableEq F] [DecidableEq G]
 -- A simplicial map is a simplicial isomorphism
 -- if it admits an inverse simplicial map.
 @[simp]
-def IsInverseSimplicialIso {X : SimplicialComplex α} {Y : SimplicialComplex β}
-    (f : SimplicialMap X Y) (g : SimplicialMap Y X) : Prop :=
-  (vertices X).restrict (SimplicialMap.comp f g).map = (vertices X).restrict id ∧
-    (vertices Y).restrict (SimplicialMap.comp g f).map = (vertices Y).restrict id
+def IsInverseSimplicialIso
+    {X : Geometry.SimplicialComplex 𝕜 E}
+    {Y : Geometry.SimplicialComplex 𝕜 F}
+    (f : SimplicialMap X Y)
+    (g : SimplicialMap Y X)
+  : Prop :=
+    (X.vertices).restrict (SimplicialMap.comp f g).map = (X.vertices).restrict id ∧
+    (Y.vertices).restrict (SimplicialMap.comp g f).map = (Y.vertices).restrict id
 
-theorem isInverseSimplicialIso_symm {X : SimplicialComplex α} {Y : SimplicialComplex β}
-    (f : SimplicialMap X Y) (g : SimplicialMap Y X) :
-    IsInverseSimplicialIso f g ↔ IsInverseSimplicialIso g f :=
-  by
+theorem IsInverseSimplicialIso_symm
+    {X : Geometry.SimplicialComplex 𝕜 E}
+    {Y : Geometry.SimplicialComplex 𝕜 F}
+    (f : SimplicialMap X Y)
+    (g : SimplicialMap Y X)
+  : IsInverseSimplicialIso f g ↔ IsInverseSimplicialIso g f :=
+by
   constructor <;> unfold IsInverseSimplicialIso
   · intro f_inv_g
     cases' f_inv_g with fg_id gf_id
@@ -533,23 +540,31 @@ theorem isInverseSimplicialIso_symm {X : SimplicialComplex α} {Y : SimplicialCo
     constructor <;> assumption
 
 @[simp]
-def IsSimplicialIso {X : SimplicialComplex α} {Y : SimplicialComplex β} (f : SimplicialMap X Y) :
-    Prop :=
-  ∃ g : SimplicialMap Y X, IsInverseSimplicialIso f g
+def IsSimplicialIso
+    {X : Geometry.SimplicialComplex 𝕜 E}
+    {Y : Geometry.SimplicialComplex 𝕜 F}
+    (f : SimplicialMap X Y)
+  : Prop :=
+    ∃ g : SimplicialMap Y X, IsInverseSimplicialIso f g
 
 --:= set.bij_on (simplicial_map_lift f) X.simplices Y.simplices
 -- For example, the identity map is a simplicial isomorphism
 -- because it is its own inverse
-theorem id_isSimplicialIso (X : SimplicialComplex α) : IsSimplicialIso (idSimplicialMap X) :=
-  by
+theorem id_isSimplicialIso
+    (X : Geometry.SimplicialComplex 𝕜 E)
+  : IsSimplicialIso (idSimplicialMap X) :=
+by
   use idSimplicialMap X
-  show IsInverseSimplicialIso (idSimplicialMap X) (idSimplicialMap X)
   simp only [IsInverseSimplicialIso, Set.restrict_id, and_self]
   tauto
 
-theorem iso_inv_is_iso {X : SimplicialComplex α} {Y : SimplicialComplex β} (f : SimplicialMap X Y)
-    (g : SimplicialMap Y X) : IsSimplicialIso f → IsInverseSimplicialIso f g → IsSimplicialIso g :=
-  by
+theorem iso_inv_is_iso
+    {X : Geometry.SimplicialComplex 𝕜 E}
+    {Y : Geometry.SimplicialComplex 𝕜 F}
+    (f : SimplicialMap X Y)
+    (g : SimplicialMap Y X)
+  : IsSimplicialIso f → IsInverseSimplicialIso f g → IsSimplicialIso g :=
+by
   intro f_iso g_inv_f
   unfold IsSimplicialIso
   use f
@@ -558,10 +573,14 @@ theorem iso_inv_is_iso {X : SimplicialComplex α} {Y : SimplicialComplex β} (f 
   assumption
 
 -- The composition of two isomorphisms gives an isomorphism.
-theorem iso_comp_is_iso {X : SimplicialComplex α} {Y : SimplicialComplex β}
-    {Z : SimplicialComplex γ} (f : SimplicialMap X Y) (g : SimplicialMap Y Z) :
-    IsSimplicialIso f → IsSimplicialIso g → IsSimplicialIso (SimplicialMap.comp f g) :=
-  by
+theorem iso_comp_is_iso
+    {X : Geometry.SimplicialComplex 𝕜 E}
+    {Y : Geometry.SimplicialComplex 𝕜 F}
+    {Z : Geometry.SimplicialComplex 𝕜 G}
+    (f : SimplicialMap X Y)
+    (g : SimplicialMap Y Z)
+  : IsSimplicialIso f → IsSimplicialIso g → IsSimplicialIso (SimplicialMap.comp f g) :=
+by
   unfold IsSimplicialIso
   intro f_iso g_iso
   choose f_inv f_iso using f_iso
@@ -570,30 +589,34 @@ theorem iso_comp_is_iso {X : SimplicialComplex α} {Y : SimplicialComplex β}
   simp only [IsInverseSimplicialIso, SimplicialMap.comp, idSimplicialMap] at *
   cases' f_iso with f_inv_left f_inv_right
   cases' g_iso with g_inv_left g_inv_right
-  simp at *
+  simp only [Set.restrict_eq_restrict_iff] at *
   unfold Set.EqOn at *
   constructor
   intro x x_vert
   specialize f_inv_left x_vert
   specialize g_inv_left (simplicialMap_on_vertices X Y f x x_vert)
-  rw [Function.comp.assoc, ← Function.comp.assoc g_inv.map, Function.comp_apply, g_inv_left]
+  rw [Function.comp_assoc, ← Function.comp_assoc g_inv.map, Function.comp_apply, Function.comp_apply, g_inv_left]
   simp
   assumption
   intro z z_vert
   specialize g_inv_right z_vert
   specialize f_inv_right (simplicialMap_on_vertices Z Y g_inv z z_vert)
-  rw [Function.comp.assoc, ← Function.comp.assoc f.map, Function.comp_apply, f_inv_right]
+  rw [Function.comp_assoc, ← Function.comp_assoc f.map, Function.comp_apply, Function.comp_apply, f_inv_right]
   simp
   assumption
 
-theorem iso_is_injective_vertices {X : SimplicialComplex α} {Y : SimplicialComplex β}
-    (f : SimplicialMap X Y) (f_iso : IsSimplicialIso f) : Set.InjOn f.map (vertices X) :=
-  by
+theorem iso_is_injective_vertices
+    {X : Geometry.SimplicialComplex 𝕜 E}
+    {Y : Geometry.SimplicialComplex 𝕜 F}
+    (f : SimplicialMap X Y)
+    (f_iso : IsSimplicialIso f)
+  : Set.InjOn f.map (X.vertices) :=
+by
   unfold IsSimplicialIso at f_iso
   choose g g_inv_f using f_iso
   unfold IsInverseSimplicialIso at g_inv_f
   choose fg_id gf_id using g_inv_f
-  simp only [Function.funext_iff, Set.restrict_eq_restrict_iff, Set.EqOn] at fg_id
+  simp only [Set.restrict_eq_restrict_iff, Set.EqOn] at fg_id
   unfold Set.InjOn
   intro x₁ x₁_in_X x₂ x₂_in_X fx₁_eq_fx₂
   have fgx₁_eq_x₁ : (f.comp g).map x₁ = id x₁ :=
@@ -605,13 +628,17 @@ theorem iso_is_injective_vertices {X : SimplicialComplex α} {Y : SimplicialComp
     specialize fg_id x₂_in_X
     assumption
   simp only [SimplicialMap.comp, Function.comp_apply] at fgx₁_eq_x₁ fgx₂_eq_x₂
-  simp only [fx₁_eq_fx₂, fgx₂_eq_x₂, id.def] at fgx₁_eq_x₁
+  simp only [fx₁_eq_fx₂, fgx₂_eq_x₂] at fgx₁_eq_x₁
   symm
   assumption
 
-theorem iso_is_injective_simplices {X : SimplicialComplex α} {Y : SimplicialComplex β}
-    (f : SimplicialMap X Y) (f_iso : IsSimplicialIso f) : ∀ s ∈ X.simplices, Set.InjOn f.map ↑s :=
-  by
+theorem iso_is_injective_simplices
+    {X : Geometry.SimplicialComplex 𝕜 E}
+    {Y : Geometry.SimplicialComplex 𝕜 F}
+    (f : SimplicialMap X Y)
+    (f_iso : IsSimplicialIso f)
+  : ∀ s ∈ X.faces, Set.InjOn f.map ↑s :=
+by
   intro s s_in_X
   simp only [Set.InjOn]
   intro x₁ x₁_in_s x₂ x₂_in_s fx₁_eq_fx₂
@@ -619,23 +646,20 @@ theorem iso_is_injective_simplices {X : SimplicialComplex α} {Y : SimplicialCom
   choose g gf_inv using f_iso
   unfold IsInverseSimplicialIso at gf_inv
   choose gf_id fg_id using gf_inv
-  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply] at
-    gf_id
-  have x₁_in_X : x₁ ∈ vertices X := by
+  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply] at gf_id
+  have x₁_in_X : x₁ ∈ X.vertices := by
     rw [vertex_iff_in_simplex]
     use s; constructor <;> assumption
-  have x₂_in_X : x₂ ∈ vertices X := by
+  have x₂_in_X : x₂ ∈ X.vertices := by
     rw [vertex_iff_in_simplex]
     use s; constructor <;> assumption
   have gfx₁_eq_x₁ : g.map (f.map x₁) = x₁ :=
     by
     specialize gf_id x₁_in_X
-    rw [id.def] at gf_id
     assumption
   have gfx₂_eq_x₂ : g.map (f.map x₂) = x₂ :=
     by
     specialize gf_id x₂_in_X
-    rw [id.def] at gf_id
     assumption
   have gfx₁_eq_gfx₂ : g.map (f.map x₁) = g.map (f.map x₂) :=
     by
@@ -644,15 +668,18 @@ theorem iso_is_injective_simplices {X : SimplicialComplex α} {Y : SimplicialCom
   rw [gfx₁_eq_x₁, gfx₂_eq_x₂] at gfx₁_eq_gfx₂
   assumption
 
-theorem iso_is_surjective_vertices {X : SimplicialComplex α} {Y : SimplicialComplex β}
-    (f : SimplicialMap X Y) (f_iso : IsSimplicialIso f) :
-    Set.SurjOn f.map (vertices X) (vertices Y) :=
-  by
+theorem iso_is_surjective_vertices
+    {X : Geometry.SimplicialComplex 𝕜 E}
+    {Y : Geometry.SimplicialComplex 𝕜 E}
+    (f : SimplicialMap X Y)
+    (f_iso : IsSimplicialIso f)
+  : Set.SurjOn f.map (X.vertices) (Y.vertices) :=
+by
   unfold IsSimplicialIso at f_iso
   choose g g_inv_f using f_iso
   unfold IsInverseSimplicialIso at g_inv_f
   choose fg_id gf_id using g_inv_f
-  simp only [Function.funext_iff, Set.restrict_eq_restrict_iff, Set.EqOn] at gf_id
+  simp only [Set.restrict_eq_restrict_iff, Set.EqOn] at gf_id
   simp only [Set.SurjOn, Set.subset_def, Set.mem_image]
   intro x x_in_Y
   specialize gf_id x_in_Y
@@ -665,7 +692,6 @@ theorem iso_is_surjective_vertices {X : SimplicialComplex α} {Y : SimplicialCom
   assumption
   apply Finset.mem_image_of_mem
   assumption
-  rw [id.def] at gf_id
   assumption
 
 -- Defining isomorphy between simplicial complexes.
