@@ -1,6 +1,7 @@
 import Mathlib.Tactic
 import Mathlib.Analysis.Convex.SimplicialComplex.Basic
 import Pachner.SimplicialComplex
+import Mathlib.Logic.Equiv.Defs
 
 variable {𝕜 E F G : Type _}
 variable [Ring 𝕜] [PartialOrder 𝕜]
@@ -514,6 +515,7 @@ variable [DecidableEq E] [DecidableEq F] [DecidableEq G]
 
 -- A simplicial map is a simplicial isomorphism
 -- if it admits an inverse simplicial map.
+
 @[simp]
 def IsInverseSimplicialIso
     {X : Geometry.SimplicialComplex 𝕜 E}
@@ -739,40 +741,6 @@ by
   apply f.is_simplicial
   assumption
 
-theorem simplicial_iso_lift_inj
-    (X : Geometry.SimplicialComplex 𝕜 E)
-    (Y : Geometry.SimplicialComplex 𝕜 F)
-    (f : SimplicialMap X Y)
-  : IsSimplicialIso f → Set.InjOn (simplicialMapLift f) X.faces :=
-by
-  intro f_iso
-  choose g gf_inv using f_iso
-  unfold IsInverseSimplicialIso at gf_inv
-  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
-    Set.image_id] at gf_inv
-  choose gf_id fg_id using gf_inv
-  unfold Set.InjOn
-
-  intro s s_in_X t t_in_X fs_eq_ft
-  unfold simplicialMapLift at fs_eq_ft
-  simp only [Geometry.SimplicialComplex.mem_vertices] at gf_id fg_id
-  rw [Finset.ext_iff] at ⊢ fs_eq_ft
-  intro x
-  specialize fs_eq_ft (f.map x)
-  constructor
-
-  intro x_in_s
-  have x_in_X : {x} ∈ X.faces :=
-  by
-    rw [←Geometry.SimplicialComplex.mem_vertices, vertex_iff_in_simplex]
-    use s
-  specialize gf_id x_in_X
-
-  -- try shit out
-  rw [id_eq] at gf_id
-  sorry
-  sorry
-
 theorem simplicial_iso_vertices
     (X : Geometry.SimplicialComplex 𝕜 E)
     (Y : Geometry.SimplicialComplex 𝕜 F)
@@ -806,70 +774,133 @@ by
   apply f.is_simplicial
   assumption
 
+theorem simplicial_iso_lift_inj
+    (X : Geometry.SimplicialComplex 𝕜 E)
+    (Y : Geometry.SimplicialComplex 𝕜 F)
+    (f : SimplicialMap X Y)
+  : IsSimplicialIso f → Set.InjOn (simplicialMapLift f) X.faces :=
+by
+  intro f_iso
+  have f_iso' := f_iso
+  intro s s_in_X t t_in_X fs_eq_ft
+
+  choose g gf_inv using f_iso'
+  unfold IsInverseSimplicialIso at gf_inv
+  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
+    Set.image_id] at gf_inv
+  choose gf_id fg_id using gf_inv
+
+  unfold simplicialMapLift at fs_eq_ft
+  simp only [Geometry.SimplicialComplex.mem_vertices] at gf_id fg_id
+  rw [Finset.ext_iff] at ⊢ fs_eq_ft
+  intro x
+  specialize fs_eq_ft (f.map x)
+  constructor
+
+  intro x_in_s
+  have x_in_X : {x} ∈ X.faces :=
+  by
+    rw [←Geometry.SimplicialComplex.mem_vertices, vertex_iff_in_simplex]
+    use s
+  specialize gf_id x_in_X
+
+  -- try shit out
+  rw [id_eq] at gf_id
+  have fx_in_fs : f.map x ∈ Finset.image f.map s :=
+  by
+    rw [Finset.mem_image]
+    use x
+  rw [fs_eq_ft, Finset.mem_image] at fx_in_fs
+  choose a a_in_t fa_eq_fs using fx_in_fs
+  have fx_in_Y : {f.map x} ∈ Y.faces :=
+  by
+    rw [← Finset.image_singleton]
+    apply f.is_simplicial
+    assumption
+  specialize fg_id fx_in_Y
+  sorry
+  sorry
+
 -- what?
-instance IsSimpliciallyIso.finite
-    (X : Geometry.SimplicialComplex 𝕜 E) [Finite X.faces]
+noncomputable instance IsSimpliciallyIso.Fintype
+    (X : Geometry.SimplicialComplex 𝕜 E) [Fintype X.faces]
     (Y : Geometry.SimplicialComplex 𝕜 F)
     (X_iso_Y : X ≅ Y)
-  : Finite Y.faces :=
+  : Fintype Y.faces :=
 by
   unfold IsSimpliciallyIso at X_iso_Y
   choose f f_iso using X_iso_Y
   rw [simplicial_iso_implies_lift_bij X Y f f_iso]
-  rw [Set.finite_coe_iff, Set.finite_image_iff, ← Set.finite_coe_iff]
-  assumption
-  apply simplicial_iso_lift_inj
-  assumption
+  apply Set.fintypeImage
 
-theorem simplicial_iso_preserves_simplex_dim {X : SimplicialComplex α} {Y : SimplicialComplex β}
-    (f : SimplicialMap X Y) (f_iso : IsSimplicialIso f) :
-    ∀ s ∈ X.simplices, dim s = dim (Finset.image f.map s) :=
+theorem simplicial_iso_preserves_simplex_dim
+    {X : Geometry.SimplicialComplex 𝕜 E}
+    {Y : Geometry.SimplicialComplex 𝕜 F}
+    (f : SimplicialMap X Y)
+    (f_iso : IsSimplicialIso f) :
+    ∀ s ∈ X.faces, face_dim s = face_dim (Finset.image f.map s) :=
   by
   intro s s_in_X
-  unfold dim
+  unfold face_dim
   apply congr_arg fun z : ℤ => z - 1
   symm
   rw [Nat.cast_inj, Finset.card_image_iff]
   apply iso_is_injective_simplices f f_iso s s_in_X
 
-theorem simplicial_iso_preserves_dim (X : SimplicialComplex α) [X_fin : Fintype X.simplices]
-    (Y : SimplicialComplex β) (X_iso_Y : X ≅ Y) :
-    @dimOfComplex α X X_fin =
-      @dimOfComplex β Y (@IsSimpliciallyIso.fintype α β _ _ X X_fin Y X_iso_Y) :=
+theorem simplicial_iso_preserves_dim
+    (X : Geometry.SimplicialComplex 𝕜 E) [X_fin : Fintype X.faces]
+    (Y : Geometry.SimplicialComplex 𝕜 F)
+    (X_iso_Y : X ≅ Y) :
+    X.dim = @Y.dim _ _ _ _ _ _ (IsSimpliciallyIso.Fintype X Y X_iso_Y) :=
+by
+  have Y_fin : Fintype Y.faces :=
   by
+    apply IsSimpliciallyIso.Fintype X Y X_iso_Y
+
   unfold IsSimpliciallyIso at X_iso_Y
-  choose f f_iso using X_iso_Y
-  simp only [dimOfComplex]
+  have X_iso_Y' := X_iso_Y
+  choose f f_iso using X_iso_Y'
+  simp only [Geometry.SimplicialComplex.dim]
   rw [le_antisymm_iff]
   constructor
   -- dim X ≤ dim Y case.
   rw [Finset.max'_le_iff]
   intro n n_X_dim
-  rw [Finset.mem_image] at n_X_dim
+  rw [Finset.mem_union, Finset.mem_image] at n_X_dim
+  cases' n_X_dim with n_X_dim X_empty
   choose s s_in_X s_dim_n using n_X_dim
   rw [Set.mem_toFinset] at s_in_X
   rw [← s_dim_n]
   apply Finset.le_max'
-  rw [simplicial_iso_preserves_simplex_dim f f_iso s s_in_X, Finset.mem_image]
+  rw [simplicial_iso_preserves_simplex_dim f f_iso s s_in_X, Finset.mem_union, Finset.mem_image]
+  left
   use Finset.image f.map s
   constructor
-  rw [Set.mem_toFinset]
+  simp only [Set.mem_toFinset]
   apply f.is_simplicial
   assumption
   rfl
+
+  apply Finset.le_max'
+  rw [Finset.mem_union]
+  right
+  assumption
+
   -- dim Y ≤ dim X case.
   rw [Finset.max'_le_iff]
   intro m m_Y_dim
-  rw [Finset.mem_image] at m_Y_dim
+  rw [Finset.mem_union, Finset.mem_image] at m_Y_dim
+  cases' m_Y_dim with m_Y_dim Y_empty
   choose t t_in_Y t_dim_m using m_Y_dim
-  rw [Set.mem_toFinset] at t_in_Y
+  simp only [Set.mem_toFinset] at t_in_Y
   rw [← t_dim_m]
   let f_iso' := f_iso
   unfold IsSimplicialIso at f_iso'
   choose g gf_inv using f_iso'
   have g_iso : IsSimplicialIso g := by apply iso_inv_is_iso f g f_iso gf_inv
   apply Finset.le_max'
-  rw [simplicial_iso_preserves_simplex_dim g g_iso t t_in_Y, Finset.mem_image]
+  rw [simplicial_iso_preserves_simplex_dim g g_iso t t_in_Y, Finset.mem_union, Finset.mem_image]
+  left
   use Finset.image g.map t
   constructor
   rw [Set.mem_toFinset]
@@ -877,34 +908,47 @@ theorem simplicial_iso_preserves_dim (X : SimplicialComplex α) [X_fin : Fintype
   assumption
   rfl
 
+  apply Finset.le_max'
+  rw [Finset.mem_union]
+  right
+  assumption
+
 -- Being simplicially isomorphic is an equivalence relation.
 @[refl]
-theorem simplicial_iso_refl (X : SimplicialComplex α) : X ≅ X :=
-  by
+theorem simplicial_iso_refl
+    (X : Geometry.SimplicialComplex 𝕜 E)
+  : X ≅ X :=
+by
   unfold IsSimpliciallyIso
   use idSimplicialMap X
   apply id_isSimplicialIso
 
 @[symm]
-theorem simplicial_iso_symm (X : SimplicialComplex α) (Y : SimplicialComplex β) : X ≅ Y ↔ Y ≅ X :=
-  by
+theorem simplicial_iso_symm
+    (X : Geometry.SimplicialComplex 𝕜 E)
+    (Y : Geometry.SimplicialComplex 𝕜 F)
+  : (X ≅ Y) ↔ (Y ≅ X) :=
+by
   unfold IsSimpliciallyIso
   constructor <;> unfold IsSimplicialIso
   · intro X_iso_Y
     choose f g f_inv_g using X_iso_Y
     use g; use f
-    rw [isInverseSimplicialIso_symm]
+    rw [IsInverseSimplicialIso_symm]
     assumption
   · intro Y_iso_X
     choose f g f_inv_g using Y_iso_X
     use g; use f
-    rw [isInverseSimplicialIso_symm]
+    rw [IsInverseSimplicialIso_symm]
     assumption
 
 @[trans]
-theorem simplicial_iso_trans (X : SimplicialComplex α) (Y : SimplicialComplex β)
-    (Z : SimplicialComplex γ) : X ≅ Y → Y ≅ Z → X ≅ Z :=
-  by
+theorem simplicial_iso_trans
+    (X : Geometry.SimplicialComplex 𝕜 E)
+    (Y : Geometry.SimplicialComplex 𝕜 F)
+    (Z : Geometry.SimplicialComplex 𝕜 G)
+  : (X ≅ Y) → Y ≅ Z → X ≅ Z :=
+by
   intro X_iso_Y Y_iso_Z
   unfold IsSimpliciallyIso at *
   choose f f_iso using X_iso_Y
@@ -912,8 +956,10 @@ theorem simplicial_iso_trans (X : SimplicialComplex α) (Y : SimplicialComplex �
   use f.comp g
   apply iso_comp_is_iso <;> assumption
 
-theorem simplicial_iso_preserves_equiv (X Y : SimplicialComplex α) :
-    X.simplices = Y.simplices → X ≅ Y := by
+theorem simplicial_iso_preserves_equiv
+    (X Y : Geometry.SimplicialComplex 𝕜 E)
+  : X.faces = Y.faces → X ≅ Y :=
+by
   intro H
   unfold IsSimpliciallyIso
   have id_simplicial_X : IsSimplicialMap X Y id :=
@@ -934,14 +980,16 @@ theorem simplicial_iso_preserves_equiv (X Y : SimplicialComplex α) :
   set id_Y := SimplicialMap.mk id id_simplicial_Y
   use id_Y
   unfold IsInverseSimplicialIso
-  constructor <;> simp only [SimplicialMap.comp] <;> rw [Function.id_comp] <;>
-    simp only [idSimplicialMap]
+  constructor <;> simp only [SimplicialMap.comp] <;> rw [Function.id_comp]
 
-theorem simplicial_iso_preserves_subcomplex_image (X Y Z : SimplicialComplex α)
-    (f : SimplicialMap Y Z) (f_iso : IsSimplicialIso f) : X ⊆ Y → simplicialImage X f.map ⊆ Z :=
-  by
+theorem simplicial_iso_preserves_subcomplex_image
+    (X Y Z : Geometry.SimplicialComplex 𝕜 E)
+    (f : SimplicialMap Y Z)
+    (f_iso : IsSimplicialIso f)
+  : X ⊆ Y → simplicialImage X f.map ⊆ Z :=
+by
   intro X_sub_Y
-  simp only [IsSubcomplex] at X_sub_Y ⊢
+  simp only [Geometry.SimplicialComplex.instHasSubset, IsSubcomplex] at X_sub_Y ⊢
   rw [simplicial_iso_implies_lift_bij Y Z f f_iso]
   simp only [simplicialMapLift, Set.image]
   simp only [Set.subset_def] at X_sub_Y ⊢
@@ -949,7 +997,7 @@ theorem simplicial_iso_preserves_subcomplex_image (X Y Z : SimplicialComplex α)
   simp only [Set.mem_setOf] at t_in_fX ⊢
   choose s s_in_X fs_eq_t using t_in_fX
   specialize X_sub_Y s s_in_X
-  use s; constructor <;> assumption
+  use s
 
 end Isomorphism
 
@@ -958,18 +1006,25 @@ end Isomorphism
 -/
 section Coercion
 
-variable [DecidableEq α] [DecidableEq β] [DecidableEq γ]
+variable [DecidableEq E] [F_dec : DecidableEq F] [DecidableEq G]
 
 -- Define as coercion on types that lifts to simplicial map.
-structure SimplicialCoe (X : SimplicialComplex α) (β : Type _) where mk ::
-  coe : α → β
-  Injective : Set.InjOn coe (vertices X)
+structure SimplicialCoe
+    (X : Geometry.SimplicialComplex 𝕜 E)
+    (F : Type _)
+  where mk ::
+    coe : E → F
+    Injective : Set.InjOn coe (X.vertices)
 
-notation φ "[" X "]" => simplicialImage X φ.coe
+variable {X : Geometry.SimplicialComplex 𝕜 E} {f : SimplicialCoe X F}
+notation f "[" X "]" => simplicialImage X f.coe
 
-def SimplicialCoe.simplicialMap {X : SimplicialComplex α} (φ : SimplicialCoe X β) :
-    SimplicialMap X (φ[X]) :=
-  SimplicialMap.mk φ.coe (map_is_simplicial_onto_image X φ.coe)
+
+def SimplicialCoe.simplicialMap
+    {X : Geometry.SimplicialComplex 𝕜 E}
+    (φ : SimplicialCoe X F)
+  : SimplicialMap X (φ[X]) :=
+    SimplicialMap.mk φ.coe (map_is_simplicial_onto_image X φ.coe)
 
 instance SimplicialCoe.fintype (X : SimplicialComplex α) [Fintype X.simplices]
     (φ : SimplicialCoe X β) : Fintype φ[X].simplices :=

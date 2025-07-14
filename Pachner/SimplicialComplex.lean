@@ -8,6 +8,12 @@ open scoped BigOperators
 variable {𝕜 E : Type _}
 variable [Ring 𝕜] [PartialOrder 𝕜] [AddCommGroup E] [Module 𝕜 E]
 
+class SimplicialComplex (𝕜 E : Type*)
+    [Ring 𝕜] [PartialOrder 𝕜]
+    [AddCommGroup E] [Module 𝕜 E]
+  extends Geometry.SimplicialComplex 𝕜 E where
+    foo : True
+
 theorem vertices_setOf (X : Geometry.SimplicialComplex 𝕜 E) :
     X.vertices = {x : E | ∃ s ∈ X.faces, x ∈ s} :=
 by
