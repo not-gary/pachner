@@ -62,8 +62,8 @@ def simplicialMapLift
     fun s : Finset E => Finset.image f.map s
 
 def simplicialImage
-    (X : Geometry.SimplicialComplex 𝕜 E)
     (f : E → F)
+    (X : Geometry.SimplicialComplex 𝕜 E)
   : Geometry.SimplicialComplex 𝕜 F :=
     Geometry.SimplicialComplex.mk
       {(Finset.image f s) | s ∈ X.faces}
@@ -89,12 +89,13 @@ def simplicialImage
         assumption)
       (by
         sorry)
+infixl:80 " ''ˢ " => simplicialImage
 
 theorem simplicialImage_congr
     {X : Geometry.SimplicialComplex 𝕜 E}
     (f g : E → F)
   : Set.EqOn f g X.vertices
-      → (simplicialImage X f).faces = (simplicialImage X g).faces :=
+      → (f ''ˢ X).faces = (g ''ˢ X).faces :=
   by
   simp only [Set.ext_iff, simplicialImage, Set.mem_setOf]
   intro f_eq_g t
@@ -122,7 +123,7 @@ theorem simplicialImage_congr
 theorem map_is_simplicial_onto_image
     (X : Geometry.SimplicialComplex 𝕜 E)
     (f : E → F)
-  : IsSimplicialMap X (simplicialImage X f) f :=
+  : IsSimplicialMap X (f ''ˢ X) f :=
 by
   unfold IsSimplicialMap
   intro s s_in_X
@@ -133,13 +134,13 @@ def SimplicialMap.ontoImage
     {X : Geometry.SimplicialComplex 𝕜 E}
     {Z : Geometry.SimplicialComplex 𝕜 F}
     (f : SimplicialMap X Z)
-  : SimplicialMap X (simplicialImage X f.map) :=
+  : SimplicialMap X (f.map ''ˢ X) :=
     SimplicialMap.mk f.map (map_is_simplicial_onto_image X f.map)
 
 theorem simplicialImage_vertices
     (X : Geometry.SimplicialComplex 𝕜 E)
     (f : E → F)
-  : (simplicialImage X f).vertices = f '' X.vertices :=
+  : (f ''ˢ X).vertices = f '' X.vertices :=
 by
   simp only [vertices_setOf, simplicialImage, Set.image, Set.ext_iff, Set.mem_setOf]
   intro y
@@ -162,12 +163,12 @@ by
   assumption
 
 notation "⟨" f ", " X "⟩" =>
-  @SimplicialMap.mk _ _ _ _ _ _ _ _ _ _ X (simplicialImage X f) f (map_is_simplicial_onto_image X f)
+  @SimplicialMap.mk _ _ _ _ _ _ _ _ _ _ X (f ''ˢ X) f (map_is_simplicial_onto_image X f)
 
 theorem simplicialImage_is_lift_image
     (X : Geometry.SimplicialComplex 𝕜 E)
     (f : E → F)
-  : (simplicialImage X f).faces = simplicialMapLift ⟨f, X⟩ '' X.faces :=
+  : (f ''ˢ X).faces = simplicialMapLift ⟨f, X⟩ '' X.faces :=
 by
   simp only [simplicialImage, simplicialMapLift, Set.ext_iff]
   intro s
@@ -186,8 +187,8 @@ by
 theorem simplicialImage_union [DecidableEq E]
     (X Y : Geometry.SimplicialComplex 𝕜 E)
     (f : E → F)
-  : (simplicialImage (X ∪ Y) f).faces =
-      (simplicialImage X f).faces ∪ (simplicialImage Y f).faces :=
+  : (f ''ˢ (X ∪ Y)).faces =
+      (f ''ˢ X).faces ∪ (f ''ˢ Y).faces :=
 by
   simp only [simplicialImage_is_lift_image, simplicialMapLift, simplicialUnion, Set.image,
     Set.ext_iff, Set.mem_union, Set.mem_setOf]
@@ -986,7 +987,7 @@ theorem simplicial_iso_preserves_subcomplex_image
     (X Y Z : Geometry.SimplicialComplex 𝕜 E)
     (f : SimplicialMap Y Z)
     (f_iso : IsSimplicialIso f)
-  : X ⊆ Y → simplicialImage X f.map ⊆ Z :=
+  : X ⊆ Y → f.map ''ˢ X ⊆ Z :=
 by
   intro X_sub_Y
   simp only [Geometry.SimplicialComplex.instHasSubset, IsSubcomplex] at X_sub_Y ⊢
@@ -1016,14 +1017,10 @@ structure SimplicialCoe
     coe : E → F
     Injective : Set.InjOn coe (X.vertices)
 
-variable {X : Geometry.SimplicialComplex 𝕜 E} {f : SimplicialCoe X F}
-notation f "[" X "]" => simplicialImage X f.coe
-
-
 def SimplicialCoe.simplicialMap
     {X : Geometry.SimplicialComplex 𝕜 E}
     (φ : SimplicialCoe X F)
-  : SimplicialMap X (φ[X]) :=
+  : SimplicialMap X (φ.coe ''ˢ X) :=
     SimplicialMap.mk φ.coe (map_is_simplicial_onto_image X φ.coe)
 
 instance SimplicialCoe.fintype (X : SimplicialComplex α) [Fintype X.simplices]
