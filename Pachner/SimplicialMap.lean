@@ -1317,7 +1317,8 @@ end Coercion
 -/
 section Join
 
-variable [DecidableEq E] [DecidableEq F]
+variable [DecidableEq 𝕜] [DecidableEq E] [DecidableEq F] -- add [DecidableEq 𝕜] here since we use in in DirectSum
+variable [Nontrivial 𝕜]
 
 -- Start with some formalization of disjoint unions.
 
@@ -1368,45 +1369,8 @@ def BinaryDirectSum
     [AddCommGroup Y]
   := DirectSum (Fin 2) (BinaryDirectSum.types X Y)
 
--- The canonical inclusions
-@[simp]
-def BinaryDirectSum.incl_left
-    (X : Type _)
-    (Y : Type _)
-    [AddCommGroup X]
-    [AddCommGroup Y]
-  := DirectSum.of (BinaryDirectSum.types X Y) 0
-
-@[simp]
-def BinaryDirectSum.incl_right
-    (X : Type _)
-    (Y : Type _)
-    [AddCommGroup X]
-    [AddCommGroup Y]
-  := DirectSum.of (BinaryDirectSum.types X Y) 1
-
--- For convenience
-@[simp]
-def BinaryDirectSum.image_left
-    (X : Type _)
-    (Y : Type _)
-    [AddCommGroup X]
-    [AddCommGroup Y]
-    [DecidableEq X]
-    [DecidableEq Y]
-    (s : Finset X)
-  := Finset.image (BinaryDirectSum.incl_left X Y) s
-
-@[simp]
-def BinaryDirectSum.image_right
-    (X : Type _)
-    (Y : Type _)
-    [AddCommGroup X]
-    [AddCommGroup Y]
-    [DecidableEq X]
-    [DecidableEq Y]
-    (t : Finset Y)
-  := Finset.image (BinaryDirectSum.incl_right X Y) t
+instance BinaryDirectSum.CeoSort : Coe (BinaryDirectSum E 𝕜) (DirectSum (Fin 2) (BinaryDirectSum.types E 𝕜)) where
+  coe x := x
 
 -- Help Lean with some more instances
 instance BinaryDirectSum.instAddCommGroup
@@ -1427,50 +1391,147 @@ instance BinaryDirectSum.instDecidableEq
   : DecidableEq (BinaryDirectSum X Y) :=
     instDecidableEqDirectSum (Fin 2) (BinaryDirectSum.types X Y)
 
+-- The canonical inclusions
+def BinaryDirectSum.incl_l
+    (X : Type _)
+    (Y : Type _)
+    [AddCommGroup X]
+    [AddCommGroup Y]
+  := DirectSum.of (BinaryDirectSum.types X Y) 0
+
+def BinaryDirectSum.incl_r
+    (X : Type _)
+    (Y : Type _)
+    [AddCommGroup X]
+    [AddCommGroup Y]
+  := DirectSum.of (BinaryDirectSum.types X Y) 1
+
+def BinaryDirectSum.proj_l
+    (X : Type _)
+    (Y : Type _)
+    [AddCommGroup X]
+    [AddCommGroup Y]
+    (x : BinaryDirectSum X Y)
+  : X :=
+by
+  unfold BinaryDirectSum at *
+  use x 0
+
+def BinaryDirectSum.proj_r
+    {X : Type _}
+    {Y : Type _}
+    [AddCommGroup X]
+    [AddCommGroup Y]
+    (x : BinaryDirectSum X Y)
+  : Y :=
+by
+  unfold BinaryDirectSum at *
+  use x 1
+
+-- Lean could not synthesize HAdd for x + (BinaryDirectSum.incl_right E 𝕜 y) with (x : BinaryDirectSum E 𝕜)
+-- use (BinaryDirectSum.include_left E 𝕜 y) instead, then it works
+def BinaryDirectSum.include_left
+    (X : Type _)
+    (Y : Type _)
+    [AddCommGroup X]
+    [AddCommGroup Y]
+    (x : X)
+  : BinaryDirectSum X Y :=
+    (BinaryDirectSum.incl_l X Y) x
+
+def BinaryDirectSum.include_right
+    (X : Type _)
+    (Y : Type _)
+    [AddCommGroup X]
+    [AddCommGroup Y]
+    (y : Y)
+  : BinaryDirectSum X Y :=
+    (BinaryDirectSum.incl_r X Y) y
+
+-- For convenience
+@[simp]
+def BinaryDirectSum.image_left
+    (X : Type _)
+    (Y : Type _)
+    [AddCommGroup X]
+    [AddCommGroup Y]
+    [DecidableEq X]
+    [DecidableEq Y]
+    (s : Finset X)
+  : Finset (BinaryDirectSum X Y) :=
+    Finset.image (BinaryDirectSum.incl_l X Y) s
+
+@[simp]
+def BinaryDirectSum.image_right
+    (X : Type _)
+    (Y : Type _)
+    [AddCommGroup X]
+    [AddCommGroup Y]
+    [DecidableEq X]
+    [DecidableEq Y]
+    (t : Finset Y)
+  : Finset (BinaryDirectSum X Y) :=
+    Finset.image (BinaryDirectSum.incl_r X Y) t
+
+theorem include_left_project_right
+    (X : Type _)
+    (Y : Type _)
+    [AddCommGroup X]
+    [AddCommGroup Y]
+    (x : X)
+  : BinaryDirectSum.proj_r ((BinaryDirectSum.incl_l X Y) x) = 0 :=
+by
+  unfold BinaryDirectSum.proj_r
+  unfold BinaryDirectSum.incl_l
+  apply DirectSum.of_eq_of_ne
+  trivial
+
 end BinaryDirectSum
 
 @[simp]
 def simplexDisjointUnion
-    (s : Finset E)
-    (t : Finset F)
-  : Finset (BinaryDirectSum E F) :=
-    Finset.image (BinaryDirectSum.incl_left E F) s ∪ Finset.image (BinaryDirectSum.incl_right E F) t
+    (s t : Finset E)
+  : Finset (BinaryDirectSum E 𝕜) :=
+    (BinaryDirectSum.image_left E 𝕜 s) ∪
+    Finset.image (· + (BinaryDirectSum.include_right E 𝕜 1)) (BinaryDirectSum.image_left E 𝕜 t)
 
 infixl:65 " ⊔ₛ " => simplexDisjointUnion
 
 instance SimplexDisjoint.nonempty
-    (s : Finset E)
-    (t : Finset F)
+    (s t : Finset E)
     (H : Nonempty s ∨ Nonempty t)
-  : Nonempty (s ⊔ₛ t) :=
+  : Nonempty (s ⊔ₛ t : Finset (BinaryDirectSum E 𝕜)) := -- seems it can't infer 𝕜 in the type of s ⊔ₛ t so we need to specify it
 by
   iterate 2 rw [Finset.nonempty_coe_sort, ← Finset.coe_nonempty] at *
   unfold simplexDisjointUnion
-  simp
+  -- simp
   cases' H with Hs Ht
-  · rw [Finset.coe_nonempty] at *
+  · simp
+    rw [Finset.coe_nonempty] at *
     constructor
     assumption
   · rw [Finset.coe_nonempty] at *
-    rw [Or.comm]
-    constructor
+    apply Finset.Nonempty.inr
+    apply Finset.Nonempty.image
+    unfold BinaryDirectSum.image_left
+    apply Finset.Nonempty.image
     assumption
 
 instance SimplexDisjoint.nonempty.left
     (s : Finset E)
     [Nonempty s]
-  : Nonempty (s ⊔ₛ (∅ : Finset F)) :=
+  : Nonempty (s ⊔ₛ ∅ : Finset (BinaryDirectSum E 𝕜)) := -- same here
 by
-  have : Nonempty ↥s ∨ Nonempty ↥(∅ : Finset F) :=
+  have : Nonempty ↥s ∨ Nonempty ↥(∅ : Finset E) :=
     by
     left
     assumption
-  apply SimplexDisjoint.nonempty s (∅ : Finset F) this
+  apply SimplexDisjoint.nonempty s (∅ : Finset E) this
 
 instance SimplexDisjoint.nonempty.right
-    (t : Finset F)
+    (t : Finset E)
     [Nonempty t]
-  : Nonempty ((∅ : Finset E) ⊔ₛ t) :=
+  : Nonempty (∅ ⊔ₛ t : Finset (BinaryDirectSum E 𝕜)) := --same here
 by
   have : Nonempty ↥(∅ : Finset E) ∨ Nonempty ↥t :=
     by
@@ -1482,29 +1543,61 @@ instance SimplexDisjoint.partialOrder
   : PartialOrder (Finset (BinaryDirectSum E F)) :=
     Finset.partialOrder
 
-theorem simplex_disjoint_disjoint (s t : Finset α) :
-    @Disjoint _ SimplexDisjoint.partialOrder _ (Finset.product s {(0 : ℕ)})
-      (Finset.product t {(1 : ℕ)}) :=
-  by
-  rw [Finset.disjoint_left]
-  intro x x_in_s0
-  rw [Finset.mem_product] at *
-  cases' x_in_s0 with x_in_s x0
-  rw [not_and_or]
-  right
-  rw [Finset.mem_singleton] at *
-  rw [x0]
-  simp
+theorem simplex_disjoint_disjoint
+    (s t : Finset E)
+  : Disjoint
+      (BinaryDirectSum.image_left E 𝕜 s)
+      (Finset.image (· + (BinaryDirectSum.include_right E 𝕜 1)) (BinaryDirectSum.image_left E 𝕜 t)) :=
+by
+  rw [Finset.disjoint_iff_ne]
+  intro x x_in_incl_s y y_in_incl_t
+  unfold BinaryDirectSum at x y
+  simp at x_in_incl_s y_in_incl_t
+  choose a a_in_s using x_in_incl_s
+  choose a_in_s a_incl_eq_x using a_in_s
+  choose b b_in_t using y_in_incl_t
+  choose b_in_t b_incl_eq_y using b_in_t
+  unfold BinaryDirectSum.include_right at b_incl_eq_y
+  apply_fun fun x => BinaryDirectSum.proj_r x at a_incl_eq_x
+  apply_fun fun y => BinaryDirectSum.proj_r y at b_incl_eq_y
+  have x_eq_0 : 0 = x 1 := by
+    have h : ((DirectSum.of (BinaryDirectSum.types E 𝕜) 0) a) 1 = 0 := by
+      apply DirectSum.of_eq_of_ne
+      tauto
+    rw [←h]
+    assumption
+  have y_minus_1_eq_0 : 0 = (y + -(BinaryDirectSum.incl_r E 𝕜) (1 : 𝕜)) 1 := by
+    have h : ((DirectSum.of (BinaryDirectSum.types E 𝕜) 0) b) 1 = 0 := by
+      apply DirectSum.of_eq_of_ne
+      tauto
+    rw [←h]
+    assumption
+  rw [DirectSum.add_apply] at y_minus_1_eq_0
+  have h : (-(BinaryDirectSum.incl_r E 𝕜) (1 : 𝕜)) 1 = -(1 : 𝕜) := by
+    unfold BinaryDirectSum.incl_r
+    rw [←AddMonoidHom.map_neg]
+    rw [DirectSum.of_eq_same]
+  simp only [h] at y_minus_1_eq_0
+  by_contra x_eq_y
+  rw [DirectSum.ext_iff] at x_eq_y
+  specialize x_eq_y 1
+  rw [←x_eq_0] at x_eq_y
+  rw [←x_eq_y] at y_minus_1_eq_0
+  simp at y_minus_1_eq_0
 
-theorem simplex_disjoint_mem (s t : Finset α) (x : α × ℕ) :
-    x ∈ s ⊔ₛ t ↔ x.fst ∈ s ∧ x.snd = 0 ∨ x.fst ∈ t ∧ x.snd = 1 :=
-  by
+theorem simplex_disjoint_mem
+    (s t : Finset E)
+    (x : DirectSum (Fin 2) (BinaryDirectSum.types E 𝕜))
+  : x ∈ s ⊔ₛ t ↔ (x 0) ∈ s ∧ (x 1) = 0 ∨ (x 0) ∈ t ∧ (x 1) = (1 : 𝕜) :=
+by
   simp only [simplexDisjointUnion]
   rw [← Finset.disjUnion_eq_union, Finset.mem_disjUnion]
   constructor
   intro x_in_prod
   cases' x_in_prod with x_in_s0 x_in_t1
-  rw [Finset.mem_product] at x_in_s0
+  simp at x_in_s0
+  choose x_in_s a_incl_eq_x using x_in_s0
+
   cases' x_in_s0 with x_in_s x0
   left; constructor
   assumption
