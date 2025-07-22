@@ -1610,28 +1610,35 @@ by
   assumption
   apply simplex_disjoint_disjoint
 
-theorem simplex_disjoint_mem_left (s t : Finset α) (x : α) : (x, 0) ∈ s ⊔ₛ t ↔ x ∈ s :=
-  by
-  unfold simplexDisjointUnion
+theorem simplex_disjoint_mem_left
+    (s t : Finset E)
+    (x : E)
+  : (BinaryDirectSum.incl_l E 𝕜 x) ∈ s ⊔ₛ t ↔ x ∈ s :=
+by
   constructor
   · intro x0_in_st
-    rw [Finset.mem_union] at x0_in_st
-    cases' x0_in_st with x0_in_s0 x0_in_t1
-    rw [Finset.mem_product] at x0_in_s0
-    cases' x0_in_s0 with x_in_s zero
-    simp at x_in_s
-    assumption
-    rw [Finset.mem_product] at x0_in_t1
-    cases' x0_in_t1 with x_in_t contra
-    simp at contra
-    contradiction
+    have h : (BinaryDirectSum.incl_l E 𝕜 x) ∈ s ⊔ₛ t
+          ↔ ((BinaryDirectSum.incl_l E 𝕜 x) 0) ∈ s ∧ ((BinaryDirectSum.incl_l E 𝕜 x) 1) = 0
+            ∨ ((BinaryDirectSum.incl_l E 𝕜 x) 0) ∈ t ∧ ((BinaryDirectSum.incl_l E 𝕜 x) 1) = (1 : 𝕜) :=
+      by apply simplex_disjoint_mem
+    rw [h] at x0_in_st
+    cases' x0_in_st with foo bar
+    · choose x_in_s _ using foo
+      unfold BinaryDirectSum.incl_l at x_in_s
+      have h : ((DirectSum.of (BinaryDirectSum.types E 𝕜) 0) x) 0 = x := by
+        apply DirectSum.of_eq_same
+      rw [h] at x_in_s
+      assumption
+    · choose c d using bar
+      rw [← BinaryDirectSum.proj_r] at d
+      rw [include_left_project_right] at d
+      by_contra
+      simp at d
   · intro x_in_s
-    rw [Finset.mem_union]
-    left
-    rw [Finset.mem_product]
-    constructor
-    simp; assumption
+    unfold simplexDisjointUnion
     simp
+    left
+    use x
 
 theorem simplex_disjoint_mem_right (s t : Finset α) (x : α) : (x, 1) ∈ s ⊔ₛ t ↔ x ∈ t :=
   by
