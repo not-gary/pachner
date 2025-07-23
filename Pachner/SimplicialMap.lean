@@ -2096,32 +2096,60 @@ by
   unfold BinaryDirectSum.include_right
   apply add_left_injective
 
-/- ././././Mathport/Syntax/Translate/Expr.lean:373:4: unsupported set replacement {(«expr ⊔ₛ »(s, t)) | (s «expr ∈ » X.simplices) (t «expr ∈ » Y.simplices)} -/
 -- Define simplicial join.
 @[simp]
-def simplicialJoin (X Y : SimplicialComplex α) : SimplicialComplex (α × ℕ) :=
-  SimplicialComplex.mk
-    "././././Mathport/Syntax/Translate/Expr.lean:373:4: unsupported set replacement {(«expr ⊔ₛ »(s, t)) | (s «expr ∈ » X.simplices) (t «expr ∈ » Y.simplices)}"
+def simplicialJoin (X Y : AbstractSimplicialComplex E) : AbstractSimplicialComplex (BinaryDirectSum E 𝕜) :=
+  AbstractSimplicialComplex.mk
+    ({(s ⊔ₛ t) | (s ∈ X.faces ∪ {∅}) (t ∈ Y.faces ∪ {∅})} \ {∅})
     (by
-      rw [Set.nonempty_coe_sort, Set.nonempty_def]
-      use∅
-      rw [Set.mem_setOf]
-      use∅; constructor; apply simplicialComplex_empty_simplex
-      use∅; constructor; apply simplicialComplex_empty_simplex
-      tauto)
+      rw [Set.mem_diff, not_and]
+      intro h
+      simp only [Set.mem_singleton_iff, not_true_eq_false, not_false_eq_true])
     (by
-      unfold IsSubsetClosed
-      intro s s_in_XY t t_sset_s
-      rw [Set.mem_setOf] at *
+      intro s t s_in_XY t_sset_s t_ne
+      rw [Set.mem_diff, Set.mem_setOf] at *
+      choose s_in_XY s_ne using s_in_XY
       choose u Hu v Hv uv_eq_s using s_in_XY
       rw [← uv_eq_s, simplex_disjoint_subset_sep] at t_sset_s
       choose z w t_eq_zw using t_sset_s
       choose t_eq_zw z_sset_u w_sset_v using t_eq_zw
+      constructor
       use z; constructor
-      apply X.subset_closed u <;> assumption
+
+      rw [Set.mem_union] at ⊢ Hu
+      by_cases z_empty : z = ∅
+      right
+      rw [Set.mem_singleton_iff]
+      assumption
+
+      cases' Hu with u_in_X u_empty
+      left
+      apply X.down_closed <;> assumption
+
+      right
+      rw [Set.mem_singleton_iff] at u_empty
+      rw [u_empty, Finset.subset_empty] at z_sset_u
+      contradiction
+
       use w; constructor
-      apply Y.subset_closed v <;> assumption
-      symm; assumption)
+      rw [Set.mem_union] at ⊢ Hv
+      by_cases w_empty : w = ∅
+      right
+      rw [Set.mem_singleton_iff]
+      assumption
+
+      cases' Hv with v_in_Y v_empty
+      left
+      apply Y.down_closed <;> assumption
+
+      right
+      rw [Set.mem_singleton_iff] at v_empty
+      rw [v_empty, Finset.subset_empty] at w_sset_v
+      contradiction
+
+      symm; assumption
+      rw [Set.mem_singleton_iff]
+      assumption)
 
 infixl:70 " ⋆ " => simplicialJoin
 
