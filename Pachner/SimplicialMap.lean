@@ -1907,7 +1907,8 @@ by
   let w_prod : Finset (BinaryDirectSum E 𝕜) := Finset.filter (fun x : BinaryDirectSum E 𝕜 => x.proj_r = 1) s
   let w : Finset E := Finset.biUnion w_prod fun x => {x.proj_l}
   use z; use w
-  have s_eq_zw : s = z ⊔ₛ w := by
+  have s_eq_zw : s = z ⊔ₛ w :=
+  by
     rw [Finset.ext_iff]
     intro x
     constructor
@@ -2013,7 +2014,8 @@ by
   apply simplex_disjoint_eq_unique
 
 theorem simplex_disjoint_distr_union
-    (s t u w : Finset E) : s ⊔ₛ t ∪ (u ⊔ₛ w) = (s ∪ u ⊔ₛ (t ∪ w) : Finset (BinaryDirectSum E 𝕜)) :=
+    (s t u w : Finset E)
+  : s ⊔ₛ t ∪ (u ⊔ₛ w) = (s ∪ u ⊔ₛ (t ∪ w) : Finset (BinaryDirectSum E 𝕜)) :=
 by
   unfold simplexDisjointUnion
   rw [← Finset.union_assoc]
@@ -2034,45 +2036,65 @@ by
   unfold BinaryDirectSum.image_left
   rw [← Finset.image_union t w]
 
-theorem simplex_disjoint_distr_inter (s t u w : Finset α) : (s ⊔ₛ t) ∩ (u ⊔ₛ w) = s ∩ u ⊔ₛ t ∩ w :=
-  by
+theorem image_left_inter
+    (s t : Finset E)
+  : BinaryDirectSum.image_left E 𝕜 s ∩ BinaryDirectSum.image_left E 𝕜 t = BinaryDirectSum.image_left E 𝕜 (s ∩ t) :=
+by
+  simp only [BinaryDirectSum.image_left]
+  rw [Finset.image_inter]
+  unfold BinaryDirectSum.incl_l
+  apply DirectSum.of_injective
+
+theorem image_right_inter
+    (s t : Finset E)
+  : Finset.image (fun x ↦ x + BinaryDirectSum.include_right E 𝕜 1) (BinaryDirectSum.image_left E 𝕜 s) ∩ Finset.image (fun x ↦ x + BinaryDirectSum.include_right E 𝕜 1) (BinaryDirectSum.image_left E 𝕜 t)
+    = Finset.image (fun x ↦ x + BinaryDirectSum.include_right E 𝕜 1) (BinaryDirectSum.image_left E 𝕜 (s ∩ t)) :=
+by
+  rw [← Finset.image_inter, image_left_inter]
+  apply add_left_injective
+
+theorem simplex_disjoint_distr_inter
+    (s t u w : Finset E)
+  : (s ⊔ₛ t) ∩ (u ⊔ₛ w) = (s ∩ u ⊔ₛ t ∩ w : Finset (BinaryDirectSum E 𝕜)) :=
+by
   unfold simplexDisjointUnion
   repeat' rw [Finset.inter_union_distrib_left]
   repeat' rw [Finset.union_inter_distrib_right]
-  have H_tu_empty :
-    (Finset.product t {1} : Finset (α × ℕ)) ∩ (Finset.product u {0} : Finset (α × ℕ)) = ∅ :=
-    by
+  have H_tu_empty : (Finset.image (fun x ↦ x + BinaryDirectSum.include_right E 𝕜 1) (BinaryDirectSum.image_left E 𝕜 t)) ∩ (BinaryDirectSum.image_left E 𝕜 u) = ∅ :=
+  by
     rw [← Finset.disjoint_iff_inter_eq_empty]
-    rw [Finset.disjoint_product]
-    right
-    rw [Finset.disjoint_iff_inter_eq_empty]
-    tauto
-  have H_sw_empty :
-    (Finset.product s {0} : Finset (α × ℕ)) ∩ (Finset.product w {1} : Finset (α × ℕ)) = ∅ :=
-    by
+    symm
+    apply simplex_disjoint_disjoint u t
+  have H_sw_empty : (BinaryDirectSum.image_left E 𝕜 s) ∩ (Finset.image (fun x => x + BinaryDirectSum.include_right E 𝕜 1) (BinaryDirectSum.image_left E 𝕜 w)) = ∅ :=
+  by
     rw [← Finset.disjoint_iff_inter_eq_empty]
-    rw [Finset.disjoint_product]
-    right
-    rw [Finset.disjoint_iff_inter_eq_empty]
-    tauto
+    apply simplex_disjoint_disjoint s w
   rw [H_tu_empty, H_sw_empty]
   repeat' rw [Finset.union_empty, Finset.empty_union]
-  repeat' rw [Finset.inter_product]
+  rw [image_right_inter, image_left_inter]
 
-/- ././././Mathport/Syntax/Translate/Expr.lean:177:8: unsupported: ambiguous notation -/
-/- ././././Mathport/Syntax/Translate/Expr.lean:177:8: unsupported: ambiguous notation -/
-theorem simplex_disjoint_card (s t : Finset α) : (s ⊔ₛ t).card = s.card + t.card :=
-  by
+theorem simplex_disjoint_card
+    (s t : Finset E)
+  : (s ⊔ₛ t : Finset (BinaryDirectSum E 𝕜)).card = s.card + t.card :=
+by
   simp only [simplexDisjointUnion]
-  set s₀ : Finset (α × ℕ) := s ×ˢ {0}
-  set t₁ : Finset (α × ℕ) := t ×ˢ {1}
+  set s₀ : Finset (BinaryDirectSum E 𝕜) := BinaryDirectSum.image_left E 𝕜 s
+  set t₁ : Finset (BinaryDirectSum E 𝕜) := Finset.image (fun x ↦ x + BinaryDirectSum.include_right E 𝕜 1) (BinaryDirectSum.image_left E 𝕜 t)
   have card_disj : (s₀ ∪ t₁).card = s₀.card + t₁.card :=
     by
     apply Finset.card_union_of_disjoint
-    simp only [s₀, t₁, Finset.disjoint_product, Finset.disjoint_singleton]
-    right
-    apply Nat.zero_ne_one
-  simp only [card_disj, s₀, t₁, Finset.card_product, Finset.card_singleton, mul_one]
+    simp only [s₀, t₁]
+    apply simplex_disjoint_disjoint s t
+  simp only [card_disj, s₀, t₁]
+  rw [Finset.card_image_of_injective]
+  simp only [BinaryDirectSum.image_left]
+  rw [Finset.card_image_of_injective, BinaryDirectSum.incl_l, Finset.card_image_of_injective]
+
+  apply DirectSum.of_injective
+  unfold BinaryDirectSum.incl_l
+  apply DirectSum.of_injective
+  unfold BinaryDirectSum.include_right
+  apply add_left_injective
 
 /- ././././Mathport/Syntax/Translate/Expr.lean:373:4: unsupported set replacement {(«expr ⊔ₛ »(s, t)) | (s «expr ∈ » X.simplices) (t «expr ∈ » Y.simplices)} -/
 -- Define simplicial join.
