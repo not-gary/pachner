@@ -2280,138 +2280,192 @@ by
 theorem simplicialJoin_mem
     (X Y : AbstractSimplicialComplex E)
     (s : Finset (BinaryDirectSum E 𝕜)) :
-    s ∈ (X ⋆ Y).faces ↔ ∃ t ∈ X.faces ∪ {∅}, ∃ u ∈ Y.faces ∪ {∅}, s = t ⊔ₛ u ∧ (t ≠ ∅ ∨ u ≠ ∅) :=
+    s ∈ (X ⋆ Y).faces ↔ ∃ t ∈ X.faces ∪ {∅}, ∃ u ∈ Y.faces ∪ {∅}, s = t ⊔ₛ u ∧ (s ≠ ∅) :=
   by
   unfold simplicialJoin
   simp only [AbstractSimplicialComplex.faces]
   rw [Set.mem_diff, Set.mem_setOf]
   constructor
   · intro s_in_XY
+    choose s_in_XY s_ne using s_in_XY
     choose t Ht u Hu s_eq_tu using s_in_XY
     use t; constructor; assumption
     use u; constructor; assumption
-    symm
+    constructor
+    symm; assumption
+    rw [Set.mem_singleton_iff] at s_ne
     assumption
   · intro s_eq_tu
-    choose t Ht u Hu s_eq_tu using s_eq_tu
+    choose t Ht u Hu s_eq_tu s_ne using s_eq_tu
+    constructor
+
     use t; constructor; assumption
     use u; constructor; assumption
     symm
     assumption
 
-theorem simplicialJoin_incl_left (X Y : SimplicialComplex α) (s : Finset α) :
-    s ∈ X.simplices → s ⊔ₛ ∅ ∈ (X ⋆ Y).simplices :=
-  by
+    rw [Set.mem_singleton_iff]
+    assumption
+
+theorem simplicialJoin_incl_left
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E)
+  : s ∈ X.faces → (s ⊔ₛ ∅ : Finset (BinaryDirectSum E 𝕜)) ∈ (X ⋆ Y).faces :=
+by
   intro s_in_X
   unfold simplicialJoin
-  simp only [SimplicialComplex.simplices]
-  rw [Set.mem_setOf]
-  use s; constructor; assumption
-  use∅; constructor; apply simplicialComplex_empty_simplex
+  simp only [AbstractSimplicialComplex.faces]
+  rw [Set.mem_diff, Set.mem_setOf]
+  constructor
+
+  use s; constructor
+  rw [Set.mem_union]
+  left; assumption
+
+  use ∅; constructor
+  rw [Set.mem_union]
+  right; apply Set.mem_singleton
   rfl
 
-theorem simplicialJoin_incl_right (X Y : SimplicialComplex α) (t : Finset α) :
-    t ∈ Y.simplices → ∅ ⊔ₛ t ∈ (X ⋆ Y).simplices :=
-  by
+  rw [Set.mem_singleton_iff]
+  simp only [simplexDisjointUnion, BinaryDirectSum.image_left,
+    Finset.image_empty, Finset.union_empty, Finset.image_eq_empty]
+  revert s_in_X
+  contrapose
+  rw [not_not]
+  intro s_empty
+  rw [s_empty]
+  apply X.empty_notMem
+
+theorem simplicialJoin_incl_right
+    (X Y : AbstractSimplicialComplex E)
+    (t : Finset E)
+  : t ∈ Y.faces → (∅ ⊔ₛ t : Finset (BinaryDirectSum E 𝕜)) ∈ (X ⋆ Y).faces :=
+by
   intro t_in_Y
   unfold simplicialJoin
-  simp only [SimplicialComplex.simplices]
-  rw [Set.mem_setOf]
-  use∅; constructor; apply simplicialComplex_empty_simplex
-  use t; constructor; assumption
+  simp only [AbstractSimplicialComplex.faces]
+  rw [Set.mem_diff, Set.mem_setOf]
+  constructor
+
+  use ∅; constructor
+  rw [Set.mem_union]
+  right
+  apply Set.mem_singleton
+
+  use t; constructor
+  rw [Set.mem_union]
+  left; assumption
   rfl
 
-theorem simplicialJoin_vertices_mem_left (X Y : SimplicialComplex α) (x : α) :
-    (x, 0) ∈ vertices (X ⋆ Y) ↔ x ∈ vertices X :=
+  rw [Set.mem_singleton_iff]
+  simp only [simplexDisjointUnion, BinaryDirectSum.include_right, BinaryDirectSum.image_left,
+    Finset.union_eq_empty]
+  rw [and_comm, not_and]
+  intro t_empty
+  rw [Finset.image_eq_empty, Finset.image_eq_empty] at t_empty
+  have contra : t ∉ Y.faces :=
   by
-  dsimp only [vertices, simplicialJoin, SimplicialComplex.simplices]
-  repeat' rw [Set.mem_iUnion]
+    rw [t_empty]
+    apply Y.empty_notMem
+  contradiction
+
+theorem simplicialJoin_vertices_mem_left
+    (X Y : AbstractSimplicialComplex E)
+    (x : E)
+  : x.0 𝕜 ∈ (X ⋆ Y).vertices ↔ x ∈ X.vertices :=
+by
+  simp only [AbstractSimplicialComplex.vertices_eq, Set.mem_iUnion]
   constructor
   · intro x0_in_XY
-    choose s s_lift Hs x0_in_s using x0_in_XY
-    rw [Set.mem_setOf, Set.mem_range] at Hs
-    choose Hs s_lifts using Hs
-    choose t Ht u Hu tu_eq_s using Hs
-    use t
-    rw [Set.mem_iUnion]
-    use Ht
-    have Hx_0 : (x, 0) ∈ s := by
-      rw [← Finset.mem_coe, s_lifts]
-      assumption
-    rw [Finset.mem_coe]
-    rw [← tu_eq_s, simplex_disjoint_mem_left] at Hx_0
+    choose s s_in_XY x_in_s using x0_in_XY
+    simp only [simplicialJoin, Set.mem_diff, Set.mem_setOf] at s_in_XY
+    choose s_in_XY s_ne using s_in_XY
+    choose t t_in_X u u_in_Y s_eq_tu using s_in_XY
+
+    cases' t_in_X with t_in_X t_empty
+    use t; constructor
+    rw [← s_eq_tu, Finset.mem_coe, simplex_disjoint_mem_left] at x_in_s
     assumption
+
+    rw [Set.mem_singleton_iff] at t_empty
+    rw [t_empty, Finset.ext_iff] at s_eq_tu
+    specialize s_eq_tu (x.0 𝕜)
+    rw [Finset.mem_coe, ← s_eq_tu] at x_in_s
+    have contra : x.0 𝕜 ∉ ∅ ⊔ₛ u :=
+    by
+      simp only [simplex_disjoint_mem_left, Finset.notMem_empty, not_false_eq_true]
+    contradiction
   · intro x_in_s
-    choose s s_lift Hs x_in_s using x_in_s
-    rw [Set.mem_range] at Hs
-    choose Hs s_lifts using Hs
-    use s ⊔ₛ ∅
-    rw [Set.mem_setOf, Set.mem_iUnion]
-    have H_ex :
-      ∃ (z : Finset α) (Hz : z ∈ X.simplices) (w : Finset α) (Hw : w ∈ Y.simplices),
-        z ⊔ₛ w = s ⊔ₛ ∅ :=
-      by
-      use s; constructor; assumption
-      use∅; constructor; apply simplicialComplex_empty_simplex
-      rfl
-    use H_ex
+    choose s s_in_X x_in_s using x_in_s
+    use (s ⊔ₛ ∅); constructor
+
     rw [Finset.mem_coe, simplex_disjoint_mem_left]
-    have Hx : x ∈ s := by
-      rw [← Finset.mem_coe, s_lifts]
-      assumption
     assumption
 
-theorem simplicialJoin_vertices_mem_right (X Y : SimplicialComplex α) (x : α) :
-    (x, 1) ∈ vertices (X ⋆ Y) ↔ x ∈ vertices Y :=
-  by
-  dsimp only [vertices, simplicialJoin, SimplicialComplex.simplices]
-  repeat' rw [Set.mem_iUnion]
+    apply simplicialJoin_incl_left
+    assumption
+
+theorem simplicialJoin_vertices_mem_right
+    (X Y : AbstractSimplicialComplex E)
+    (x : E)
+  : x.1 𝕜 ∈ (X ⋆ Y).vertices ↔ x ∈ Y.vertices :=
+by
+  simp only [AbstractSimplicialComplex.vertices_eq, Set.mem_iUnion]
   constructor
-  · intro x1_in_XY
-    choose s s_lift Hs x1_in_s using x1_in_XY
-    rw [Set.mem_setOf, Set.mem_range] at Hs
-    choose Hs s_lifts using Hs
-    choose t Ht u Hu tu_eq_s using Hs
-    use u
-    rw [Set.mem_iUnion]
-    use Hu
-    have Hx_1 : (x, 1) ∈ s := by
-      rw [← Finset.mem_coe, s_lifts]
-      assumption
-    rw [Finset.mem_coe]
-    rw [← tu_eq_s, simplex_disjoint_mem_right] at Hx_1
-    assumption
-  · intro x_in_s
-    choose s s_lift Hs x_in_s using x_in_s
-    rw [Set.mem_range] at Hs
-    choose Hs s_lifts using Hs
-    use∅ ⊔ₛ s
-    rw [Set.mem_setOf, Set.mem_iUnion]
-    have H_ex :
-      ∃ (z : Finset α) (Hz : z ∈ X.simplices) (w : Finset α) (Hw : w ∈ Y.simplices),
-        z ⊔ₛ w = ∅ ⊔ₛ s :=
-      by
-      use∅; constructor; apply simplicialComplex_empty_simplex
-      use s; constructor; assumption
-      rfl
-    use H_ex
-    rw [Finset.mem_coe, simplex_disjoint_mem_right]
-    have Hx : x ∈ s := by
-      rw [← Finset.mem_coe, s_lifts]
-      assumption
+  · intro x0_in_XY
+    choose s s_in_XY x_in_s using x0_in_XY
+    simp only [simplicialJoin, Set.mem_diff, Set.mem_setOf] at s_in_XY
+    choose s_in_XY s_ne using s_in_XY
+    choose t t_in_X u u_in_Y s_eq_tu using s_in_XY
+
+    cases' u_in_Y with u_in_Y u_empty
+    use u; constructor
+    rw [← s_eq_tu, Finset.mem_coe, simplex_disjoint_mem_right] at x_in_s
     assumption
 
-theorem simplicialJoin_mem_vertices (X Y : SimplicialComplex α) (x : α × ℕ) :
-    x ∈ vertices (X ⋆ Y) ↔ x.fst ∈ vertices X ∧ x.snd = 0 ∨ x.fst ∈ vertices Y ∧ x.snd = 1 :=
-  by
+    rw [Set.mem_singleton_iff] at u_empty
+    rw [u_empty, Finset.ext_iff] at s_eq_tu
+    specialize s_eq_tu (x.1 𝕜)
+    rw [Finset.mem_coe, ← s_eq_tu] at x_in_s
+    have contra : x.1 𝕜 ∉ t ⊔ₛ ∅ :=
+    by
+      simp only [simplex_disjoint_mem_right, Finset.notMem_empty, not_false_eq_true]
+    contradiction
+  · intro x_in_s
+    choose s s_in_X x_in_s using x_in_s
+    use (∅ ⊔ₛ s); constructor
+
+    rw [Finset.mem_coe, simplex_disjoint_mem_right]
+    assumption
+
+    apply simplicialJoin_incl_right
+    assumption
+
+def BinaryDirectSum.fst
+    {X Y : Type _} [AddCommGroup X] [AddCommGroup Y]
+    (x : BinaryDirectSum X Y)
+  := BinaryDirectSum.proj_l x
+
+def BinaryDirectSum.snd
+    {X Y : Type _} [AddCommGroup X] [AddCommGroup Y]
+    (x : BinaryDirectSum X Y)
+  := BinaryDirectSum.proj_r x
+
+theorem simplicialJoin_mem_vertices
+    (X Y : AbstractSimplicialComplex E)
+    (x : BinaryDirectSum E 𝕜)
+  : x ∈ (X ⋆ Y).vertices ↔ x.fst ∈ X.vertices ∧ x.snd = 0 ∨ x.fst ∈ Y.vertices ∧ x.snd = 1 :=
+by
   constructor
   · intro x_in_XY
-    simp only [vertices, simplicialJoin] at x_in_XY
+    simp only [AbstractSimplicialComplex.vertices_eq, simplicialJoin] at x_in_XY
     rw [Set.mem_iUnion] at x_in_XY
     choose y x_in_XY using x_in_XY
     rw [Set.mem_iUnion] at x_in_XY
     choose Hy x_in_y using x_in_XY
-    rw [Set.mem_setOf] at Hy
+    rw [Set.mem_diff, Set.mem_setOf] at Hy
+    choose Hy y_ne using Hy
     choose s Hy using Hy
     cases' Hy with Hs Hy
     choose t Hy using Hy
@@ -2426,35 +2480,48 @@ theorem simplicialJoin_mem_vertices (X Y : SimplicialComplex α) (x : α × ℕ)
     left
     cases' x_in_s with x_in_s x0
     constructor
-    simp only [vertices]
+    simp only [AbstractSimplicialComplex.vertices_eq]
     rw [Set.mem_iUnion]
     use s
     rw [Set.mem_iUnion]
+    rw [Set.mem_union] at Hs
+    cases' Hs with Hs s_empty
     use Hs
     rw [Finset.mem_coe]
     assumption
+
+    rw [Set.mem_singleton_iff] at s_empty
+    rw [s_empty] at x_in_s
+    contradiction
     assumption
+
     right
     cases' x_in_t with x_in_t x1
     constructor
-    simp only [vertices]
+    simp only [AbstractSimplicialComplex.vertices_eq]
     rw [Set.mem_iUnion]
     use t
     rw [Set.mem_iUnion]
+    rw [Set.mem_union] at Ht
+    cases' Ht with Ht t_empty
     use Ht
     rw [Finset.mem_coe]
     assumption
+
+    rw [Set.mem_singleton_iff] at t_empty
+    rw [t_empty] at x_in_t
+    contradiction
     assumption
   · intro x_in_X_or_Y
     cases' x_in_X_or_Y with x_in_X x_in_Y
     cases' x_in_X with x_in_X x0
-    simp only [vertices] at *
+    simp only [AbstractSimplicialComplex.vertices_eq] at *
     rw [Set.mem_iUnion] at *
     choose s x_in_X using x_in_X
     use s ⊔ₛ ∅
     rw [Set.mem_iUnion] at *
     choose Hs x_in_s using x_in_X
-    have Hs_incl : s ⊔ₛ ∅ ∈ (X ⋆ Y).simplices :=
+    have Hs_incl : (s ⊔ₛ ∅ : Finset (BinaryDirectSum E 𝕜)) ∈ (X ⋆ Y).faces :=
       by
       apply simplicialJoin_incl_left
       assumption
@@ -2464,13 +2531,13 @@ theorem simplicialJoin_mem_vertices (X Y : SimplicialComplex α) (x : α × ℕ)
     rw [Finset.mem_coe] at x_in_s
     constructor <;> assumption
     cases' x_in_Y with x_in_Y x1
-    simp only [vertices] at *
+    simp only [AbstractSimplicialComplex.vertices_eq] at *
     rw [Set.mem_iUnion] at *
     choose t x_in_Y using x_in_Y
     use∅ ⊔ₛ t
     rw [Set.mem_iUnion] at *
     choose Ht x_in_t using x_in_Y
-    have Ht_incl : ∅ ⊔ₛ t ∈ (X ⋆ Y).simplices :=
+    have Ht_incl : (∅ ⊔ₛ t : Finset (BinaryDirectSum E 𝕜)) ∈ (X ⋆ Y).faces :=
       by
       apply simplicialJoin_incl_right
       assumption
@@ -2480,23 +2547,50 @@ theorem simplicialJoin_mem_vertices (X Y : SimplicialComplex α) (x : α × ℕ)
     rw [Finset.mem_coe] at x_in_t
     constructor <;> assumption
 
-def simplicialJoinIsoMap (f g : α → β) : α × ℕ → β × ℕ := fun x : α × ℕ =>
-  if x.snd = 0 then (f x.fst, x.snd) else (g x.fst, x.snd)
+def simplicialJoinIsoMap (f g : E → F) : BinaryDirectSum E 𝕜 → BinaryDirectSum F 𝕜
+  := fun x : BinaryDirectSum E 𝕜
+    => if x.snd = 0 then (f x.fst).0 𝕜 else (g x.fst).1 𝕜
 
-theorem simplicialJoin_iso_simplicial (X Y : SimplicialComplex α) (Z W : SimplicialComplex β)
-    (f : SimplicialMap X Z) (g : SimplicialMap Y W) :
-    IsSimplicialMap (X ⋆ Y) (Z ⋆ W) (simplicialJoinIsoMap f.map g.map) :=
-  by
+theorem simplicialJoin_iso_simplicial
+    (X Y : AbstractSimplicialComplex E)
+    (Z W : AbstractSimplicialComplex F)
+    (f : SimplicialMap X Z)
+    (g : SimplicialMap Y W)
+  : IsSimplicialMap (X ⋆ Y) (Z ⋆ W : AbstractSimplicialComplex (BinaryDirectSum F 𝕜)) (simplicialJoinIsoMap f.map g.map) :=
+by
   unfold IsSimplicialMap
   intro s s_in_XY
   rw [simplicialJoin_mem] at *
   choose t Ht u Hu s_eq_tu using s_in_XY
   use Finset.image f.map t; constructor
+  rw [Set.mem_union] at ⊢ Ht
+  cases' Ht with Ht t_empty
+
+  left
   apply f.is_simplicial
   assumption
+
+  right
+  rw [Set.mem_singleton_iff] at ⊢ t_empty
+  rw [t_empty]
+  apply Finset.image_empty
+
   use Finset.image g.map u; constructor
+  rw [Set.mem_union] at ⊢ Hu
+  cases' Hu with Hu u_empty
+
+  left
   apply g.is_simplicial
   assumption
+
+  right
+  rw [Set.mem_singleton_iff] at ⊢ u_empty
+  rw [u_empty]
+  apply Finset.image_empty
+
+  choose s_eq_tu s_ne using s_eq_tu
+  constructor
+
   rw [s_eq_tu]
   simp only [simplexDisjointUnion]
   rw [Finset.image_union]
@@ -2505,12 +2599,13 @@ theorem simplicialJoin_iso_simplicial (X Y : SimplicialComplex α) (Z W : Simpli
   constructor
   · intro x_in_f
     rw [Finset.mem_union] at *
-    cases x_in_f
+    cases' x_in_f with x_in_left x_in_right
+
     left
-    rw [Finset.mem_product]
-    rw [Finset.mem_image] at *
-    choose y y_in_t0 using x_in_f
+    rw [BinaryDirectSum.image_left, Finset.mem_image] at *
+    choose y y_in_t0 using x_in_left
     cases' y_in_t0 with y_in_t0 fy_x
+
     use y.fst
     rw [Finset.mem_product] at y_in_t0
     cases' y_in_t0 with y_in_t0 y_0
@@ -2537,7 +2632,7 @@ theorem simplicialJoin_iso_simplicial (X Y : SimplicialComplex α) (Z W : Simpli
     cases' fy_x with fy_x_fst fy_x_snd
     simp at fy_x_snd
     rw [Finset.mem_singleton, ← fy_x_snd]
-    finish
+
     simp only [Finset.mem_image, simplicialJoinIsoMap] at x_in_f
     choose y y_in_u fy_eq_x using x_in_f
     revert fy_eq_x
@@ -2598,7 +2693,7 @@ theorem simplicialJoin_iso_simplicial (X Y : SimplicialComplex α) (Z W : Simpli
     simp
     simp only [simplicialJoinIsoMap]
     split_ifs
-    finish
+    -- finish
     rw [Prod.eq_iff_fst_eq_snd_eq]
     constructor
     assumption
