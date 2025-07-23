@@ -1528,6 +1528,25 @@ def simplexDisjointUnion
 
 infixl:65 " ⊔ₛ " => simplexDisjointUnion
 
+def SimplexDisjoint.inl
+    {E : Type _}
+    [AddCommGroup E]
+    (x : E)
+    (𝕜 : Type _)
+    [Ring 𝕜] [Nontrivial 𝕜]
+  := BinaryDirectSum.incl_l E 𝕜 x
+
+def SimplexDisjoint.inr
+    {E : Type _}
+    [AddCommGroup E]
+    (x : E)
+    (𝕜 : Type _)
+    [Ring 𝕜] [Nontrivial 𝕜]
+  := (BinaryDirectSum.incl_l E 𝕜 x) + (BinaryDirectSum.incl_r E 𝕜 (1 : 𝕜))
+
+infix:75 ".0 " => SimplexDisjoint.inl
+infix:75 ".1 " => SimplexDisjoint.inr
+
 instance SimplexDisjoint.nonempty
     (s t : Finset E)
     (H : Nonempty s ∨ Nonempty t)
@@ -1758,8 +1777,9 @@ by
 theorem simplex_disjoint_mem_left
     (s t : Finset E)
     (x : E)
-  : (BinaryDirectSum.incl_l E 𝕜 x) ∈ s ⊔ₛ t ↔ x ∈ s :=
+  : x.0 𝕜 ∈ s ⊔ₛ t ↔ x ∈ s :=
 by
+  unfold SimplexDisjoint.inl
   constructor
   · intro x0_in_st
     have h : (BinaryDirectSum.incl_l E 𝕜 x) ∈ s ⊔ₛ t
@@ -1785,7 +1805,10 @@ by
     left
     use x
 
-theorem simplex_disjoint_mem_right (s t : Finset α) (x : α) : (x, 1) ∈ s ⊔ₛ t ↔ x ∈ t :=
+theorem simplex_disjoint_mem_right
+    (s t : Finset E)
+    (x : E)
+  : x.1 𝕜 ∈ s ⊔ₛ t ↔ x ∈ t :=
   by
   unfold simplexDisjointUnion
   constructor
