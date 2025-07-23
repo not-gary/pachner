@@ -1809,41 +1809,70 @@ theorem simplex_disjoint_mem_right
     (s t : Finset E)
     (x : E)
   : x.1 𝕜 ∈ s ⊔ₛ t ↔ x ∈ t :=
-  by
-  unfold simplexDisjointUnion
+by
+  unfold SimplexDisjoint.inr
   constructor
   · intro x1_in_st
-    rw [Finset.mem_union] at x1_in_st
-    cases' x1_in_st with x1_in_s0 x1_in_t1
-    rw [Finset.mem_product] at x1_in_s0
-    cases' x1_in_s0 with x_in_s contra
-    simp at contra
-    contradiction
-    rw [Finset.mem_product] at x1_in_t1
-    cases' x1_in_t1 with x_in_t one
-    simp at x_in_t
-    assumption
+    rw [simplex_disjoint_mem] at x1_in_st
+    cases' x1_in_st with a b
+    · choose _ d using a
+      rw [DirectSum.add_apply] at d
+      iterate 2 rw [← BinaryDirectSum.proj_r] at d
+      rw [include_right_project_right] at d
+      rw [include_left_project_right] at d
+      simp at d
+    · choose c _ using b
+      rw [DirectSum.add_apply] at c
+      iterate 2 rw [← BinaryDirectSum.proj_l] at c
+      rw [include_right_project_left] at c
+      simp at c
+      have h : x = BinaryDirectSum.proj_l ((BinaryDirectSum.incl_l E 𝕜) x) :=
+        by rw [include_left_project_left]
+      rw [h]
+      assumption
   · intro x_in_t
-    rw [Finset.mem_union]
+    have h : (BinaryDirectSum.include_left E 𝕜 x + BinaryDirectSum.include_right E 𝕜 1).proj_l ∈ t
+            ∧ (BinaryDirectSum.include_left E 𝕜 x + BinaryDirectSum.include_right E 𝕜 1).proj_r = 1 :=
+      by
+      constructor
+      · unfold BinaryDirectSum.proj_l
+        rw [DirectSum.add_apply]
+        iterate 2 rw [← BinaryDirectSum.proj_l]
+        unfold BinaryDirectSum.include_left
+        unfold BinaryDirectSum.include_right
+        rw [include_right_project_left]
+        simp
+        have h : BinaryDirectSum.proj_l ((BinaryDirectSum.incl_l E 𝕜) x) = x :=
+          by apply include_left_project_left
+        rw [← h] at x_in_t
+        assumption
+      · unfold BinaryDirectSum.proj_r
+        rw [DirectSum.add_apply]
+        iterate 2 rw [← BinaryDirectSum.proj_r]
+        unfold BinaryDirectSum.include_left
+        unfold BinaryDirectSum.include_right
+        rw [include_left_project_right]
+        rw [include_right_project_right]
+        simp
+    rw [simplex_disjoint_mem]
     right
-    rw [Finset.mem_product]
-    constructor
-    simp; assumption
-    simp
+    assumption
 
-theorem simplex_disjoint_subset_unique (s t u w : Finset α) : s ⊔ₛ t ⊆ u ⊔ₛ w ↔ s ⊆ u ∧ t ⊆ w :=
-  by
+theorem simplex_disjoint_subset_unique
+    (s t u w : Finset E)
+  : s ⊔ₛ t ⊆ (u ⊔ₛ w : Finset (BinaryDirectSum E 𝕜)) ↔ s ⊆ u ∧ t ⊆ w :=
+by
   constructor
   intro disj_sset
   rw [Finset.subset_iff] at disj_sset
   constructor <;> rw [Finset.subset_iff] <;> intro x x_in_s
-  have Hs_0 : (x, 0) ∈ s ⊔ₛ t := by
+  have Hs_0 : x.0 𝕜 ∈ s ⊔ₛ t := by
     rw [simplex_disjoint_mem_left]
     assumption
   specialize disj_sset Hs_0
   rw [simplex_disjoint_mem_left] at disj_sset
   assumption
-  have Ht_1 : (x, 1) ∈ s ⊔ₛ t := by
+  have Ht_1 : x.1 𝕜 ∈ s ⊔ₛ t := by
     rw [simplex_disjoint_mem_right]
     assumption
   specialize disj_sset Ht_1
@@ -1851,82 +1880,89 @@ theorem simplex_disjoint_subset_unique (s t u w : Finset α) : s ⊔ₛ t ⊆ u 
   assumption
   intro sset
   cases' sset with s_sset_u t_sset_w
-  rw [Finset.subset_iff] at *
+  rw [Finset.subset_iff]
   intro x x_in_st
   simp only [simplexDisjointUnion, Finset.mem_union, Finset.mem_product] at *
   cases x_in_st
   left
-  cases' x_in_st with x_in_s x0
-  constructor
-  specialize s_sset_u x_in_s
-  assumption
+  unfold BinaryDirectSum.image_left
+  apply Finset.image_subset_image s_sset_u
   assumption
   right
-  cases' x_in_st with x_in_t x1
-  constructor
-  specialize t_sset_w x_in_t
-  assumption
+  unfold BinaryDirectSum.image_left
+  rw [Finset.image_image]
+  apply Finset.image_subset_image t_sset_w
+  rw [← Finset.image_image]
   assumption
 
-theorem simplex_disjoint_subset_sep (s : Finset (α × ℕ)) (t u : Finset α) :
-    s ⊆ t ⊔ₛ u ↔ ∃ z w : Finset α, s = z ⊔ₛ w ∧ z ⊆ t ∧ w ⊆ u :=
-  by
+theorem simplex_disjoint_subset_sep
+    (s : Finset (BinaryDirectSum E 𝕜))
+    (t u : Finset E)
+  : s ⊆ t ⊔ₛ u ↔ ∃ z w : Finset E, s = z ⊔ₛ w ∧ z ⊆ t ∧ w ⊆ u :=
+by
   constructor
   intro s_sset_tu
-  let z_prod : Finset (α × ℕ) := Finset.filter (fun x : α × ℕ => x.snd = 0) s
-  let z : Finset α := Finset.biUnion z_prod fun x => {x.fst}
-  let w_prod : Finset (α × ℕ) := Finset.filter (fun x : α × ℕ => x.snd = 1) s
-  let w : Finset α := Finset.biUnion w_prod fun x => {x.fst}
+  let z_prod : Finset (BinaryDirectSum E 𝕜) := Finset.filter (fun x : BinaryDirectSum E 𝕜 => x.proj_r = 0) s
+  let z : Finset E := Finset.biUnion z_prod fun x => {x.proj_l}
+  let w_prod : Finset (BinaryDirectSum E 𝕜) := Finset.filter (fun x : BinaryDirectSum E 𝕜 => x.proj_r = 1) s
+  let w : Finset E := Finset.biUnion w_prod fun x => {x.proj_l}
   use z; use w
   have s_eq_zw : s = z ⊔ₛ w := by
     rw [Finset.ext_iff]
     intro x
     constructor
-    rw [Finset.subset_iff] at s_sset_tu
-    simp_rw [simplex_disjoint_mem] at s_sset_tu
-    intro x_in_s
-    specialize s_sset_tu x_in_s
-    rw [simplex_disjoint_mem]
-    simp only [z, z_prod, w, w_prod]
-    iterate 2 rw [Finset.mem_biUnion]
-    cases s_sset_tu
-    left
-    cases' s_sset_tu with x_in_t x0
-    use x
-    rw [Finset.mem_filter]
-    constructor; constructor; assumption
-    assumption
-    rw [Finset.mem_singleton]
-    assumption
-    right
-    cases' s_sset_tu with x_in_u x1
-    constructor
-    use x
-    rw [Finset.mem_filter]
-    constructor; constructor; assumption
-    assumption
-    rw [Finset.mem_singleton]
-    assumption
-    intro x_in_zw
-    rw [simplex_disjoint_mem] at x_in_zw
-    cases x_in_zw <;>
-      · cases' x_in_zw with x_in_filter xn
-        simp only [z, z_prod, w, w_prod] at x_in_filter
-        rw [Finset.mem_biUnion] at x_in_filter
-        choose y y_in_prod x_eq_y using x_in_filter
-        rw [Finset.mem_filter] at y_in_prod
-        cases' y_in_prod with y_in_s yn
-        rw [Finset.mem_singleton] at x_eq_y
-        have : x = y := by
-          rw [Prod.eq_iff_fst_eq_snd_eq]
-          constructor
-          assumption
-          rw [xn, yn]
-        rw [this]
+    · rw [Finset.subset_iff] at s_sset_tu
+      intro x_in_s
+      specialize s_sset_tu x_in_s
+      rw [simplex_disjoint_mem]
+      rw [simplex_disjoint_mem] at s_sset_tu
+      simp only [z, z_prod, w, w_prod]
+      iterate 2 rw [Finset.mem_biUnion]
+      simp [BinaryDirectSum.proj_l, BinaryDirectSum.proj_r]
+      cases' s_sset_tu with a b
+      · cases' a with x_in_t x0
+        constructor
+        constructor
+        use x
+        assumption
+      · cases' b with x_in_u x1
+        symm
+        constructor
+        constructor
+        use x
+        assumption
+    · intro x_in_zw
+      rw [simplex_disjoint_mem] at x_in_zw
+      cases' x_in_zw with a b
+      · simp [z, z_prod, BinaryDirectSum.proj_l, BinaryDirectSum.proj_r] at a
+        choose h1 h2 using a
+        choose y h4 using h1
+        choose h5 h6 using h4
+        choose h7 h8 using h5
+        have h8 : x = y := by
+          rw [DirectSum.ext_iff]
+          intro i
+          match i with
+          | 0 => assumption
+          | 1 => simp [h2]; symm; assumption
+        rw [h8]
+        assumption
+      · simp [w, w_prod, BinaryDirectSum.proj_l, BinaryDirectSum.proj_r] at b
+        choose h1 h2 using b
+        choose y h4 using h1
+        choose h5 h6 using h4
+        choose h7 h8 using h5
+        have h8 : x = y := by
+          rw [DirectSum.ext_iff]
+          intro i
+          match i with
+          | 0 => assumption
+          | 1 => simp [h2]; symm; assumption
+        rw [h8]
         assumption
   constructor
   apply s_eq_zw
-  rw [← simplex_disjoint_subset_unique, ← s_eq_zw]
+  rw [← @simplex_disjoint_subset_unique _ 𝕜, ← s_eq_zw]
   assumption
   intro s_eq_zw
   choose z w s_eq_zw using s_eq_zw
@@ -1935,24 +1971,27 @@ theorem simplex_disjoint_subset_sep (s : Finset (α × ℕ)) (t u : Finset α) :
   intro x x_in_s
   rw [s_eq_zw] at x_in_s
   rw [simplex_disjoint_mem] at *
-  cases x_in_s
-  left
-  cases' x_in_s with x_in_t x0
+  cases' x_in_s with a b
+  cases' a with x_in_t x0
   constructor
   rw [Finset.subset_iff] at z_sset_t
   specialize z_sset_t x_in_t
+  constructor
   assumption
   assumption
-  right
-  cases' x_in_s with x_in_u x1
+  cases' b with x_in_u x1
+  symm
   constructor
   rw [Finset.subset_iff] at w_sset_u
   specialize w_sset_u x_in_u
+  constructor
   assumption
   assumption
 
-theorem simplex_disjoint_eq_unique (s t u w : Finset α) : s ⊔ₛ t = u ⊔ₛ w ↔ s = u ∧ t = w :=
-  by
+theorem simplex_disjoint_eq_unique
+    (s t u w : Finset E)
+  : s ⊔ₛ t = (u ⊔ₛ w : Finset (BinaryDirectSum E 𝕜)) ↔ s = u ∧ t = w :=
+by
   constructor
   · intro H
     repeat' rw [Finset.Subset.antisymm_iff] at *
@@ -1964,24 +2003,36 @@ theorem simplex_disjoint_eq_unique (s t u w : Finset α) : s ⊔ₛ t = u ⊔ₛ
     repeat' rw [simplex_disjoint_subset_unique]
     tauto
 
-theorem simplex_disjoint_empty (s t : Finset α) : s ⊔ₛ t = ∅ ↔ s = ∅ ∧ t = ∅ :=
-  by
-  have H : (∅ : Finset (α × ℕ)) = (∅ : Finset α) ⊔ₛ (∅ : Finset α) :=
+theorem simplex_disjoint_empty
+    (s t : Finset E) : (s ⊔ₛ t : Finset (BinaryDirectSum E 𝕜)) = ∅ ↔ s = ∅ ∧ t = ∅ :=
+by
+  have H : (∅ : Finset (BinaryDirectSum E 𝕜)) = (∅ : Finset E) ⊔ₛ (∅ : Finset E) :=
     by
     simp
-    repeat' rw [Finset.map_empty]
   rw [H]
   apply simplex_disjoint_eq_unique
 
-theorem simplex_disjoint_distr_union (s t u w : Finset α) : s ⊔ₛ t ∪ (u ⊔ₛ w) = s ∪ u ⊔ₛ (t ∪ w) :=
-  by
+theorem simplex_disjoint_distr_union
+    (s t u w : Finset E) : s ⊔ₛ t ∪ (u ⊔ₛ w) = (s ∪ u ⊔ₛ (t ∪ w) : Finset (BinaryDirectSum E 𝕜)) :=
+by
   unfold simplexDisjointUnion
   rw [← Finset.union_assoc]
-  rw [Finset.union_assoc _ (Finset.product t {1}) (Finset.product u {0})]
-  rw [Finset.union_comm (Finset.product t {1}) (Finset.product u {0})]
+  rw [Finset.union_assoc _
+      (Finset.image (fun x ↦ x + BinaryDirectSum.include_right E 𝕜 1) (BinaryDirectSum.image_left E 𝕜 t))
+      (BinaryDirectSum.image_left E 𝕜 u)]
+  rw [Finset.union_comm
+      (Finset.image (fun x ↦ x + BinaryDirectSum.include_right E 𝕜 1) (BinaryDirectSum.image_left E 𝕜 t))
+      (BinaryDirectSum.image_left E 𝕜 u)]
   rw [← Finset.union_assoc]
-  rw [Finset.union_assoc _ (Finset.product t {1}) (Finset.product w {1})]
-  repeat' rw [Finset.union_product]
+  rw [Finset.union_assoc _
+      (Finset.image (fun x ↦ x + BinaryDirectSum.include_right E 𝕜 1) (BinaryDirectSum.image_left E 𝕜 t))
+      (Finset.image (fun x ↦ x + BinaryDirectSum.include_right E 𝕜 1) (BinaryDirectSum.image_left E 𝕜 w))]
+  unfold BinaryDirectSum.image_left
+  rw [← Finset.image_union s u]
+  iterate 4 rw [← BinaryDirectSum.image_left]
+  rw [← Finset.image_union (BinaryDirectSum.image_left E 𝕜 t) (BinaryDirectSum.image_left E 𝕜 w)]
+  unfold BinaryDirectSum.image_left
+  rw [← Finset.image_union t w]
 
 theorem simplex_disjoint_distr_inter (s t u w : Finset α) : (s ⊔ₛ t) ∩ (u ⊔ₛ w) = s ∩ u ⊔ₛ t ∩ w :=
   by
