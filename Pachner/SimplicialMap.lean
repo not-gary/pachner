@@ -1363,7 +1363,7 @@ def BinaryDirectSum
     [AddCommGroup Y]
   := DirectSum (Fin 2) (BinaryDirectSum.types X Y)
 
-instance BinaryDirectSum.CeoSort : Coe (BinaryDirectSum E 𝕜) (DirectSum (Fin 2) (BinaryDirectSum.types E 𝕜)) where
+instance BinaryDirectSum.CoeSort : Coe (BinaryDirectSum E 𝕜) (DirectSum (Fin 2) (BinaryDirectSum.types E 𝕜)) where
   coe x := x
 
 -- Help Lean with some more instances
@@ -1401,8 +1401,8 @@ def BinaryDirectSum.incl_r
   := DirectSum.of (BinaryDirectSum.types X Y) 1
 
 def BinaryDirectSum.proj_l
-    (X : Type _)
-    (Y : Type _)
+    {X : Type _}
+    {Y : Type _}
     [AddCommGroup X]
     [AddCommGroup Y]
     (x : BinaryDirectSum X Y)
@@ -1479,6 +1479,43 @@ by
   unfold BinaryDirectSum.incl_l
   apply DirectSum.of_eq_of_ne
   trivial
+
+theorem include_right_project_left
+    (X : Type _)
+    (Y : Type _)
+    [AddCommGroup X]
+    [AddCommGroup Y]
+    (y : Y)
+  : BinaryDirectSum.proj_l ((BinaryDirectSum.incl_r X Y) y) = 0 :=
+by
+  unfold BinaryDirectSum.proj_l
+  unfold BinaryDirectSum.incl_r
+  apply DirectSum.of_eq_of_ne
+  trivial
+
+theorem include_left_project_left
+    {X : Type _}
+    {Y : Type _}
+    [AddCommGroup X]
+    [AddCommGroup Y]
+    (x : X)
+  : BinaryDirectSum.proj_l ((BinaryDirectSum.incl_l X Y) x) = x :=
+by
+  unfold BinaryDirectSum.proj_l
+  unfold BinaryDirectSum.incl_l
+  apply DirectSum.of_eq_same
+
+theorem include_right_project_right
+    (X : Type _)
+    (Y : Type _)
+    [AddCommGroup X]
+    [AddCommGroup Y]
+    (y : Y)
+  : BinaryDirectSum.proj_r ((BinaryDirectSum.incl_r X Y) y) = y :=
+by
+  unfold BinaryDirectSum.proj_r
+  unfold BinaryDirectSum.incl_r
+  apply DirectSum.of_eq_same
 
 end BinaryDirectSum
 
@@ -1579,6 +1616,29 @@ by
   rw [←x_eq_y] at y_minus_1_eq_0
   simp at y_minus_1_eq_0
 
+theorem image_right_coordinate (t : Finset E) (x : DirectSum (Fin 2) (BinaryDirectSum.types E 𝕜))
+  : x ∈ Finset.image (fun x ↦ x + BinaryDirectSum.include_right E 𝕜 1) (BinaryDirectSum.image_left E 𝕜 t)
+    → x 1 = (1 : 𝕜) :=
+by
+  intro x_in_img
+  simp only [BinaryDirectSum.image_left, Finset.image_add_right,
+    Finset.mem_preimage, Finset.mem_image] at x_in_img
+  choose a a_in_t a_incl_eq_x using x_in_img
+  rw [BinaryDirectSum.incl_l, BinaryDirectSum.include_right, BinaryDirectSum.incl_r,
+    DirectSum.ext_iff] at a_incl_eq_x
+  specialize a_incl_eq_x 1
+  rw [DirectSum.of_eq_of_ne, DirectSum.add_apply] at a_incl_eq_x
+
+  have rhs_eq_neg_one : (-(DirectSum.of (BinaryDirectSum.types E 𝕜) 1) (1 : 𝕜)) 1 = -(1 : 𝕜) :=
+  by
+    rw [← AddMonoidHom.map_neg, DirectSum.of_eq_same]
+  rw [rhs_eq_neg_one] at a_incl_eq_x
+  apply_fun fun x => x + -(1 : 𝕜)
+  simp only [add_neg_cancel, a_incl_eq_x]
+
+  apply add_left_injective
+  trivial
+
 theorem simplex_disjoint_mem
     (s t : Finset E)
     (x : DirectSum (Fin 2) (BinaryDirectSum.types E 𝕜))
@@ -1587,27 +1647,112 @@ by
   simp only [simplexDisjointUnion]
   rw [← Finset.disjUnion_eq_union, Finset.mem_disjUnion]
   constructor
+
   intro x_in_prod
   cases' x_in_prod with x_in_s0 x_in_t1
-  simp at x_in_s0
-  choose a a_in_s a_inl_eq_x using x_in_s0
-  simp only [BinaryDirectSum.incl_l] at a_inl_eq_x
-  unfold BinaryDirectSum.types at a_inl_eq_x
 
-  cases' x_in_s0 with x_in_s x0
+  simp at x_in_s0
+  choose a a_in_s a_incl_eq_x using x_in_s0
   left; constructor
+
+  apply_fun fun x => BinaryDirectSum.proj_l x at a_incl_eq_x
+  have a_incl_proj : BinaryDirectSum.proj_l ((BinaryDirectSum.incl_l E 𝕜) a) = a :=
+  by
+    rw [include_left_project_left]
+  have x_left_eq_a : BinaryDirectSum.proj_l x = a :=
+  by
+    rw [← a_incl_eq_x]
+    assumption
+  unfold BinaryDirectSum.proj_l at x_left_eq_a
+  rw [x_left_eq_a]
   assumption
-  rw [Finset.mem_singleton] at x0
-  assumption
-  rw [Finset.mem_product] at x_in_t1
-  cases' x_in_t1 with x_in_t x1
+
+  apply_fun fun x => BinaryDirectSum.proj_r x at a_incl_eq_x
+  have x_eq_0 : 0 = x 1 := by
+    have h : ((DirectSum.of (BinaryDirectSum.types E 𝕜) 0) a) 1 = 0 := by
+      apply DirectSum.of_eq_of_ne
+      tauto
+    rw [←h]
+    assumption
+  rw [x_eq_0]
+
   right; constructor
+
+  simp only [BinaryDirectSum.image_left, Finset.image_add_right,
+    Finset.mem_preimage, Finset.mem_image] at x_in_t1
+  choose a a_in_t a_incl_eq_x using x_in_t1
+
+  apply_fun fun x => BinaryDirectSum.proj_l x at a_incl_eq_x
+  have a_incl_proj : BinaryDirectSum.proj_l ((BinaryDirectSum.incl_l E 𝕜) a) = a :=
+  by
+    rw [include_left_project_left]
+  unfold BinaryDirectSum.include_right at a_incl_eq_x
+  unfold BinaryDirectSum.proj_l at a_incl_eq_x
+  rw [DirectSum.add_apply] at a_incl_eq_x
+  have test : (-(BinaryDirectSum.incl_r E 𝕜) (1 : 𝕜)) 0 = 0 :=
+  by
+    unfold BinaryDirectSum.incl_r
+    rw [←AddMonoidHom.map_neg]
+    rw [DirectSum.of_eq_of_ne]
+    trivial
+  rw [test] at a_incl_eq_x
+  simp at a_incl_eq_x
+  unfold BinaryDirectSum.proj_l at a_incl_proj
+  have a_eq_x0 : a = x 0 :=
+  by
+    rw [← a_incl_proj]
+    assumption
+  rw [← a_eq_x0]
   assumption
-  rw [Finset.mem_singleton] at x1
+
+  apply image_right_coordinate; assumption
+
+  -- converse
+  intro x_prod
+  cases' x_prod with x_in_s x_in_t
+
+  rcases x_in_s with ⟨x_in_s, x_left⟩
+  left
+  rw [BinaryDirectSum.image_left, BinaryDirectSum.incl_l, Finset.mem_image]
+  use x 0; constructor
   assumption
-  intro x_in_st
-  iterate 2 rw [Finset.mem_product, Finset.mem_singleton]
+  rw [DirectSum.ext_iff]
+  intro i
+  by_cases h : i = 0
+  rw [h, DirectSum.of_eq_same]
+
+  have i_eq_1 : i = 1 := by omega
+  rw [i_eq_1, DirectSum.of_eq_of_ne, x_left]
+  trivial
+
+  rcases x_in_t with ⟨x_in_t, x_right⟩
+  right
+  simp only [BinaryDirectSum.image_left, Finset.image_add_right,
+    Finset.mem_preimage, Finset.mem_image]
+  simp only [BinaryDirectSum.incl_l, BinaryDirectSum.include_right, BinaryDirectSum.incl_r]
+  use x 0; constructor
   assumption
+  rw [DirectSum.ext_iff]
+  intro i
+  by_cases h : i = 0
+  rw [h, DirectSum.of_eq_same, DirectSum.add_apply]
+  have rhs_eq_0 : (-(DirectSum.of (BinaryDirectSum.types E 𝕜) 1) (1 : 𝕜)) 0 = 0 :=
+  by
+    rw [← AddMonoidHom.map_neg, DirectSum.of_eq_of_ne]
+    trivial
+  rw [rhs_eq_0, add_zero]
+
+  have i_eq_1 : i = 1 := by omega
+  rw [i_eq_1, DirectSum.of_eq_of_ne, DirectSum.add_apply]
+  have rhs_eq_neg_one : (-(DirectSum.of (BinaryDirectSum.types E 𝕜) 1) (1 : 𝕜)) 1 = -(1 : 𝕜) :=
+  by
+    rw [← AddMonoidHom.map_neg, DirectSum.of_eq_same]
+  rw [rhs_eq_neg_one]
+  apply_fun fun x => x + -(1 : 𝕜) at x_right
+  rw [add_neg_cancel] at x_right
+  rw [x_right]
+  trivial
+
   apply simplex_disjoint_disjoint
 
 theorem simplex_disjoint_mem_left
