@@ -3894,42 +3894,140 @@ by
   set m := Y.dim
   rw [le_antisymm_iff]
   constructor
-  · have k_dim : k ∈ Finset.image dim (X ⋆ Y).simplices.toFinset := by apply Finset.max'_mem
-    simp only [Finset.mem_image, Set.mem_toFinset] at k_dim
+  · have k_dim : k ∈ Finset.image face_dim (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).faces.toFinset ∪ {-1} :=
+    by
+      simp only [k, AbstractSimplicialComplex.dim]
+      apply Finset.max'_mem
+    simp only [Finset.mem_union, Finset.mem_image, Finset.mem_singleton, Set.mem_toFinset] at k_dim
+    cases' k_dim with k_dim k_empty
+
     choose u u_in_XY dim_u_k using k_dim
     rw [simplicialJoin_mem] at u_in_XY
     choose s s_in_X t t_in_Y u_eq_st using u_in_XY
-    rw [← dim_u_k, dim, u_eq_st, simplex_disjoint_card]
-    have st_dim : ↑(s.card + t.card) - 1 = dim s + dim t + 1 := by simp; linarith
+    choose u_eq_st u_ne using u_eq_st
+    rw [← dim_u_k, face_dim, u_eq_st, simplex_disjoint_card]
+    have st_dim : ↑(s.card + t.card) - 1 = face_dim s + face_dim t + 1 := by simp; linarith
     rw [st_dim]
-    have s_le_dim : dim s ≤ dimOfComplex X :=
-      by
+    have s_le_dim : face_dim s ≤ X.dim :=
+    by
       apply Finset.le_max'
-      simp only [Finset.mem_image, Set.mem_toFinset]
-      use s; constructor; assumption
-      rfl
-    have t_le_dim : dim t ≤ dimOfComplex Y :=
-      by
+      simp only [Finset.mem_union, Finset.mem_image, Finset.mem_singleton, Set.mem_toFinset]
+      rw [Set.mem_union, Set.mem_singleton_iff] at s_in_X
+      cases' s_in_X with s_in_X s_empty
+
+      left; use s
+      right; subst s_empty
+      simp only [face_dim, Finset.card_empty, CharP.cast_eq_zero, zero_sub, Int.reduceNeg, k]
+    have t_le_dim : face_dim t ≤ Y.dim :=
+    by
       apply Finset.le_max'
-      simp only [Finset.mem_image, Set.mem_toFinset]
-      use t; constructor; assumption
-      rfl
+      simp only [Finset.mem_union, Finset.mem_image, Finset.mem_singleton, Set.mem_toFinset]
+      rw [Set.mem_union, Set.mem_singleton_iff] at t_in_Y
+      cases' t_in_Y with t_in_Y t_empty
+
+      left; use t
+      right; subst t_empty
+      simp only [face_dim, Finset.card_empty, CharP.cast_eq_zero, zero_sub, Int.reduceNeg, k]
     linarith
-  · have n_dim : n ∈ Finset.image dim X.simplices.to_finset := by apply Finset.max'_mem
-    have m_dim : m ∈ Finset.image dim Y.simplices.to_finset := by apply Finset.max'_mem
-    simp only [Finset.mem_image, Set.mem_toFinset] at n_dim m_dim
+
+    have Hn : -1 ≤ n :=
+    by
+      simp only [n, AbstractSimplicialComplex.dim]
+      apply Finset.le_max'
+      rw [Finset.mem_union]
+      right; apply Finset.mem_singleton_self
+    have Hm : -1 ≤ m :=
+    by
+      simp only [m, AbstractSimplicialComplex.dim]
+      apply Finset.le_max'
+      rw [Finset.mem_union]
+      right; apply Finset.mem_singleton_self
+    linarith
+  · have n_dim : n ∈ Finset.image face_dim X.faces.toFinset ∪ {-1} :=
+    by
+      apply Finset.max'_mem
+    have m_dim : m ∈ Finset.image face_dim Y.faces.toFinset ∪ {-1} :=
+    by
+      apply Finset.max'_mem
+    simp only [Finset.mem_image, Finset.mem_union, Finset.mem_singleton, Set.mem_toFinset] at n_dim m_dim
+    cases' n_dim with n_dim n_empty <;>
+    cases' m_dim with m_dim m_empty
+
     choose s s_in_X dim_s_n using n_dim
     choose t t_in_Y dim_t_m using m_dim
-    have st_dim : ↑(s.card + t.card) - 1 = dim s + dim t + 1 := by simp; linarith
+    have st_dim : ↑(s.card + t.card) - 1 = face_dim s + face_dim t + 1 := by simp; linarith
     simp only [← dim_s_n, ← dim_t_m, ← st_dim, ← simplex_disjoint_card]
     apply Finset.le_max'
-    simp only [Finset.mem_image, Set.mem_toFinset]
-    use s ⊔ₛ t; constructor
+    simp only [Finset.mem_union, Finset.mem_image, Finset.mem_singleton, Set.mem_toFinset]
+    left; use s ⊔ₛ t; constructor
     rw [simplicialJoin_mem]
-    use s; constructor; assumption
-    use t; constructor; assumption
-    rfl
-    unfold dim
+    use s; constructor
+    rw [Set.mem_union]; left; assumption
+    use t; constructor
+    rw [Set.mem_union]; left; assumption
+    constructor; rfl
+    rw [ne_eq, simplex_disjoint_empty, not_and_or]
+    left
+    revert s_in_X
+    contrapose
+    rw [not_not]
+    intro s_empty
+    rw [s_empty]
+    apply X.empty_notMem
+    unfold face_dim
+    rw [simplex_disjoint_card]
+
+    choose s s_in_X dim_s_n using n_dim
+    simp only [← dim_s_n, m_empty, Int.reduceNeg, neg_add_cancel_right, ge_iff_le, n, m, k]
+    apply Finset.le_max'
+    simp only [Finset.mem_union, Finset.mem_image, Finset.mem_singleton, Set.mem_toFinset]
+    left; use s ⊔ₛ ∅; constructor
+    rw [simplicialJoin_mem]
+    use s; constructor
+    rw [Set.mem_union]; left; assumption
+    use ∅; constructor
+    rw [Set.mem_union]; right; apply Set.mem_singleton
+    constructor; rfl
+    rw [ne_eq, simplex_disjoint_empty, not_and_or]
+    left
+    revert s_in_X
+    contrapose
+    rw [not_not]
+    intro s_empty
+    rw [s_empty]
+    apply X.empty_notMem
+    unfold face_dim
+    rw [simplex_disjoint_card, Finset.card_empty]
+    simp only [add_zero, n, m, k]
+
+    choose t t_in_Y dim_t_m using m_dim
+    simp only [← dim_t_m, n_empty, Int.reduceNeg, neg_add_cancel_comm, ge_iff_le, n, m, k]
+    apply Finset.le_max'
+    simp only [Finset.mem_union, Finset.mem_image, Finset.mem_singleton, Set.mem_toFinset]
+    left; use ∅ ⊔ₛ t; constructor
+    rw [simplicialJoin_mem]
+    use ∅; constructor
+    rw [Set.mem_union]; right; apply Set.mem_singleton
+    use t; constructor
+    rw [Set.mem_union]; left; assumption
+    constructor; rfl
+    rw [ne_eq, simplex_disjoint_empty, not_and_or]
+    right
+    revert t_in_Y
+    contrapose
+    rw [not_not]
+    intro t_empty
+    rw [t_empty]
+    apply Y.empty_notMem
+    unfold face_dim
+    rw [simplex_disjoint_card, Finset.card_empty]
+    simp only [zero_add, n, m, k]
+
+    simp only [n_empty, m_empty]
+    simp only [Int.reduceNeg, Int.reduceAdd, ge_iff_le, n, m, k]
+    apply Finset.le_max'
+    rw [Finset.mem_union]
+    right; apply Finset.mem_singleton_self
 
 -- Show that, for disjoint complexes, projection to the first coordinate is a coercion.
 theorem join_fst_proj_is_coe (X Y : SimplicialComplex α) :
