@@ -3308,18 +3308,20 @@ by
     choose contra x2_one using contra
     contradiction
 
-def simplicialJoinCommMap : α × ℕ → α × ℕ := fun x : α × ℕ =>
-  if x.snd = 0 then (x.fst, 1) else (x.fst, 0)
+def simplicialJoinCommMap : E × 𝕜 → E × 𝕜 := fun x : E × 𝕜 => if x.snd = 0 then (x.fst, 1) else (x.fst, 0)
 
-theorem simplicialJoin_comm_simplicial (X Y : SimplicialComplex α) :
-    IsSimplicialMap (X ⋆ Y) (Y ⋆ X) simplicialJoinCommMap :=
-  by
-  simp only [IsSimplicialMap, simplicialJoin, Set.mem_setOf]
+theorem simplicialJoin_comm_simplicial
+    (X Y : AbstractSimplicialComplex E)
+  : IsSimplicialMap (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) (Y ⋆ X) simplicialJoinCommMap :=
+by
+  simp only [IsSimplicialMap, simplicialJoin, Set.mem_diff, Set.mem_setOf]
   intro u u_in_XY
+  choose u_in_XY u_ne using u_in_XY
   choose s s_in_X t t_in_Y st_eq_u using u_in_XY
+  constructor
   use t; constructor; assumption
   use s; constructor; assumption
-  simp only [simplicialJoinCommMap, Finset.ext_iff]
+  simp only [Finset.ext_iff]
   intro x; constructor
   · intro x_in_ts
     rw [simplex_disjoint_mem] at x_in_ts
@@ -3329,21 +3331,22 @@ theorem simplicialJoin_comm_simplicial (X Y : SimplicialComplex α) :
     use(x.fst, 1); constructor
     rw [← st_eq_u, simplex_disjoint_mem_right]
     assumption
-    simp only [Nat.one_ne_zero, if_false]
+    simp only [simplicialJoinCommMap, Nat.one_ne_zero]
+    simp only [one_ne_zero, ↓reduceIte]
     simp only [← x_zero, Prod.ext_iff]
-    constructor <;> rfl
     choose x_in_s x_one using x_in_s
     use(x.fst, 0); constructor
     rw [← st_eq_u, simplex_disjoint_mem_left]
     assumption
-    simp only [eq_self_iff_true, if_true]
+
+    simp only [simplicialJoinCommMap, eq_self_iff_true, ↓reduceIte]
     simp only [← x_one, Prod.ext_iff]
-    constructor <;> rfl
   · intro x_in_img
     rw [Finset.mem_image] at x_in_img
     rw [simplex_disjoint_mem]
     choose y y_in_u fy_eq_x using x_in_img
     revert fy_eq_x
+    simp only [simplicialJoinCommMap]
     split_ifs
     intro y_one_x
     simp only [Prod.ext_iff, Prod.fst, Prod.snd] at y_one_x
@@ -3355,7 +3358,7 @@ theorem simplicialJoin_comm_simplicial (X Y : SimplicialComplex α) :
     rw [y_eq_x] at y_in_s
     right; constructor <;> assumption
     choose y_in_t contra using contra
-    have H : y.snd ≠ 0 := by omega
+    have H : y.snd ≠ 0 := by simp only [contra, ne_eq, one_ne_zero, not_false_eq_true]
     contradiction
     intro y_zero_x
     simp only [Prod.ext_iff, Prod.fst, Prod.snd] at y_zero_x
@@ -3369,11 +3372,17 @@ theorem simplicialJoin_comm_simplicial (X Y : SimplicialComplex α) :
     rw [y_eq_x] at y_in_t
     left; constructor <;> assumption
 
-theorem simplicialJoin_comm (X Y : SimplicialComplex α) : X ⋆ Y ≅ Y ⋆ X :=
-  by
-  let f : SimplicialMap (X ⋆ Y) (Y ⋆ X) :=
+  rw [Set.mem_singleton_iff] at ⊢ u_ne
+  rw [Finset.image_eq_empty]
+  assumption
+
+theorem simplicialJoin_comm
+    (X Y : AbstractSimplicialComplex E)
+  : (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) ≅ (Y ⋆ X : AbstractSimplicialComplex (E × 𝕜)) :=
+by
+  let f : SimplicialMap (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) (Y ⋆ X) :=
     SimplicialMap.mk simplicialJoinCommMap (simplicialJoin_comm_simplicial X Y)
-  let g : SimplicialMap (Y ⋆ X) (X ⋆ Y) :=
+  let g : SimplicialMap (Y ⋆ X : AbstractSimplicialComplex (E × 𝕜)) (X ⋆ Y) :=
     SimplicialMap.mk simplicialJoinCommMap (simplicialJoin_comm_simplicial Y X)
   unfold IsSimpliciallyIso
   use f
@@ -3384,32 +3393,33 @@ theorem simplicialJoin_comm (X Y : SimplicialComplex α) : X ⋆ Y ≅ Y ⋆ X :
     · simp only [Set.restrict_eq_restrict_iff, Set.EqOn]
       intro x x_in_XY
       rw [simplicialJoin_mem_vertices] at x_in_XY
-      simp only [f, g, SimplicialMap.comp, simplicialJoinCommMap, id.def, Function.comp_apply]
+      simp only [f, g, SimplicialMap.comp, simplicialJoinCommMap, id, Function.comp_apply]
       cases' x_in_XY with x_in_X x_in_Y
       choose x_in_X x_zero using x_in_X
-      simp only [x_zero, eq_self_iff_true, if_true, Nat.one_ne_zero, if_false]
+      simp only [x_zero, eq_self_iff_true, if_true, Nat.one_ne_zero]
+      simp only [one_ne_zero, ↓reduceIte, g, f]
       simp only [← x_zero, Prod.ext_iff, Prod.fst, Prod.snd]
-      constructor <;> rfl
       choose x_in_Y x_one using x_in_Y
-      simp only [x_one, eq_self_iff_true, if_true, Nat.one_ne_zero, if_false]
+      simp only [x_one, eq_self_iff_true, if_true, Nat.one_ne_zero]
+      simp only [one_ne_zero, ↓reduceIte, g, f]
       simp only [← x_one, Prod.ext_iff, Prod.fst, Prod.snd]
-      constructor <;> rfl
 
 -- Make sense of natural projections, inclusions, etc.
-def simplicialJoinIdForwardMap : α × ℕ → α := fun x : α × ℕ => x.fst
+def simplicialJoinIdForwardMap : E × 𝕜 → E := fun x : E × 𝕜 => x.fst
 
-/- ././././Mathport/Syntax/Translate/Expr.lean:177:8: unsupported: ambiguous notation -/
-theorem simplicialJoin_id_left_forward_simplicial (X : SimplicialComplex α) :
-    IsSimplicialMap (X ⋆ emptySc) X simplicialJoinIdForwardMap :=
-  by
-  simp only [IsSimplicialMap, simplicialJoinIdForwardMap, emptySc]
+theorem simplicialJoin_id_left_forward_simplicial
+    (X : AbstractSimplicialComplex E)
+  : IsSimplicialMap (X ⋆ ⊥ : AbstractSimplicialComplex (E × 𝕜)) X simplicialJoinIdForwardMap :=
+by
+  simp only [IsSimplicialMap, AbstractSimplicialComplex.hasBot]
   intro u u_in_X_empty
   rw [simplicialJoin_mem] at u_in_X_empty
   choose s s_in_X t t_in_empty st_eq_u using u_in_X_empty
-  rw [Set.mem_singleton_iff] at t_in_empty
+  simp only [Set.union_singleton, insert_empty_eq, Set.mem_singleton_iff] at t_in_empty
   simp only [t_in_empty, simplexDisjointUnion, Finset.empty_product, Finset.union_empty] at st_eq_u
+  choose st_eq_u u_ne using st_eq_u
   simp only [st_eq_u]
-  have s_img : Finset.image Prod.fst (s ×ˢ {0}) = s :=
+  have s_img : Finset.image simplicialJoinIdForwardMap (s ×ˢ {(0 : 𝕜)}) = s :=
     by
     simp only [Finset.ext_iff, Finset.mem_image]
     intro x
@@ -3426,23 +3436,32 @@ theorem simplicialJoin_id_left_forward_simplicial (X : SimplicialComplex α) :
     constructor
     assumption
     apply Finset.mem_singleton_self
-    simp only [Prod.fst]
-  rw [s_img]
+    simp only [simplicialJoinIdForwardMap, Prod.fst]
+  cases' s_in_X with s_in_X contra
+  rw [← s_img] at s_in_X
   assumption
 
-def simplicialJoinIdLeftInverseMap : α → α × ℕ := fun x : α => (x, 0)
+  rw [Set.mem_singleton_iff] at contra
+  subst contra
+  rw [Finset.empty_product] at st_eq_u
+  contradiction
 
-/- ././././Mathport/Syntax/Translate/Expr.lean:177:8: unsupported: ambiguous notation -/
-theorem simplicialJoin_id_left_inverse_simplicial (X : SimplicialComplex α) :
-    IsSimplicialMap X (X ⋆ emptySc) simplicialJoinIdLeftInverseMap :=
-  by
+def simplicialJoinIdLeftInverseMap : E → E × 𝕜 := fun x : E => (x, 0)
+
+theorem simplicialJoin_id_left_inverse_simplicial
+    (X : AbstractSimplicialComplex E)
+  : IsSimplicialMap X (X ⋆ ⊥ : AbstractSimplicialComplex (E × 𝕜)) simplicialJoinIdLeftInverseMap :=
+by
   simp only [IsSimplicialMap]
   intro u u_in_X
-  simp only [simplicialJoin, emptySc, Set.mem_setOf]
-  use u; constructor; assumption
-  use∅; constructor; apply simplicialComplex_empty_simplex
-  have u_img : Finset.image simplicialJoinIdLeftInverseMap u = u ×ˢ {0} :=
-    by
+  simp only [simplicialJoin, AbstractSimplicialComplex.hasBot, Set.mem_diff, Set.mem_setOf]
+  constructor
+  use u; constructor
+  rw [Set.mem_union]; left; assumption
+  use ∅; constructor
+  rw [Set.mem_union]; right; apply Set.mem_singleton
+  have u_img : Finset.image simplicialJoinIdLeftInverseMap u = u ×ˢ {(0 : 𝕜)} :=
+  by
     simp only [simplicialJoinIdLeftInverseMap, Finset.ext_iff, Finset.mem_image, Finset.mem_product]
     intro x
     constructor
@@ -3458,14 +3477,24 @@ theorem simplicialJoin_id_left_inverse_simplicial (X : SimplicialComplex α) :
     rw [Finset.mem_singleton, @comm _ Eq] at x_zero
     use x.fst; constructor; assumption
     simp only [Prod.ext_iff, Prod.fst, Prod.snd]
-    constructor; rfl; assumption
+    constructor; trivial; assumption
   simp only [u_img, simplexDisjointUnion, Finset.empty_product, Finset.union_empty]
 
-theorem simplicialJoin_id_left (X : SimplicialComplex α) : X ⋆ emptySc ≅ X :=
-  by
-  let f : SimplicialMap (X ⋆ emptySc) X :=
+  rw [Set.mem_singleton_iff, Finset.image_eq_empty]
+  revert u_in_X
+  contrapose
+  rw [not_not]
+  intro u_empty
+  rw [u_empty]
+  apply X.empty_notMem
+
+theorem simplicialJoin_id_left
+    (X : AbstractSimplicialComplex E)
+  : (X ⋆ ⊥ : AbstractSimplicialComplex (E × 𝕜)) ≅ X :=
+by
+  let f : SimplicialMap (X ⋆ ⊥ : AbstractSimplicialComplex (E × 𝕜)) X :=
     SimplicialMap.mk simplicialJoinIdForwardMap (simplicialJoin_id_left_forward_simplicial X)
-  let g : SimplicialMap X (X ⋆ emptySc) :=
+  let g : SimplicialMap X (X ⋆ ⊥ : AbstractSimplicialComplex (E × 𝕜)) :=
     SimplicialMap.mk simplicialJoinIdLeftInverseMap (simplicialJoin_id_left_inverse_simplicial X)
   unfold IsSimpliciallyIso
   use f
@@ -3476,8 +3505,8 @@ theorem simplicialJoin_id_left (X : SimplicialComplex α) : X ⋆ emptySc ≅ X 
   · simp only [Set.restrict_eq_restrict_iff, Set.EqOn]
     intro x x_in_X_empty
     rw [simplicialJoin_mem_vertices] at x_in_X_empty
-    simp only [f, g, simplicialJoinIdForwardMap, simplicialJoinIdLeftInverseMap]
-    simp only [SimplicialMap.comp, Function.comp_apply, id.def, Prod.ext_iff, Prod.fst, Prod.snd]
+    simp only [f, g, simplicialJoinIdForwardMap]
+    simp only [SimplicialMap.comp, Function.comp_apply, id, Prod.ext_iff, Prod.fst, Prod.snd]
     cases' x_in_X_empty with x_in_X contra
     choose x_in_X x_zero using x_in_X
     rw [@comm _ Eq] at x_zero
@@ -3485,26 +3514,28 @@ theorem simplicialJoin_id_left (X : SimplicialComplex α) : X ⋆ emptySc ≅ X 
     rfl
     assumption
     choose contra x_one using contra
-    rw [emptySc_vertices] at contra
-    have H : x.fst ∉ ∅ := by apply Set.not_mem_empty x.fst
+    simp only [simplicialJoinIdLeftInverseMap]
+    simp only [AbstractSimplicialComplex.vertices, Set.mem_setOf, AbstractSimplicialComplex.hasBot] at contra
     contradiction
   · simp only [Set.restrict_eq_restrict_iff, Set.EqOn]
     intro x x_in_X
-    simp only [f, g, simplicialJoinIdForwardMap, simplicialJoinIdLeftInverseMap]
-    simp only [SimplicialMap.comp, Function.comp_apply, id.def]
+    simp only [f, g, SimplicialMap.comp, Function.comp_apply, id]
+    simp only [simplicialJoinIdForwardMap, simplicialJoinIdLeftInverseMap]
 
-/- ././././Mathport/Syntax/Translate/Expr.lean:177:8: unsupported: ambiguous notation -/
-theorem simplicialJoin_id_right_forward_simplicial (X : SimplicialComplex α) :
-    IsSimplicialMap (emptySc ⋆ X) X simplicialJoinIdForwardMap :=
-  by
-  simp only [IsSimplicialMap, simplicialJoinIdForwardMap, emptySc]
+theorem simplicialJoin_id_right_forward_simplicial
+    (X : AbstractSimplicialComplex E)
+  : IsSimplicialMap (⊥ ⋆ X : AbstractSimplicialComplex (E × 𝕜)) X simplicialJoinIdForwardMap :=
+by
+  simp only [IsSimplicialMap, simplicialJoinIdForwardMap, AbstractSimplicialComplex.hasBot]
   intro u u_in_empty_X
   rw [simplicialJoin_mem] at u_in_empty_X
   choose s s_in_empty t t_in_X st_eq_u using u_in_empty_X
-  rw [Set.mem_singleton_iff] at s_in_empty
+  simp only [AbstractSimplicialComplex.hasBot, Set.mem_union, Set.mem_singleton_iff] at s_in_empty
+  cases' s_in_empty with contra s_in_empty
+  contradiction
   simp only [s_in_empty, simplexDisjointUnion, Finset.empty_product, Finset.empty_union] at st_eq_u
   simp only [st_eq_u]
-  have t_img : Finset.image Prod.fst (t ×ˢ {1}) = t :=
+  have t_img : Finset.image simplicialJoinIdForwardMap (t ×ˢ {(1 : 𝕜)}) = t :=
     by
     simp only [Finset.ext_iff, Finset.mem_image]
     intro x
@@ -3521,23 +3552,33 @@ theorem simplicialJoin_id_right_forward_simplicial (X : SimplicialComplex α) :
     constructor
     assumption
     apply Finset.mem_singleton_self
-    simp only [Prod.fst]
-  rw [t_img]
+    simp only [simplicialJoinIdForwardMap, Prod.fst]
+  simp only [simplicialJoinIdForwardMap, t_img]
+  cases' t_in_X with t_in_X contra
   assumption
 
-def simplicialJoinIdRightInverseMap : α → α × ℕ := fun x : α => (x, 1)
+  rw [Set.mem_singleton_iff] at contra
+  subst contra
+  choose st_eq_u u_ne using st_eq_u
+  rw [Finset.empty_product] at st_eq_u
+  contradiction
 
-/- ././././Mathport/Syntax/Translate/Expr.lean:177:8: unsupported: ambiguous notation -/
-theorem simplicialJoin_id_right_inverse_simplicial (X : SimplicialComplex α) :
-    IsSimplicialMap X (emptySc ⋆ X) simplicialJoinIdRightInverseMap :=
-  by
+def simplicialJoinIdRightInverseMap : E → E × 𝕜 := fun x : E => (x, 1)
+
+theorem simplicialJoin_id_right_inverse_simplicial
+    (X : AbstractSimplicialComplex E)
+  : IsSimplicialMap X (⊥ ⋆ X : AbstractSimplicialComplex (E × 𝕜)) simplicialJoinIdRightInverseMap :=
+by
   simp only [IsSimplicialMap]
   intro u u_in_X
-  simp only [simplicialJoin, emptySc, Set.mem_setOf]
-  use∅; constructor; apply simplicialComplex_empty_simplex
-  use u; constructor; assumption
-  have u_img : Finset.image simplicialJoinIdRightInverseMap u = u ×ˢ {1} :=
-    by
+  simp only [simplicialJoin, AbstractSimplicialComplex.hasBot, Set.mem_diff, Set.mem_setOf]
+  constructor
+  use ∅; constructor
+  rw [Set.mem_union]; right; apply Set.mem_singleton
+  use u; constructor
+  rw [Set.mem_union]; left; assumption
+  have u_img : Finset.image simplicialJoinIdRightInverseMap u = u ×ˢ {(1 : 𝕜)} :=
+  by
     simp only [simplicialJoinIdRightInverseMap, Finset.ext_iff, Finset.mem_image,
       Finset.mem_product]
     intro x
@@ -3554,14 +3595,24 @@ theorem simplicialJoin_id_right_inverse_simplicial (X : SimplicialComplex α) :
     rw [Finset.mem_singleton, @comm _ Eq] at x_zero
     use x.fst; constructor; assumption
     simp only [Prod.ext_iff, Prod.fst, Prod.snd]
-    constructor; rfl; assumption
+    constructor; trivial; assumption
   simp only [u_img, simplexDisjointUnion, Finset.empty_product, Finset.empty_union]
 
-theorem simplicialJoin_id_right (X : SimplicialComplex α) : emptySc ⋆ X ≅ X :=
-  by
-  let f : SimplicialMap (emptySc ⋆ X) X :=
+  rw [Set.mem_singleton_iff, Finset.image_eq_empty]
+  revert u_in_X
+  contrapose
+  rw [not_not]
+  intro u_empty
+  rw [u_empty]
+  apply X.empty_notMem
+
+theorem simplicialJoin_id_right
+    (X : AbstractSimplicialComplex E)
+  : (⊥ ⋆ X : AbstractSimplicialComplex (E × 𝕜)) ≅ X :=
+by
+  let f : SimplicialMap (⊥ ⋆ X : AbstractSimplicialComplex (E × 𝕜)) X :=
     SimplicialMap.mk simplicialJoinIdForwardMap (simplicialJoin_id_right_forward_simplicial X)
-  let g : SimplicialMap X (emptySc ⋆ X) :=
+  let g : SimplicialMap X (⊥ ⋆ X : AbstractSimplicialComplex (E × 𝕜)) :=
     SimplicialMap.mk simplicialJoinIdRightInverseMap (simplicialJoin_id_right_inverse_simplicial X)
   unfold IsSimpliciallyIso
   use f
@@ -3573,11 +3624,10 @@ theorem simplicialJoin_id_right (X : SimplicialComplex α) : emptySc ⋆ X ≅ X
     intro x x_in_empty_X
     rw [simplicialJoin_mem_vertices] at x_in_empty_X
     simp only [f, g, simplicialJoinIdForwardMap, simplicialJoinIdRightInverseMap]
-    simp only [SimplicialMap.comp, Function.comp_apply, id.def, Prod.ext_iff, Prod.fst, Prod.snd]
+    simp only [SimplicialMap.comp, Function.comp_apply, id, Prod.ext_iff, Prod.fst, Prod.snd]
     cases' x_in_empty_X with contra x_in_X
     choose contra x_one using contra
-    rw [emptySc_vertices] at contra
-    have H : x.fst ∉ ∅ := by apply Set.not_mem_empty x.fst
+    simp only [AbstractSimplicialComplex.vertices, Set.mem_setOf, AbstractSimplicialComplex.hasBot] at contra
     contradiction
     choose x_in_X x_zero using x_in_X
     rw [@comm _ Eq] at x_zero
@@ -3586,8 +3636,8 @@ theorem simplicialJoin_id_right (X : SimplicialComplex α) : emptySc ⋆ X ≅ X
     assumption
   · simp only [Set.restrict_eq_restrict_iff, Set.EqOn]
     intro x x_in_X
-    simp only [f, g, simplicialJoinIdForwardMap, simplicialJoinIdRightInverseMap]
-    simp only [SimplicialMap.comp, Function.comp_apply, id.def]
+    simp only [f, g, SimplicialMap.comp, Function.comp_apply, id]
+    simp only [simplicialJoinIdForwardMap, simplicialJoinIdRightInverseMap]
 
 theorem simplicialJoin_natural_incl_left (X Y : SimplicialComplex α) (t : Finset α) :
     t ∈ Y.simplices ↔ X ⋆ simplex t ⊆ X ⋆ Y :=
