@@ -3639,170 +3639,259 @@ by
     simp only [f, g, SimplicialMap.comp, Function.comp_apply, id]
     simp only [simplicialJoinIdForwardMap, simplicialJoinIdRightInverseMap]
 
-theorem simplicialJoin_natural_incl_left (X Y : SimplicialComplex α) (t : Finset α) :
-    t ∈ Y.simplices ↔ X ⋆ simplex t ⊆ X ⋆ Y :=
-  by
-  simp only [simplicialJoin, IsSubcomplex, Set.subset_def, Set.mem_setOf]
-  constructor
-  -- t ∈ Y case.
-  intro t_in_Y u u_in_join
-  choose s s_in_X v v_in_Y sv_eq_u using u_in_join
-  use s; constructor; assumption
-  use v; constructor
-  apply simplex_if_in_subcomplex (simplex t)
-  assumption
-  rw [← simplex_iff_subcomplex_mem]
-  assumption
-  assumption
-  -- X ⋆ t ⊆ X ⋆ Y case.
-  intro X_sub_Y
-  specialize X_sub_Y (∅ ⊔ₛ t)
-  have X_mem :
-    ∃ (s : Finset α) (H : s ∈ X.simplices) (v : Finset α) (H : v ∈ (simplex t).simplices),
-      s ⊔ₛ v = ∅ ⊔ₛ t :=
-    by
-    use∅; constructor; apply simplicialComplex_empty_simplex
-    use t; constructor
-    simp only [simplex, Finset.mem_coe]
-    apply Finset.mem_powerset_self
-    rfl
-  specialize X_sub_Y X_mem
-  choose s s_in_X v v_in_Y sv_eq_t using X_sub_Y
-  rw [simplex_disjoint_eq_unique] at sv_eq_t
-  choose s_empty v_eq_t using sv_eq_t
-  subst v_eq_t
-  assumption
+-- theorem simplicialJoin_natural_incl_left
+--     (X Y : AbstractSimplicialComplex E)
+--     (t : Finset E) [Nonempty t]
+--   : t ∈ Y.faces ↔ X ⋆ simplex t ⊆ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) :=
+-- by
+--   simp only [simplicialJoin, AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def, Set.mem_diff, Set.mem_setOf]
+--   constructor
+--   -- t ∈ Y case.
+--   intro t_in_Y u u_in_join
+--   choose u_in_join u_ne using u_in_join
+--   choose s s_in_X v v_in_Y sv_eq_u using u_in_join
+--   constructor
+--   use s; constructor; assumption
+--   use v; constructor
+--   rw [Set.mem_union]
+--   cases' v_in_Y with v_in_Y v_empty
+--   left; apply simplex_if_in_subcomplex (simplex t)
+--   assumption
+--   rw [← simplex_iff_subcomplex_mem]
+--   assumption
+--   right; assumption
+--   assumption
+--   assumption
+--   -- X ⋆ t ⊆ X ⋆ Y case.
+--   intro X_sub_Y
+--   specialize X_sub_Y (∅ ⊔ₛ t)
+--   have please : (∃ s ∈ X.faces ∪ {∅}, ∃ t_1 ∈ (simplex t).faces ∪ {∅}, s ⊔ₛ t_1 = ∅ ⊔ₛ t) ∧ (∅ ⊔ₛ t : Finset (E × 𝕜)) ∉ {(∅ : Finset (E × 𝕜))}
+--   specialize X_sub_Y
+--     (by
+--       constructor
+--       use ∅; constructor
+--       rw [Set.mem_union]
+--       right; apply Set.mem_singleton
+--       use t; constructor
+--       rw [Set.mem_union]
+--       left
+--       simp only [simplex, Set.mem_union, Set.mem_diff, Finset.mem_coe]
+--       constructor
+--       apply Finset.mem_powerset_self
+--       rw [Set.mem_singleton_iff, ← ne_eq, ← Finset.nonempty_iff_ne_empty, ← Finset.nonempty_coe_sort]
+--       assumption
+--       rfl
 
-theorem simplicialJoin_natural_incl_right (X Y : SimplicialComplex α) (s : Finset α) :
-    s ∈ X.simplices ↔ simplex s ⋆ Y ⊆ X ⋆ Y :=
-  by
-  simp only [simplicialJoin, IsSubcomplex, Set.subset_def, Set.mem_setOf]
-  constructor
-  -- s ∈ X case.
-  intro s_in_X u u_in_join
-  choose t t_in_X v v_in_Y tv_eq_u using u_in_join
-  use t; constructor
-  apply simplex_if_in_subcomplex (simplex s)
-  assumption
-  rw [← simplex_iff_subcomplex_mem]
-  assumption
-  use v; constructor
-  assumption
-  assumption
-  -- X ⋆ t ⊆ X ⋆ Y case.
-  intro X_sub_Y
-  specialize X_sub_Y (s ⊔ₛ ∅)
-  have Y_mem :
-    ∃ (t : Finset α) (H : t ∈ (simplex s).simplices) (v : Finset α) (H : v ∈ Y.simplices),
-      t ⊔ₛ v = s ⊔ₛ ∅ :=
-    by
-    use s; constructor
-    simp only [simplex, Finset.mem_coe]
-    apply Finset.mem_powerset_self
-    use∅; constructor; apply simplicialComplex_empty_simplex
-    rfl
-  specialize X_sub_Y Y_mem
-  choose t t_in_X v v_in_Y tv_eq_s using X_sub_Y
-  rw [simplex_disjoint_eq_unique] at tv_eq_s
-  choose s_eq_t v_empty using tv_eq_s
-  subst s_eq_t
-  assumption
+--       rw [Set.mem_singleton_iff, simplex_disjoint_empty, not_and_or]
+--       right
+--       rw [←ne_eq, ← Finset.nonempty_iff_ne_empty, ← Finset.nonempty_coe_sort]
+--       assumption)
+--     choose s s_in_X v v_in_Y sv_eq_t using X_sub_Y
+--     rw [simplex_disjoint_eq_unique] at sv_eq_t
+--     choose s_empty v_eq_t using sv_eq_t
+--     subst v_eq_t
+--     assumption
 
-theorem simplicialJoin_subcomplex (X Y Z W : SimplicialComplex α) (X_subcomp_Z : X ⊆ Z)
-    (Y_subcomp_W : Y ⊆ W) : X ⋆ Y ⊆ Z ⋆ W :=
-  by
-  simp only [SimplicialComplex.hasSubset, IsSubcomplex] at *
-  simp only [simplicialJoin, SimplicialComplex.simplices]
+-- theorem simplicialJoin_natural_incl_right (X Y : SimplicialComplex α) (s : Finset α) :
+--     s ∈ X.simplices ↔ simplex s ⋆ Y ⊆ X ⋆ Y :=
+--   by
+--   simp only [simplicialJoin, IsSubcomplex, Set.subset_def, Set.mem_setOf]
+--   constructor
+--   -- s ∈ X case.
+--   intro s_in_X u u_in_join
+--   choose t t_in_X v v_in_Y tv_eq_u using u_in_join
+--   use t; constructor
+--   apply simplex_if_in_subcomplex (simplex s)
+--   assumption
+--   rw [← simplex_iff_subcomplex_mem]
+--   assumption
+--   use v; constructor
+--   assumption
+--   assumption
+--   -- X ⋆ t ⊆ X ⋆ Y case.
+--   intro X_sub_Y
+--   specialize X_sub_Y (s ⊔ₛ ∅)
+--   have Y_mem :
+--     ∃ (t : Finset α) (H : t ∈ (simplex s).simplices) (v : Finset α) (H : v ∈ Y.simplices),
+--       t ⊔ₛ v = s ⊔ₛ ∅ :=
+--     by
+--     use s; constructor
+--     simp only [simplex, Finset.mem_coe]
+--     apply Finset.mem_powerset_self
+--     use∅; constructor; apply simplicialComplex_empty_simplex
+--     rfl
+--   specialize X_sub_Y Y_mem
+--   choose t t_in_X v v_in_Y tv_eq_s using X_sub_Y
+--   rw [simplex_disjoint_eq_unique] at tv_eq_s
+--   choose s_eq_t v_empty using tv_eq_s
+--   subst s_eq_t
+--   assumption
+
+theorem simplicialJoin_subcomplex
+    (X Y Z W : AbstractSimplicialComplex E)
+    (X_subcomp_Z : X ⊆ Z)
+    (Y_subcomp_W : Y ⊆ W)
+  : X ⋆ Y ⊆ (Z ⋆ W : AbstractSimplicialComplex (E × 𝕜)) :=
+by
+  simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex] at *
+  simp only [simplicialJoin, AbstractSimplicialComplex.faces]
   simp only [Set.subset_def] at *
   intro s s_in_XY
-  simp only [Set.mem_setOf] at *
+  simp only [Set.mem_diff, Set.mem_setOf] at *
+  choose s_in_XY s_ne using s_in_XY
   choose t Ht u Hu tu_eq_s using s_in_XY
+
+  rw [Set.mem_union] at Ht Hu
+  cases' Ht with Ht t_empty <;>
+  cases' Hu with Hu u_empty
+
   specialize X_subcomp_Z t Ht
   specialize Y_subcomp_W u Hu
-  use t; constructor; apply X_subcomp_Z
-  use u; constructor; apply Y_subcomp_W
+  constructor
+  use t; constructor
+  rw [Set.mem_union]; left; apply X_subcomp_Z
+  use u; constructor
+  rw [Set.mem_union]; left; apply Y_subcomp_W
   apply tu_eq_s
+  assumption
 
-theorem simplicialJoin_distr_union_left (X Y Z : SimplicialComplex α) :
-    (X ⋆ (Y ∪ Z)).simplices = (X ⋆ Y ∪ X ⋆ Z).simplices :=
-  by
-  simp only [simplicialJoin, simplicialUnion, Set.ext_iff, Set.mem_union, Set.mem_setOf]
+  rw [Set.mem_singleton_iff] at u_empty
+  subst u_empty
+  specialize X_subcomp_Z t Ht
+  constructor
+  use t; constructor
+  rw [Set.mem_union]; left; assumption
+  use ∅; constructor
+  rw [Set.mem_union]; right; apply Set.mem_singleton
+  assumption
+  assumption
+
+  rw [Set.mem_singleton_iff] at t_empty
+  subst t_empty
+  specialize Y_subcomp_W u Hu
+  constructor
+  use ∅; constructor
+  rw [Set.mem_union]; right; apply Set.mem_singleton
+  use u; constructor
+  rw [Set.mem_union]; left; assumption
+  assumption
+  assumption
+
+  rw [Set.mem_singleton_iff] at s_ne t_empty u_empty
+  subst t_empty u_empty
+  simp only [simplexDisjointUnion, Finset.product_singleton, Finset.map_empty,
+    Finset.union_idempotent] at tu_eq_s
+  rw [@comm _ Eq] at tu_eq_s
+  contradiction
+
+theorem simplicialJoin_distr_union_left
+    (X Y Z : AbstractSimplicialComplex E)
+  : (X ⋆ (Y ∪ Z)).faces = (X ⋆ Y ∪ (X ⋆ Z : AbstractSimplicialComplex (E × 𝕜))).faces :=
+by
+  simp only [simplicialJoin, AbstractSimplicialComplex.instHasUnion, simplicialUnion, Set.ext_iff, Set.mem_union, Set.mem_diff, Set.mem_setOf, AbstractSimplicialComplex.faces]
   intro u
   constructor
   · intro u_in_join
+    choose u_in_join u_ne using u_in_join
     choose s s_in_X t t_in_YZ st_eq_u using u_in_join
+    rw [or_or_distrib_right] at t_in_YZ
     cases' t_in_YZ with t_in_Y t_in_Z
     left
+    constructor
     use s; constructor; assumption
-    use t; constructor; assumption
+    use t
     assumption
+
     right
+    constructor
     use s; constructor; assumption
-    use t; constructor; assumption
+    use t
     assumption
   · intro u_in_union
     cases' u_in_union with u_in_XY u_in_XZ
+    choose u_in_XY u_ne using u_in_XY
     choose s s_in_X t t_in_Y st_eq_u using u_in_XY
+    constructor
     use s; constructor; assumption
     use t; constructor
+    rw [or_or_distrib_right]
     left; assumption
     assumption
+    assumption
+    choose u_in_XZ u_ne using u_in_XZ
     choose s s_in_X t t_in_Z st_eq_u using u_in_XZ
+    constructor
     use s; constructor; assumption
     use t; constructor
+    rw [or_or_distrib_right]
     right; assumption
     assumption
+    assumption
 
-theorem simplicialJoin_distr_union_left_iso (X Y Z : SimplicialComplex α) :
-    X ⋆ (Y ∪ Z) ≅ X ⋆ Y ∪ X ⋆ Z :=
-  by
+theorem simplicialJoin_distr_union_left_iso
+    (X Y Z : AbstractSimplicialComplex E)
+  : (X ⋆ (Y ∪ Z) : AbstractSimplicialComplex (E × 𝕜)) ≅ X ⋆ Y ∪ (X ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) :=
+by
   apply simplicial_iso_preserves_equiv
   apply simplicialJoin_distr_union_left
 
-theorem simplicialJoin_distr_union_right (X Y Z : SimplicialComplex α) :
-    ((Y ∪ Z) ⋆ X).simplices = (Y ⋆ X ∪ Z ⋆ X).simplices :=
-  by
-  simp only [simplicialJoin, simplicialUnion, Set.ext_iff, Set.mem_union, Set.mem_setOf]
+theorem simplicialJoin_distr_union_right
+    (X Y Z : AbstractSimplicialComplex E)
+  : ((Y ∪ Z) ⋆ X).faces = (Y ⋆ X ∪ (Z ⋆ X : AbstractSimplicialComplex (E × 𝕜))).faces :=
+by
+  simp only [simplicialJoin, AbstractSimplicialComplex.instHasUnion, simplicialUnion, Set.ext_iff, Set.mem_union, Set.mem_diff, Set.mem_setOf]
   intro u
   constructor
   · intro u_in_join
+    choose u_in_join u_ne using u_in_join
     choose s s_in_YZ t t_in_X st_eq_u using u_in_join
+    rw [or_or_distrib_right] at s_in_YZ
     cases' s_in_YZ with s_in_Y s_in_Z
-    left
+    left; constructor
     use s; constructor; assumption
-    use t; constructor; assumption
+    use t
     assumption
-    right
+
+    right; constructor
     use s; constructor; assumption
-    use t; constructor; assumption
+    use t
     assumption
   · intro u_in_union
     cases' u_in_union with u_in_XY u_in_XZ
+    choose u_in_XY u_ne using u_in_XY
     choose s s_in_X t t_in_Y st_eq_u using u_in_XY
+    constructor
     use s; constructor
+    rw [or_or_distrib_right]
     left; assumption
-    use t; constructor; assumption
-    assumption
-    choose s s_in_X t t_in_Z st_eq_u using u_in_XZ
-    use s; constructor
-    right; assumption
-    use t; constructor; assumption
+    use t
     assumption
 
-theorem simplicialJoin_distr_union_right_iso (X Y Z : SimplicialComplex α) :
-    (Y ∪ Z) ⋆ X ≅ Y ⋆ X ∪ Z ⋆ X :=
-  by
+    choose u_in_XZ u_ne using u_in_XZ
+    choose s s_in_X t t_in_Z st_eq_u using u_in_XZ
+    constructor
+    use s; constructor
+    rw [or_or_distrib_right]
+    right; assumption
+    use t
+    assumption
+
+theorem simplicialJoin_distr_union_right_iso
+    (X Y Z : AbstractSimplicialComplex E)
+  : ((Y ∪ Z) ⋆ X : AbstractSimplicialComplex (E × 𝕜)) ≅ Y ⋆ X ∪ (Z ⋆ X : AbstractSimplicialComplex (E × 𝕜)) :=
+by
   apply simplicial_iso_preserves_equiv
   apply simplicialJoin_distr_union_right
 
 -- Lemma 2.1, p.5
-theorem dim_of_join (X Y : SimplicialComplex α) [Fintype X.simplices] [Fintype Y.simplices] :
-    dimOfComplex (X ⋆ Y) = dimOfComplex X + dimOfComplex Y + 1 :=
-  by
+theorem dim_of_join
+    (X Y : AbstractSimplicialComplex E) [Fintype X.faces] [Fintype Y.faces]
+  : (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).dim = X.dim + Y.dim + 1 :=
+by
   intros
-  set k := dimOfComplex (X ⋆ Y)
-  set n := dimOfComplex X
-  set m := dimOfComplex Y
+  set k := (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).dim
+  set n := X.dim
+  set m := Y.dim
   rw [le_antisymm_iff]
   constructor
   · have k_dim : k ∈ Finset.image dim (X ⋆ Y).simplices.toFinset := by apply Finset.max'_mem
