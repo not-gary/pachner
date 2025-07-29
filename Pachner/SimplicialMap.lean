@@ -2341,7 +2341,7 @@ by
   assumption
 
 def simplicialJoinAssocForwardAux
-    (X Y Z : AbstractSimplicialComplex E)
+    (Y Z : AbstractSimplicialComplex E)
     (ψ : SimplicialCoe (Y ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) E)
   : E × 𝕜 → E × 𝕜 := fun x : E × 𝕜 => if x.snd = 0 then x else (ψ.coe (x.fst, 0), x.snd)
 
@@ -2352,7 +2352,7 @@ def simplicialJoinAssocForwardMap
     (f : SimplicialMap (φ.coe ''ˢ (X ⋆ Y)) (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)))
   : E × 𝕜 → E × 𝕜 :=
     fun x : E × 𝕜 =>
-      if x.snd = 0 then (simplicialJoinAssocForwardAux X Y Z ψ) (f.map x.fst) else (ψ.coe x, x.snd)
+      if x.snd = 0 then (simplicialJoinAssocForwardAux Y Z ψ) (f.map x.fst) else (ψ.coe x, x.snd)
 
 theorem simplicialJoin_assoc_forward_simplicial_left
     (X Y Z : AbstractSimplicialComplex E)
@@ -2926,40 +2926,151 @@ by
   choose u_eq_st u_ne using u_eq_st
   subst u_eq_st
   use Finset.image φ.coe (s ⊔ₛ a); constructor
-  simp only [simplicialImage, Set.mem_setOf, simplicialJoin_mem]
-  constructor
-  use s ⊔ₛ a; constructor
-  use s; constructor; assumption
+  simp only [simplicialImage, Set.mem_setOf, simplicialJoin_mem, Set.mem_union]
+
+  simp only [Set.mem_union] at s_in_X a_in_Y
+  cases' s_in_X with s_in_X s_empty
+  left; use s ⊔ₛ a; constructor
+  use s; constructor; left; assumption
   use a; constructor; assumption
-  constructor
-  rfl
+  constructor; rfl
   rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left
+  revert s_in_X
+  contrapose
+  rw [not_not]
+  intro s_empty
+  rw [s_empty]
+  apply X.empty_notMem
+  rfl
+
+  rw [Set.mem_singleton_iff] at s_empty
+  subst s_empty
+  cases' a_in_Y with a_in_Y a_empty
+  left; use ∅ ⊔ₛ a; constructor
+  use ∅; constructor; right; apply Set.mem_singleton
+  use a; constructor; left; assumption
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  right
+  revert a_in_Y
+  contrapose
+  rw [not_not]
+  intro a_empty
+  rw [a_empty]
+  apply Y.empty_notMem
+  rfl
+
+  rw [Set.mem_singleton_iff] at a_empty
+  subst a_empty
+  right
+  rw [Set.mem_singleton_iff, Finset.image_eq_empty, simplex_disjoint_empty]
+  constructor <;> rfl
+
   use b; constructor; assumption
   simp only [simplicialJoinAssocForwardMap, Finset.ext_iff]
+  constructor
   intro x
   constructor
   apply simplicialJoin_assoc_inv_simplicial_left <;> assumption
   apply simplicialJoin_assoc_inv_simplicial_right <;> assumption
 
-theorem simplicialJoin_assoc [Nonempty α] (X Y Z : SimplicialComplex α)
-    (φ : SimplicialCoe (X ⋆ Y) α) (ψ : SimplicialCoe (Y ⋆ Z) α) : φ[X ⋆ Y] ⋆ Z ≅ X ⋆ ψ[Y ⋆ Z] :=
-  by
-  have φ_iso : IsSimplicialIso φ.simplicial_map := by apply coe_is_iso
-  have ψ_iso : IsSimplicialIso ψ.simplicial_map := by apply coe_is_iso
+  simp only [ne_eq, Finset.image_eq_empty, simplicialJoinAssocInvMap]
+  assumption
+
+  simp only [Set.mem_singleton_iff, Set.mem_union] at s_in_X t_empty
+  subst t_empty
+  choose u_eq_st u_ne using u_eq_st
+  subst u
+  cases' s_in_X with s_in_X s_empty
+  use Finset.image φ.coe (s ⊔ₛ ∅); constructor
+  simp only [Set.mem_union, simplicialImage, Set.mem_setOf]
+  left; use s ⊔ₛ ∅; constructor
+  simp only [simplicialJoin, Set.mem_diff, Set.mem_setOf]
+  constructor; use s; constructor
+  rw [Set.mem_union]; left; assumption
+  use ∅; constructor
+  rw [Set.mem_union]; right; apply Set.mem_singleton
+  rfl
+  rw [Set.mem_singleton_iff]; assumption
+  rfl
+
+  use ∅; constructor
+  rw [Set.mem_union]; right; apply Set.mem_singleton
+  constructor
+  rw [Finset.ext_iff]
+  intro x; constructor
+
+  intro x_in_img
+  simp only [Finset.mem_image, simplicialJoinAssocInvMap, simplicialJoinAssocInvAux] at x_in_img
+  choose a a_in_s fa_x using x_in_img
+  rw [simplex_disjoint_mem] at a_in_s
+  cases' a_in_s with a_in_s contra
+  choose a1_in_s a2_zero using a_in_s
+  simp only [a2_zero] at fa_x
+  simp only [↓reduceIte, simplicialJoin, simplexDisjointUnion] at fa_x
+  simp only [Prod.ext_iff] at fa_x
+  choose fa_x x2_zero using fa_x
+  rw [simplex_disjoint_mem, Finset.mem_image]
+  constructor; constructor
+  use a; constructor
+  rw [simplex_disjoint_mem]
+  left; constructor <;> assumption
+  assumption
+  symm; assumption
+
+  choose contra a2_one using contra
+  contradiction
+
+  intro x_in_union
+  rw [simplex_disjoint_mem, Finset.mem_image] at x_in_union
+  cases' x_in_union with x_in_union contra
+  choose fa_x x2_zero using x_in_union
+  choose a a_in_s fa_x using fa_x
+  simp only [Finset.mem_image, simplicialJoinAssocInvMap, simplicialJoinAssocInvAux]
+  use a; constructor; assumption
+  rw [simplex_disjoint_mem] at a_in_s
+  cases' a_in_s with a_in_s contra
+  choose a1_in_s a2_zero using a_in_s
+  simp only [a2_zero]
+  simp only [↓reduceIte, simplicialJoin, simplexDisjointUnion]
+  simp only [Prod.ext_iff]
+  constructor; assumption
+  symm; assumption
+
+  choose contra a2_one using contra
+  contradiction
+  choose contra x2_one using contra
+  contradiction
+
+  rw [ne_eq, Finset.image_eq_empty]; assumption
+
+  subst s_empty
+  rw [ne_eq, simplex_disjoint_empty, not_and_or] at u_ne
+  cases u_ne <;> contradiction
+
+theorem simplicialJoin_assoc [Nonempty E]
+    (X Y Z : AbstractSimplicialComplex E)
+    (φ : SimplicialCoe (X ⋆ Y) E)
+    (ψ : SimplicialCoe (Y ⋆ Z) E)
+  : (φ.coe ''ˢ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) ≅ (X ⋆ ψ.coe ''ˢ (Y ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) : AbstractSimplicialComplex (E × 𝕜)) :=
+by
+  have φ_iso : IsSimplicialIso φ.simplicialMap := by apply coe_is_iso
+  have ψ_iso : IsSimplicialIso ψ.simplicialMap := by apply coe_is_iso
   unfold IsSimplicialIso at φ_iso ψ_iso
   choose gXY gφ_inv using φ_iso
   choose gYZ gψ_inv using ψ_iso
-  let f_assoc : SimplicialMap (φ[X ⋆ Y] ⋆ Z) (X ⋆ ψ[Y ⋆ Z]) :=
+  let f_assoc : SimplicialMap (φ.coe ''ˢ (X ⋆ Y) ⋆ Z) (X ⋆ ψ.coe ''ˢ (Y ⋆ Z)) :=
     SimplicialMap.mk (simplicialJoinAssocForwardMap X Y Z φ ψ gXY)
       (simplicialJoin_assoc_forward_simplicial X Y Z φ ψ gXY gφ_inv)
-  let g_assoc : SimplicialMap (X ⋆ ψ[Y ⋆ Z]) (φ[X ⋆ Y] ⋆ Z) :=
+  let g_assoc : SimplicialMap (X ⋆ ψ.coe ''ˢ (Y ⋆ Z)) (φ.coe ''ˢ (X ⋆ Y) ⋆ Z) :=
     SimplicialMap.mk (simplicialJoinAssocInvMap X Y Z φ ψ gYZ)
       (simplicialJoin_assoc_inv_simplicial X Y Z φ ψ gYZ gψ_inv)
   unfold IsInverseSimplicialIso at gφ_inv gψ_inv
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
-    id.def] at gφ_inv gψ_inv
-  have φ_rw : φ.simplicial_map.map = φ.coe := by rfl
-  have ψ_rw : ψ.simplicial_map.map = ψ.coe := by rfl
+    id] at gφ_inv gψ_inv
+  have φ_rw : φ.simplicialMap.map = φ.coe := by rfl
+  have ψ_rw : ψ.simplicialMap.map = ψ.coe := by rfl
   simp only [φ_rw] at gφ_inv
   simp only [ψ_rw] at gψ_inv
   choose gφ_id φg_id using gφ_inv
@@ -2970,18 +3081,22 @@ theorem simplicialJoin_assoc [Nonempty α] (X Y Z : SimplicialComplex α)
   use g_assoc
   unfold IsInverseSimplicialIso
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
-    id.def]
-  simp only [simplicialJoinAssocForwardMap, simplicialJoinAssocInvMap]
+    id]
+  simp only [f_assoc, g_assoc, simplicialJoinAssocForwardMap, simplicialJoinAssocInvMap]
   constructor
   · intro x x_in_join
     rw [vertex_iff_in_simplex] at x_in_join
     choose u u_in_join x_in_u using x_in_join
     simp only [simplicialJoin_mem, simplicialImage, Set.mem_setOf] at u_in_join
     choose s s_in_coe t t_in_Z u_eq_st using u_in_join
+    rw [Set.mem_union] at s_in_coe
+    cases' s_in_coe with s_in_coe s_empty
     choose v v_in_join coe_v_s using s_in_coe
     choose a a_in_X b b_in_Y v_eq_ab using v_in_join
+    choose v_eq_ab v_ne using v_eq_ab
     subst v_eq_ab
     subst coe_v_s
+    choose u_eq_st u_ne using u_eq_st
     subst u_eq_st
     simp only [Finset.mem_image, simplex_disjoint_mem] at x_in_u
     cases' x_in_u with x_in_coe x_in_t
@@ -2989,16 +3104,13 @@ theorem simplicialJoin_assoc [Nonempty α] (X Y Z : SimplicialComplex α)
     choose y y_in_join φy_x using x_in_coe
     simp only [← φy_x, x_zero, eq_self_iff_true, if_true]
     simp only [simplicialJoinAssocForwardAux, simplicialJoinAssocInvAux]
-    have y_in_XY : y ∈ vertices (X ⋆ Y) :=
-      by
+    have y_in_XY : y ∈ (X ⋆ Y).vertices :=
+    by
       rw [vertex_iff_in_simplex]
       use a ⊔ₛ b; constructor
       rw [simplicialJoin_mem]
       use a; constructor; assumption
-      use b; constructor; assumption
-      rfl
-      rw [simplex_disjoint_mem]
-      assumption
+      use b; rw [simplex_disjoint_mem]; assumption
     specialize gφ_id y_in_XY
     simp only [gφ_id]
     cases' y_in_join with y_in_a y_in_b
@@ -3007,53 +3119,100 @@ theorem simplicialJoin_assoc [Nonempty α] (X Y Z : SimplicialComplex α)
     rw [@comm _ Eq] at x_zero
     constructor <;> assumption
     choose y_in_b y_one using y_in_b
-    have y_in_YZ : (y.fst, 0) ∈ vertices (Y ⋆ Z) :=
-      by
+    have y_in_YZ : (y.fst, 0) ∈ (Y ⋆ Z : AbstractSimplicialComplex (E × 𝕜)).vertices :=
+    by
       rw [simplicialJoin_vertices_mem_left, vertex_iff_in_simplex]
-      use b; constructor <;> assumption
+      use b; constructor
+      rw [Set.mem_union] at b_in_Y
+      cases' b_in_Y with b_in_Y contra
+      assumption
+      rw [Set.mem_singleton_iff] at contra
+      rw [contra] at y_in_b
+      contradiction
+      assumption
     specialize gψ_id y_in_YZ
     simp only [gψ_id, y_one, eq_self_iff_true, if_true, Nat.one_ne_zero, if_false, Prod.snd,
       Prod.ext_iff]
     have y_rw : y = (y.fst, y.snd) := by
       simp only [Prod.ext_iff]
-      constructor <;> rfl
     rw [@comm _ Eq] at x_zero
-    rw [← y_one, ← y_rw]
+    simp only [one_ne_zero, ↓reduceIte, simplicialJoin, simplexDisjointUnion, f_assoc, g_assoc]
+    simp only [← y_one, ← y_rw, gψ_id]
+    simp only [↓reduceIte, f_assoc, g_assoc]
     constructor <;> assumption
-    have x_in_YZ : x ∈ vertices (Y ⋆ Z) :=
-      by
+    have x_in_YZ : x ∈ (Y ⋆ Z).vertices :=
+    by
       rw [vertex_iff_in_simplex]
       use b ⊔ₛ t; constructor
       rw [simplicialJoin_mem]
       use b; constructor; assumption
       use t; constructor; assumption
-      rfl
+      constructor; rfl
+      choose x1_in_t x2_one using x_in_t
+      rw [ne_eq, simplex_disjoint_empty, not_and_or]
+      right; apply Finset.ne_empty_of_mem x1_in_t
       rw [simplex_disjoint_mem]
       right; assumption
     choose x_in_t x_one using x_in_t
     specialize gψ_id x_in_YZ
     simp only [simplicialJoinAssocInvAux]
     simp only [gψ_id, x_one, Nat.one_ne_zero, if_false]
+
+    simp only [one_ne_zero, ↓reduceIte, simplicialJoin, simplexDisjointUnion, f_assoc, g_assoc]
+    simp only [gψ_id, x_one]
+    simp only [one_ne_zero, ↓reduceIte, f_assoc, g_assoc]
+
+    choose u_eq_st u_ne using u_eq_st
+    subst u_eq_st
+    rw [Set.mem_singleton_iff] at s_empty
+    subst s_empty
+    rw [simplex_disjoint_mem] at x_in_u
+    cases' x_in_u with contra x_in_t
+    choose contra x2_zero using contra
+    contradiction
+    choose x1_in_t x2_one using x_in_t
+    simp only [x2_one]
+    simp only [one_ne_zero, ↓reduceIte, simplicialJoin, simplexDisjointUnion, f_assoc, g_assoc]
+    have x_in_YZ : x ∈ (Y ⋆ Z).vertices :=
+    by
+      rw [vertex_iff_in_simplex]
+      use ∅ ⊔ₛ t; constructor
+      rw [simplicialJoin_mem]
+      use ∅; constructor
+      rw [Set.mem_union]
+      right; apply Set.mem_singleton
+      use t
+      rw [simplex_disjoint_mem]
+      right; constructor <;> assumption
+    specialize gψ_id x_in_YZ
+    simp only [gψ_id, simplicialJoinAssocInvAux, x2_one]
+    simp only [one_ne_zero, ↓reduceIte, f_assoc, g_assoc]
   · intro x x_in_join
     rw [vertex_iff_in_simplex] at x_in_join
     choose u u_in_join x_in_u using x_in_join
-    simp only [simplicialJoin_mem, simplicialImage, Set.mem_setOf] at u_in_join
+    simp only [simplicialJoin_mem, simplicialImage, Set.mem_union, Set.mem_setOf] at u_in_join
     choose s s_in_X t t_in_coe u_eq_st using u_in_join
+    cases' t_in_coe with t_in_coe t_empty
     choose v v_in_join coe_v_t using t_in_coe
     choose a a_in_X b b_in_Y v_eq_ab using v_in_join
+    choose v_eq_ab v_ne using v_eq_ab
     subst v_eq_ab
     subst coe_v_t
+    choose u_eq_st u_ne using u_eq_st
     subst u_eq_st
     simp only [Finset.mem_image, simplex_disjoint_mem] at x_in_u
     cases' x_in_u with x_in_s x_in_coe
-    have x_in_XY : x ∈ vertices (X ⋆ Y) :=
-      by
+    have x_in_XY : x ∈ (X ⋆ Y).vertices :=
+    by
       rw [vertex_iff_in_simplex]
       use s ⊔ₛ a; constructor
       rw [simplicialJoin_mem]
       use s; constructor; assumption
       use a; constructor; assumption
-      rfl
+      constructor; rfl
+      choose x1_in_s x2_zero using x_in_s
+      rw [ne_eq, simplex_disjoint_empty, not_and_or]
+      left; apply Finset.ne_empty_of_mem x1_in_s
       rw [simplex_disjoint_mem]
       left; assumption
     choose x_in_s x_one using x_in_s
@@ -3063,48 +3222,91 @@ theorem simplicialJoin_assoc [Nonempty α] (X Y Z : SimplicialComplex α)
     choose x_in_coe x_one using x_in_coe
     choose y y_in_join ψy_x using x_in_coe
     cases' y_in_join with y_in_a y_in_b
-    have y_in_YZ : y ∈ vertices (Y ⋆ Z) :=
-      by
+    have y_in_YZ : y ∈ (Y ⋆ Z).vertices :=
+    by
       rw [vertex_iff_in_simplex]
       use a ⊔ₛ b; constructor
       rw [simplicialJoin_mem]
       use a; constructor; assumption
       use b; constructor; assumption
-      rfl
+      constructor; rfl
+      choose y1_in_a y2_zero using y_in_a
+      rw [ne_eq, simplex_disjoint_empty, not_and_or]
+      left; apply Finset.ne_empty_of_mem y1_in_a
       rw [simplex_disjoint_mem]
       left; assumption
     choose y_in_a y_zero using y_in_a
     specialize gψ_id y_in_YZ
-    have y_in_XY : (y.fst, 1) ∈ vertices (X ⋆ Y) :=
+    have y_in_XY : (y.fst, 1) ∈ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).vertices :=
       by
       rw [simplicialJoin_vertices_mem_right, vertex_iff_in_simplex]
-      use a; constructor <;> assumption
+      use a; constructor
+      cases' a_in_X with a_in_Y contra
+      assumption
+      rw [Set.mem_singleton_iff] at contra
+      rw [contra] at y_in_a
+      contradiction
+      assumption
     specialize gφ_id y_in_XY
     simp only [simplicialJoinAssocForwardAux, simplicialJoinAssocInvAux]
     simp only [← ψy_x, gψ_id, gφ_id, y_zero, x_one, eq_self_iff_true, if_true, Nat.one_ne_zero,
       if_false, Prod.snd]
     have y_rw : y = (y.fst, y.snd) := by
       simp only [Prod.ext_iff]
-      constructor <;> rfl
-    rw [← y_zero, ← y_rw]
+    simp only [one_ne_zero, ↓reduceIte, simplicialJoin, simplexDisjointUnion, f_assoc, g_assoc, gφ_id]
+    simp only [Prod.ext_iff, ← y_zero, ← y_rw]
     rw [@comm _ Eq] at x_one
-    simp only [Prod.ext_iff]
     constructor <;> assumption
-    have y_in_YZ : y ∈ vertices (Y ⋆ Z) :=
+    have y_in_YZ : y ∈ (Y ⋆ Z).vertices :=
       by
       rw [vertex_iff_in_simplex]
       use a ⊔ₛ b; constructor
       rw [simplicialJoin_mem]
       use a; constructor; assumption
       use b; constructor; assumption
-      rfl
+      constructor; rfl
+      choose y1_in_b y2_one using y_in_b
+      rw [ne_eq, simplex_disjoint_empty, not_and_or]
+      right; apply Finset.ne_empty_of_mem y1_in_b
       rw [simplex_disjoint_mem]
       right; assumption
     choose y_in_b y_one using y_in_b
     specialize gψ_id y_in_YZ
     simp only [simplicialJoinAssocForwardAux, simplicialJoinAssocInvAux]
     simp only [← ψy_x, gψ_id, y_one, x_one, Nat.one_ne_zero, if_false, Prod.ext_iff]
-    constructor <;> rfl
+    simp only [one_ne_zero, ↓reduceIte, simplicialJoin, simplexDisjointUnion, f_assoc, g_assoc]
+    simp only [y_one]
+    simp only [one_ne_zero, ↓reduceIte, and_self, f_assoc, g_assoc]
+
+    rw [Set.mem_singleton_iff] at t_empty
+    subst t_empty
+    choose u_eq_st u_ne using u_eq_st
+    subst u_eq_st
+    rw [simplex_disjoint_mem] at x_in_u
+    cases' x_in_u with x_in_s contra
+    choose x1_in_s x2_zero using x_in_s
+    simp only [x2_zero]
+    simp only [↓reduceIte, simplicialJoin, simplexDisjointUnion, f_assoc, g_assoc]
+    have x_in_XY : x ∈ (X ⋆ Y).vertices :=
+    by
+      rw [vertex_iff_in_simplex]
+      use s ⊔ₛ ∅; constructor
+      rw [simplicialJoin_mem]
+      use s; constructor; assumption
+      use ∅; constructor
+      rw [Set.mem_union]
+      right; apply Set.mem_singleton
+      constructor; rfl
+      rw [ne_eq, simplex_disjoint_empty, not_and_or]
+      left; apply Finset.ne_empty_of_mem x1_in_s
+      rw [simplex_disjoint_mem]
+      left; constructor <;> assumption
+    specialize gφ_id x_in_XY
+    simp only [gφ_id, simplicialJoinAssocForwardAux, x2_zero]
+    simp only [↓reduceIte, f_assoc, g_assoc]
+
+    choose contra x2_one using contra
+    contradiction
 
 def simplicialJoinCommMap : α × ℕ → α × ℕ := fun x : α × ℕ =>
   if x.snd = 0 then (x.fst, 1) else (x.fst, 0)
