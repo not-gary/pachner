@@ -769,53 +769,6 @@ by
   apply f.is_simplicial
   assumption
 
-theorem simplicial_iso_lift_inj
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-    (f : SimplicialMap X Y)
-  : IsSimplicialIso f → Set.InjOn (simplicialMapLift f) X.faces :=
-by
-  intro f_iso
-  have f_iso' := f_iso
-  intro s s_in_X t t_in_X fs_eq_ft
-
-  choose g gf_inv using f_iso'
-  unfold IsInverseSimplicialIso at gf_inv
-  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
-    Set.image_id] at gf_inv
-  choose gf_id fg_id using gf_inv
-
-  unfold simplicialMapLift at fs_eq_ft
-  simp only [AbstractSimplicialComplex.mem_vertices] at gf_id fg_id
-  rw [Finset.ext_iff] at ⊢ fs_eq_ft
-  intro x
-  specialize fs_eq_ft (f.map x)
-  constructor
-
-  intro x_in_s
-  have x_in_X : {x} ∈ X.faces :=
-  by
-    rw [←AbstractSimplicialComplex.mem_vertices, vertex_iff_in_simplex]
-    use s
-  specialize gf_id x_in_X
-
-  -- try shit out
-  rw [id_eq] at gf_id
-  have fx_in_fs : f.map x ∈ Finset.image f.map s :=
-  by
-    rw [Finset.mem_image]
-    use x
-  rw [fs_eq_ft, Finset.mem_image] at fx_in_fs
-  choose a a_in_t fa_eq_fs using fx_in_fs
-  have fx_in_Y : {f.map x} ∈ Y.faces :=
-  by
-    rw [← Finset.image_singleton]
-    apply f.is_simplicial
-    assumption
-  specialize fg_id fx_in_Y
-  sorry
-  sorry
-
 -- what?
 noncomputable instance IsSimpliciallyIso.Fintype
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
@@ -4030,20 +3983,24 @@ by
     right; apply Finset.mem_singleton_self
 
 -- Show that, for disjoint complexes, projection to the first coordinate is a coercion.
-theorem join_fst_proj_is_coe (X Y : SimplicialComplex α) :
-    Disjoint (vertices X) (vertices Y) → Set.InjOn Prod.fst (vertices (X ⋆ Y)) :=
-  by
+theorem join_fst_proj_is_coe
+    (X Y : AbstractSimplicialComplex E)
+  : Disjoint X.vertices Y.vertices → Set.InjOn Prod.fst (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).vertices :=
+by
   intro X_disj_Y
-  simp only [Set.InjOn, vertices_setOf, simplicialJoin, Set.mem_setOf]
+  simp only [Set.InjOn, vertices_setOf, simplicialJoin, Set.mem_diff, Set.mem_union, Set.mem_setOf]
   simp only [vertices_setOf, Set.disjoint_iff_forall_ne, Set.mem_setOf] at X_disj_Y
   intro x₁ x₁_in_lhs x₂ x₂_in_rhs
   choose s₁ s₁_in_join x₁_in_s₁ using x₁_in_lhs
+  choose s₁_in_join s₁_ne using s₁_in_join
   choose u₁ u₁_in_X v₁ v₁_in_Y uv₁_eq_s₁ using s₁_in_join
   rw [← uv₁_eq_s₁, simplex_disjoint_mem] at x₁_in_s₁
   choose s₂ s₂_in_join x₂_in_s₂ using x₂_in_rhs
+  choose s₂_in_join s₂_ne using s₂_in_join
   choose u₂ u₂_in_X v₂ v₂_in_Y uv₂_eq_s₂ using s₂_in_join
   rw [← uv₂_eq_s₂, simplex_disjoint_mem] at x₂_in_s₂
   cases' x₁_in_s₁ with x₁_in_X x₁_in_Y <;> cases' x₂_in_s₂ with x₂_in_X x₂_in_Y
+
   -- x₁, x₂ ∈ X case.
   intro x₁_eq_x₂
   choose x₁_in_u₁ x₁_zero using x₁_in_X
@@ -4051,31 +4008,64 @@ theorem join_fst_proj_is_coe (X Y : SimplicialComplex α) :
   rw [← x₂_zero] at x₁_zero
   rw [Prod.ext_iff]
   constructor <;> assumption
+
   -- x₁ ∈ X, x₂ ∈ Y case.
   contrapose
   intro x₁_neq_x₂
   choose x₁_in_u₁ x₁_zero using x₁_in_X
   choose x₂_in_v₂ x₂_one using x₂_in_Y
-  have H₁ : ∃ (s : Finset α) (H : s ∈ X.simplices), x₁.fst ∈ s := by use u₁;
-    constructor <;> assumption
-  specialize X_disj_Y x₁.fst H₁
-  have H₂ : ∃ (s : Finset α) (H : s ∈ Y.simplices), x₂.fst ∈ s := by use v₂;
-    constructor <;> assumption
-  specialize X_disj_Y x₂.fst H₂
+
+  cases' u₁_in_X with u₁_in_X u₁_empty
+  cases' v₂_in_Y with v₂_in_Y v₂_empty
+
+  have H₁ : ∃ s ∈ X.faces, x₁.fst ∈ s :=
+  by
+    use u₁
+  specialize X_disj_Y H₁
+  have H₂ : ∃ s ∈ Y.faces, x₂.fst ∈ s :=
+  by
+    use v₂
+  specialize X_disj_Y H₂
   assumption
+
+  -- v₂ = ∅ case.
+  rw [Set.mem_singleton_iff] at v₂_empty
+  rw [v₂_empty] at x₂_in_v₂
+  contradiction
+  -- u₁ = ∅ case.
+  rw [Set.mem_singleton_iff] at u₁_empty
+  rw [u₁_empty] at x₁_in_u₁
+  contradiction
+
   -- x₁ ∈ Y, x₂ ∈ X case.
   contrapose
   intro x₁_neq_x₂
   choose x₁_in_v₁ x₁_one using x₁_in_Y
   choose x₂_in_u₂ x₂_zero using x₂_in_X
-  have H₂ : ∃ (s : Finset α) (H : s ∈ X.simplices), x₂.fst ∈ s := by use u₂;
-    constructor <;> assumption
-  specialize X_disj_Y x₂.fst H₂
-  have H₁ : ∃ (s : Finset α) (H : s ∈ Y.simplices), x₁.fst ∈ s := by use v₁;
-    constructor <;> assumption
-  specialize X_disj_Y x₁.fst H₁
-  rw [← Ne.def, ne_comm]
+
+  cases' u₂_in_X with u₂_in_X u₂_empty
+  cases' v₁_in_Y with v₁_in_Y v₁_empty
+
+  have H₂ : ∃ s ∈ X.faces, x₂.fst ∈ s :=
+  by
+    use u₂
+  specialize X_disj_Y H₂
+  have H₁ : ∃ s ∈ Y.faces, x₁.fst ∈ s :=
+  by
+    use v₁
+  specialize X_disj_Y H₁
+  rw [← ne_eq, ne_comm]
   assumption
+
+  -- v₁ = ∅ case.
+  rw [Set.mem_singleton_iff] at v₁_empty
+  rw [v₁_empty] at x₁_in_v₁
+  contradiction
+  -- u₂ = ∅ case.
+  rw [Set.mem_singleton_iff] at u₂_empty
+  rw [u₂_empty] at x₂_in_u₂
+  contradiction
+
   -- x₁, x₂ ∈ Y case.
   intro x₁_eq_x₂
   choose x₁_in_v₁ x₁_one using x₁_in_Y
@@ -4084,22 +4074,25 @@ theorem join_fst_proj_is_coe (X Y : SimplicialComplex α) :
   rw [Prod.ext_iff]
   constructor <;> assumption
 
-def joinFst {X Y : SimplicialComplex α} (H : Disjoint (vertices X) (vertices Y)) :
-    SimplicialCoe (X ⋆ Y) α :=
-  SimplicialCoe.mk Prod.fst (join_fst_proj_is_coe X Y H)
+def joinFst {X Y : AbstractSimplicialComplex E} (H : Disjoint X.vertices Y.vertices)
+  : SimplicialCoe (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) E :=
+      SimplicialCoe.mk Prod.fst (join_fst_proj_is_coe X Y H)
 
 notation "π₁" => joinFst
 
-theorem join_proj_vertices_mem (X Y : SimplicialComplex α) (x : α)
-    (H : Disjoint (vertices X) (vertices Y)) :
-    x ∈ vertices (π₁ H[X ⋆ Y]) ↔ x ∈ vertices X ∨ x ∈ vertices Y :=
-  by
-  simp only [vertices_setOf, simplicialImage, simplicialJoin, Set.mem_setOf, joinFst]
+theorem join_proj_vertices_mem
+    (X Y : AbstractSimplicialComplex E)
+    (x : E)
+    (H : Disjoint X.vertices Y.vertices)
+  : x ∈ ((π₁ H).coe ''ˢ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜))).vertices ↔ x ∈ X.vertices ∨ x ∈ Y.vertices :=
+by
+  simp only [vertices_setOf, simplicialImage, simplicialJoin, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf, joinFst]
   constructor
   -- x ∈ X ⋆ Y case.
   intro x_in_join
   choose u u_in_img x_in_u using x_in_join
   choose v v_in_join proj_v_u using u_in_img
+  choose v_in_join v_ne using v_in_join
   choose s s_in_X t t_in_Y st_eq_v using v_in_join
   rw [← proj_v_u, Finset.mem_image] at x_in_u
   choose y y_in_v proj_y_x using x_in_u
@@ -4107,22 +4100,37 @@ theorem join_proj_vertices_mem (X Y : SimplicialComplex α) (x : α)
   cases' y_in_v with y_in_X y_in_Y
   left
   choose y_in_s y_zero using y_in_X
+  cases' s_in_X with s_in_X contra
   subst proj_y_x
-  use s; constructor <;> assumption
+  use s
+
+  rw [contra] at y_in_s
+  contradiction
+
   right
   choose y_in_t y_one using y_in_Y
+  cases' t_in_Y with t_in_Y contra
   subst proj_y_x
-  use t; constructor <;> assumption
+  use t
+
+  rw [contra] at y_in_t
+  contradiction
+
   -- x ∈ X ∪ Y case.
   intro x_in_union
   cases' x_in_union with x_in_X x_in_Y
+
   -- x ∈ X subcase.
   choose s s_in_X x_in_s using x_in_X
   use s; constructor
   use s ⊔ₛ ∅; constructor
-  use s; constructor; assumption
-  use∅; constructor; apply simplicialComplex_empty_simplex
+  constructor
+  use s; constructor; left; assumption
+  use ∅; constructor; right; rfl
   rfl
+  rw [simplex_disjoint_empty, not_and_or]
+  left; apply Finset.ne_empty_of_mem x_in_s
+
   simp only [simplexDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
     Finset.union_empty]
   simp only [Finset.ext_iff, Finset.mem_image]
@@ -4135,18 +4143,23 @@ theorem join_proj_vertices_mem (X Y : SimplicialComplex α) (x : α)
   subst proj_b_a
   assumption
   intro a_in_s
-  use(a, 0); constructor
+  use (a, 0); constructor
   simp only [Finset.mem_product, Prod.fst, Prod.snd, Finset.mem_singleton]
-  constructor; assumption; rfl
+  constructor; assumption; trivial
   simp only [Prod.fst]
   assumption
+
   -- x ∈ Y subcase.
   choose t t_in_Y x_in_t using x_in_Y
   use t; constructor
-  use∅ ⊔ₛ t; constructor
-  use∅; constructor; apply simplicialComplex_empty_simplex
-  use t; constructor; assumption
+  use ∅ ⊔ₛ t; constructor
+  constructor
+  use ∅; constructor; right; rfl
+  use t; constructor; left; assumption
   rfl
+  rw [simplex_disjoint_empty, not_and_or]
+  right; apply Finset.ne_empty_of_mem x_in_t
+
   simp only [simplexDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
     Finset.empty_union]
   simp only [Finset.ext_iff, Finset.mem_image]
@@ -4161,12 +4174,14 @@ theorem join_proj_vertices_mem (X Y : SimplicialComplex α) (x : α)
   intro a_in_s
   use(a, 1); constructor
   simp only [Finset.mem_product, Prod.fst, Prod.snd, Finset.mem_singleton]
-  constructor; assumption; rfl
+  constructor; assumption; trivial
   simp only [Prod.fst]
   assumption
 
-theorem simplexDisjointUnion_prod_fst (s t : Finset α) : Finset.image Prod.fst (s ⊔ₛ t) = s ∪ t :=
-  by
+theorem simplexDisjointUnion_prod_fst
+    (s t : Finset E)
+  : Finset.image Prod.fst (s ⊔ₛ t : Finset (E × 𝕜)) = s ∪ t :=
+by
   simp only [simplexDisjointUnion, Finset.image_union, Finset.ext_iff, Finset.mem_image,
     Finset.mem_union]
   intro x
@@ -4202,63 +4217,104 @@ theorem simplexDisjointUnion_prod_fst (s t : Finset α) : Finset.image Prod.fst 
   apply Finset.mem_singleton_self
   simp only [Prod.fst]
 
-theorem join_proj_mem (X Y : SimplicialComplex α) (s : Finset α)
-    (H : Disjoint (vertices X) (vertices Y)) :
-    s ∈ π₁ H[X ⋆ Y].simplices ↔ ∃ t ∈ X.simplices, ∃ u ∈ Y.simplices, s = t ∪ u :=
-  by
-  simp only [simplicialImage, simplicialJoin, joinFst, Set.mem_setOf]
+theorem join_proj_mem
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E)
+    (H : Disjoint X.vertices Y.vertices)
+  : s ∈ ((π₁ H).coe ''ˢ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜))).faces ↔ ∃ t ∈ X.faces ∪ {∅}, ∃ u ∈ Y.faces ∪ {∅}, s = t ∪ u ∧ s ≠ ∅ :=
+by
+  simp only [simplicialImage, simplicialJoin, joinFst, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf]
   constructor
+
   -- s ∈ X ⋆ Y case.
   intro s_in_join
   choose v v_in_join proj_v_s using s_in_join
+  choose v_in_join v_ne using v_in_join
   choose t t_in_X u u_in_Y tu_eq_v using v_in_join
   rw [← tu_eq_v, simplexDisjointUnion_prod_fst] at proj_v_s
   use t; constructor; assumption
   use u; constructor; assumption
-  symm
-  assumption
+  constructor
+  symm; assumption
+
+  subst proj_v_s
+  rw [ne_eq, Finset.union_eq_empty, not_and_or]
+  cases' t_in_X with t_in_X t_empty
+  left
+  revert t_in_X
+  contrapose
+  rw [not_not]
+  intro t_empty
+  rw [t_empty]
+  apply X.empty_notMem
+
+  cases' u_in_Y with u_in_Y u_empty
+  right
+  revert u_in_Y
+  contrapose
+  rw [not_not]
+  intro u_empty
+  rw [u_empty]
+  apply Y.empty_notMem
+
+  subst t_empty u_empty tu_eq_v
+  rw [simplex_disjoint_empty, not_and_or] at v_ne
+  cases v_ne <;> contradiction
+
   -- s X ∪ Y case.
   intro x_decomp
-  choose t t_in_X u u_in_Y s_eq_tu using x_decomp
-  rw [← simplexDisjointUnion_prod_fst] at s_eq_tu
-  use t ⊔ₛ u; constructor
+  choose t t_in_X u u_in_Y s_eq_tu s_ne using x_decomp
+  rw [← @simplexDisjointUnion_prod_fst E 𝕜] at s_eq_tu
+  use t ⊔ₛ u; constructor; constructor
   use t; constructor; assumption
-  use u; constructor; assumption
-  rfl
-  symm
-  assumption
+  use u
 
-/- ././././Mathport/Syntax/Translate/Basic.lean:642:2: warning: expanding binder collection (s₁ t₁ «expr ∈ » X.simplices) -/
-/- ././././Mathport/Syntax/Translate/Basic.lean:642:2: warning: expanding binder collection (s₂ t₂ «expr ∈ » Y.simplices) -/
-theorem join_proj_disj_union_mem (X Y : SimplicialComplex α) (s t : Finset α)
-    (H : Disjoint (vertices X) (vertices Y)) :
-    s ∪ t ∈ π₁ H[X ⋆ Y].simplices ↔
-      ∃ (s₁ : _) (_ : s₁ ∈ X.simplices) (t₁ : _) (_ : t₁ ∈ X.simplices) (s₂ : _) (_ :
-        s₂ ∈ Y.simplices) (t₂ : _) (_ : t₂ ∈ Y.simplices),
-        s = s₁ ∪ s₂ ∧ t = t₁ ∪ t₂ ∧ s₁ ∪ t₁ ∈ X.simplices ∧ s₂ ∪ t₂ ∈ Y.simplices :=
-  by
+  rw [simplex_disjoint_empty, not_and_or]
+  cases' t_in_X with t_in_X t_empty
+  left
+  revert t_in_X
+  contrapose
+  rw [not_not]
+  intro t_empty
+  rw [t_empty]
+  apply X.empty_notMem
+
+  cases' u_in_Y with u_in_Y u_empty
+  right
+  revert u_in_Y
+  contrapose
+  rw [not_not]
+  intro t_empty
+  rw [t_empty]
+  apply Y.empty_notMem
+
+  subst t_empty u_empty s_eq_tu
+  rw [ne_eq, Finset.image_eq_empty, simplex_disjoint_empty, not_and_or] at s_ne
+  cases s_ne <;> contradiction
+
+  symm; assumption
+
+theorem join_proj_disj_union_mem
+    (X Y : AbstractSimplicialComplex E)
+    (s t : Finset E)
+    (H : Disjoint X.vertices Y.vertices)
+  : s ∪ t ∈ ((π₁ H).coe ''ˢ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜))).faces ↔
+      ∃ (s₁ : _) (_ : s₁ ∈ X.faces ∪ {∅}) (t₁ : _) (_ : t₁ ∈ X.faces ∪ {∅})
+        (s₂ : _) (_ : s₂ ∈ Y.faces ∪ {∅}) (t₂ : _) (_ : t₂ ∈ Y.faces ∪ {∅}),
+          s = s₁ ∪ s₂ ∧ t = t₁ ∪ t₂ ∧ s₁ ∪ t₁ ∈ X.faces ∪ {∅} ∧ s₂ ∪ t₂ ∈ Y.faces ∪ {∅} ∧ s ∪ t ≠ ∅ :=
+by
   rw [join_proj_mem]
   constructor
+
   -- s ∪ t ∈ X ⋆ Y case.
   intro st_in_join
-  choose u u_in_X v v_in_X st_eq_uv using st_in_join
+  choose u u_in_X v v_in_X st_eq_uv st_ne using st_in_join
   use s ∩ u; constructor
-  apply X.subset_closed u
-  assumption
-  apply Finset.inter_subset_right
   use t ∩ u; constructor
-  apply X.subset_closed u
-  assumption
-  apply Finset.inter_subset_right
   use s ∩ v; constructor
-  apply Y.subset_closed v
-  assumption
-  apply Finset.inter_subset_right
   use t ∩ v; constructor
-  apply Y.subset_closed v
-  assumption
-  apply Finset.inter_subset_right
   constructor
+
   rw [← Finset.inter_union_distrib_left, ← st_eq_uv, Finset.union_comm, Finset.inter_union_self]
   constructor
   rw [← Finset.inter_union_distrib_left, ← st_eq_uv, Finset.inter_union_self]
@@ -4266,151 +4322,100 @@ theorem join_proj_disj_union_mem (X Y : SimplicialComplex α) (s t : Finset α)
   rw [← Finset.union_inter_distrib_right, st_eq_uv, Finset.inter_comm, Finset.union_comm,
     Finset.inter_union_self]
   assumption
-  rw [← Finset.union_inter_distrib_right, st_eq_uv, Finset.inter_comm, Finset.inter_union_self]
+
+  rw [Set.mem_union, Set.mem_singleton_iff] at ⊢ v_in_X
+  constructor
+  cases' v_in_X with v_in_Y v_empty
+  left
+  apply Y.down_closed
   assumption
+
+  rw [← Finset.union_inter_distrib_right]
+  apply Finset.inter_subset_right
+  rw [← Finset.union_inter_distrib_right, st_eq_uv, Finset.inter_comm,
+    Finset.inter_union_self]
+  revert v_in_Y
+  contrapose
+  rw [not_not]
+  intro v_empty
+  rw [v_empty]
+  apply Y.empty_notMem
+
+  right
+  subst v_empty
+  simp only [Finset.inter_empty, Finset.union_idempotent]
+  assumption
+
+  cases' v_in_X with v_in_Y v_empty
+  by_cases tv_empty : t ∩ v = ∅
+  right; rw [Set.mem_singleton_iff]; assumption
+  left
+  apply Y.down_closed
+  assumption
+  apply Finset.inter_subset_right
+  assumption
+
+  right
+  rw [Set.mem_singleton_iff] at ⊢ v_empty
+  subst v_empty
+  rw [Finset.inter_empty]
+
+  cases' v_in_X with v_in_Y v_empty
+  by_cases sv_empty : s ∩ v = ∅
+  right; rw [Set.mem_singleton_iff]; assumption
+  left
+  apply Y.down_closed
+  assumption
+  apply Finset.inter_subset_right
+  assumption
+
+  right
+  rw [Set.mem_singleton_iff] at ⊢ v_empty
+  subst v_empty
+  rw [Finset.inter_empty]
+
+  cases' u_in_X with u_in_X u_empty
+  by_cases tu_empty : t ∩ u = ∅
+  right; rw [Set.mem_singleton_iff]; assumption
+  left
+  apply X.down_closed
+  assumption
+  apply Finset.inter_subset_right
+  assumption
+
+  right
+  rw [Set.mem_singleton_iff] at ⊢ u_empty
+  subst u_empty
+  rw [Finset.inter_empty]
+
+  cases' u_in_X with u_in_X u_empty
+  by_cases su_empty : s ∩ u = ∅
+  right; rw [Set.mem_singleton_iff]; assumption
+  left
+  apply X.down_closed
+  assumption
+  apply Finset.inter_subset_right
+  assumption
+
+  right
+  rw [Set.mem_singleton_iff] at ⊢ u_empty
+  subst u_empty
+  rw [Finset.inter_empty]
+
   -- s ∪ t decomp case.
   intro st_decomp
   choose s₁ s₁_in_X t₁ t₁_in_X s₂ s₂_in_Y t₂ t₂_in_Y st_decomp using st_decomp
-  choose s_decomp t_decomp st₁_in_X st₂_in_Y using st_decomp
+  choose s_decomp t_decomp st₁_in_X st₂_in_Y st_ne using st_decomp
   use s₁ ∪ t₁; constructor; assumption
   use s₂ ∪ t₂; constructor; assumption
   rw [Finset.union_comm s₂, Finset.union_assoc, ← Finset.union_assoc t₁,
     Finset.union_comm (t₁ ∪ t₂), ← Finset.union_assoc]
   rw [← s_decomp, ← t_decomp]
-
--- General result on existence of coercion for complexes over ℕ
-@[simp]
-def finiteNatComplexBound (X : SimplicialComplex ℕ) [Fintype X.simplices] : ℕ :=
-  (vertices X ∪ {(0 : ℕ)}).toFinset.max'
-    (by
-      rw [Set.toFinset_nonempty, Set.union_nonempty]
-      right
-      apply Set.singleton_nonempty)
-
-theorem finiteNatComplexBound_ne (X : SimplicialComplex ℕ) [Fintype X.simplices]
-    [X_ne : (vertices X).toFinset.Nonempty] :
-    finiteNatComplexBound X = (vertices X).toFinset.max' X_ne :=
-  by
-  simp only [finiteNatComplexBound, le_antisymm_iff]
-  constructor
-  rw [Finset.max'_le_iff]
-  intro y y_in_X
-  rw [Set.mem_toFinset, Set.mem_union, Set.mem_singleton_iff, ← Set.mem_toFinset] at y_in_X
-  cases' y_in_X with y_in_X y_zero
-  apply Finset.le_max'
+  constructor; rfl
   assumption
-  rw [y_zero]
-  apply zero_le
-  rw [Finset.max'_le_iff]
-  intro y y_in_X
-  apply Finset.le_max'
-  rw [Set.mem_toFinset, Set.mem_union, Set.mem_singleton_iff, ← Set.mem_toFinset]
-  left; assumption
 
-def joinNatProjMap (X Y : SimplicialComplex ℕ) [Fintype X.simplices] : ℕ × ℕ → ℕ := fun x : ℕ × ℕ =>
-  if x.snd = 0 then x.fst else x.fst + finiteNatComplexBound X + 1
-
-theorem join_nat_proj_is_coe (X Y : SimplicialComplex ℕ) [Fintype X.simplices] :
-    Set.InjOn (joinNatProjMap X Y) (vertices (X ⋆ Y)) :=
-  by
-  simp only [Set.InjOn, simplicialJoin_mem_vertices, joinNatProjMap]
-  simp only [Set.mem_setOf, simplicialJoin_mem, ite_eq_iff]
-  intro x₁ x₁_in_join x₂ x₂_in_join x₁_eq_x₂
-  cases' x₁_in_join with x₁_in_X x₁_in_Y <;> cases' x₂_in_join with x₂_in_X x₂_in_Y
-  -- x₁, x₂ ∈ X case.
-  choose x₁_in_X x₁_zero using x₁_in_X
-  choose x₂_in_X x₂_zero using x₂_in_X
-  cases' x₁_eq_x₂ with x₁_eq_x₂ contra
-  choose x₁_zero x₁_eq_x₂ using x₁_eq_x₂
-  rw [@comm _ Eq, ite_eq_iff] at x₁_eq_x₂
-  cases' x₁_eq_x₂ with x₁_eq_x₂ contra
-  choose x₂_zero x₁_eq_x₂ using x₁_eq_x₂
-  rw [Prod.ext_iff]
-  constructor
-  symm
-  assumption
-  rw [← x₂_zero] at x₁_zero
-  assumption
-  choose contra H using contra
-  contradiction
-  choose contra H using contra
-  contradiction
-  -- x₁ ∈ X, x₂ ∈ Y case.
-  choose x₁_in_X x₁_zero using x₁_in_X
-  choose x₂_in_Y x₂_one using x₂_in_Y
-  cases' x₁_eq_x₂ with x₁_eq_x₂ contra
-  choose x₁_zero x₁_eq_x₂ using x₁_eq_x₂
-  rw [@comm _ Eq, ite_eq_iff] at x₁_eq_x₂
-  cases' x₁_eq_x₂ with contra x₁_eq_x₂
-  choose contra H using contra
-  have x₂_nonzero : x₂.snd ≠ 0 := by omega
-  contradiction
-  choose x₂_nonzero x₁_eq_x₂ using x₁_eq_x₂
-  have x₁_le_bound : x₁.fst ≤ finiteNatComplexBound X :=
-    by
-    by_cases X_ne : vertices X = ∅
-    rw [X_ne] at x₁_in_X
-    have contra : x₁.fst ∉ ∅ := by apply Set.not_mem_empty
-    contradiction
-    rw [← Ne.def, ← Set.nonempty_iff_ne_empty, ← Set.toFinset_nonempty] at X_ne
-    rw [@finiteNatComplexBound_ne X _ X_ne]
-    apply Finset.le_max'
-    rw [Set.mem_toFinset]
-    assumption
-  have x₁_lt_x₂_bound : x₁.fst < x₂.fst + finiteNatComplexBound X + 1 := by omega
-  have contra : x₂.fst + finiteNatComplexBound X + 1 ≠ x₁.fst := ne_of_gt x₁_lt_x₂_bound
-  contradiction
-  choose contra H using contra
-  contradiction
-  -- x₁ ∈ Y, x₂ ∈ X case.
-  choose x₁_in_Y x₁_one using x₁_in_Y
-  choose x₂_in_X x₂_zero using x₂_in_X
-  cases' x₁_eq_x₂ with contra x₁_eq_x₂
-  choose contra H using contra
-  have x₁_nonzero : x₁.snd ≠ 0 := by omega
-  contradiction
-  choose x₁_zero x₁_eq_x₂ using x₁_eq_x₂
-  rw [@comm _ Eq, ite_eq_iff] at x₁_eq_x₂
-  cases' x₁_eq_x₂ with x₁_eq_x₂ contra
-  choose x₂_nonzero x₁_eq_x₂ using x₁_eq_x₂
-  have x₂_le_bound : x₂.fst ≤ finiteNatComplexBound X :=
-    by
-    simp only [finiteNatComplexBound]
-    apply Finset.le_max'
-    rw [Set.mem_toFinset, Set.mem_union]
-    left; assumption
-  have x₂_lt_x₁_bound : x₂.fst < x₁.fst + finiteNatComplexBound X + 1 := by omega
-  have contra : x₂.fst ≠ x₁.fst + finiteNatComplexBound X + 1 := ne_of_lt x₂_lt_x₁_bound
-  contradiction
-  choose contra H using contra
-  have x₂_nonzero : x₂.snd ≠ 0 := by omega
-  contradiction
-  -- x₁, x₂ ∈ Y case.
-  choose x₁_in_Y x₁_one using x₁_in_Y
-  choose x₂_in_Y x₂_one using x₂_in_Y
-  cases' x₁_eq_x₂ with contra x₁_eq_x₂
-  choose contra H using contra
-  have x₁_nonzero : x₁.snd ≠ 0 := by omega
-  contradiction
-  choose x₁_nonzero x₁_eq_x₂ using x₁_eq_x₂
-  rw [@comm _ Eq, ite_eq_iff] at x₁_eq_x₂
-  cases' x₁_eq_x₂ with contra x₁_eq_x₂
-  choose contra H using contra
-  have x₂_nonzero : x₂.snd ≠ 0 := by omega
-  contradiction
-  choose x₂_nonzero x₁_eq_x₂ using x₁_eq_x₂
-  have x₁_fst_eq_x₂_fst : x₁.fst = x₂.fst :=
-    by
-    rw [Nat.add_assoc, Nat.add_assoc] at x₁_eq_x₂
-    symm
-    apply Nat.add_right_cancel x₁_eq_x₂
-  rw [← x₂_one] at x₁_one
-  rw [Prod.ext_iff]
-  constructor <;> assumption
-
-def joinNatProj (X Y : SimplicialComplex ℕ) [Fintype X.simplices] : SimplicialCoe (X ⋆ Y) ℕ :=
-  SimplicialCoe.mk (joinNatProjMap X Y) (join_nat_proj_is_coe X Y)
-
-notation "ν⟨" X ", " Y "⟩" => joinNatProj X Y
+-- TODO: General result on existence of coercion for complexes over ℤ.
+-- Useful for combinatorial mfds.
+-- cf. Lean 3 unported code for former def'n using ℕ.
 
 end Join
