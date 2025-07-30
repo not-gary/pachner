@@ -3,53 +3,64 @@ import Mathlib.Analysis.Convex.SimplicialComplex.Basic
 import Pachner.SimplicialComplex
 import Pachner.SimplicialMap
 
-variable {α β : Type _}
-variable [DecidableEq α] [DecidableEq β]
+variable {E F : Type _}
+variable [DecidableEq E] [DecidableEq F]
 
 -- Boundary of a single simplex.
-def simplexBoundary (s : Finset α) : SimplicialComplex α :=
-  SimplicialComplex.mk (Finset.powerset s \ {s} ∪ {∅})
+def simplexBoundary
+    (s : Finset E)
+  : AbstractSimplicialComplex E :=
+    AbstractSimplicialComplex.mk (Finset.powerset s \ {s, ∅})
     (by
-      rw [Set.nonempty_coe_sort, Set.nonempty_def]
-      use∅
-      rw [Set.mem_union]
-      right
-      tauto)
+      simp only [Finset.coe_powerset, Set.mem_diff, Set.mem_preimage, Finset.coe_empty,
+        Set.mem_powerset_iff, Set.empty_subset, Set.mem_insert_iff, Set.mem_singleton_iff, or_true,
+        not_true_eq_false, and_false, not_false_eq_true])
     (by
-      simp
+      intro t u t_in_power u_sset_t u_ne
+      rw [Set.mem_diff, Set.mem_insert_iff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, not_or] at ⊢ t_in_power
+      choose t_sset_s t_ne_s t_ne using t_in_power
       constructor
-      intro t t_sset_empty
-      left
-      rw [← Finset.subset_empty]
+
+      apply subset_trans u_sset_t t_sset_s
+      constructor
+
+      have t_ssset_s : t ⊂ s :=
+      by
+        rw [Finset.ssubset_iff_subset_ne]
+        constructor <;> assumption
+      have u_ssset_s : u ⊂ s :=
+      by
+        apply ssubset_of_subset_of_ssubset u_sset_t t_ssset_s
+      rw [Finset.ssubset_iff_subset_ne] at u_ssset_s
+      choose u_sset_s u_ne_s using u_ssset_s
       assumption
-      intro s_1 _ _ t _
-      have : s_1 ⊆ t → t ⊆ s_1 → s_1 = t := subset_antisymm
-      have : t ⊆ s_1 → s_1 ⊆ s → t ⊆ s := subset_trans
-      finish)
+
+      assumption)
 
 prefix:75 "∂" => simplexBoundary
 
-instance simplexBoundary.fintype (s : Finset α) : Fintype (∂s).simplices :=
-  by
+instance simplexBoundary.fintype (s : Finset E) : Fintype (∂s).faces :=
+by
   unfold simplexBoundary
-  dsimp only [SimplicialComplex.simplices]
-  apply Set.fintypeUnion
+  dsimp only [AbstractSimplicialComplex.faces]
+  apply Set.fintypeDiff
 
-theorem simplexBoundary_subcomplex_simplex (s : Finset α) : ∂s ⊆ simplex s :=
-  by
+theorem simplexBoundary_subcomplex_simplex
+    (s : Finset E)
+  : ∂s ⊆ simplex s :=
+by
   simp only [IsSubcomplex, simplex, simplexBoundary, Set.subset_def]
   intro t t_in_bd
-  simp only [Set.mem_diff, Set.mem_union, Finset.mem_coe, Finset.mem_powerset] at t_in_bd
-  simp only [Finset.mem_coe, Finset.mem_powerset]
-  cases' t_in_bd with t_ss_s t_empty
-  choose t_ss_s t_ne_s using t_ss_s
-  assumption
-  rw [Set.mem_singleton_iff] at t_empty
-  rw [t_empty]
-  apply Set.empty_subset
+  simp only [Set.mem_diff, Set.mem_insert_iff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, not_or] at t_in_bd
+  simp only [Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset]
+  choose t_sset_s t_ne_s t_ne using t_in_bd
+  constructor <;> assumption
 
-theorem simplexBoundary_iso (s : Finset α) [Nonempty s] (t : Finset β) [Nonempty t] :
-    simplex s ≅ simplex t → ∂s ≅ ∂t := by
+theorem simplexBoundary_iso
+    (s : Finset E) [Nonempty s]
+    (t : Finset F) [Nonempty t]
+  : (simplex s ≅ simplex t) → ∂s ≅ ∂t :=
+by
   intro s_iso_t
   unfold IsSimpliciallyIso at s_iso_t ⊢
   choose f f_iso using s_iso_t
@@ -59,20 +70,22 @@ theorem simplexBoundary_iso (s : Finset α) [Nonempty s] (t : Finset β) [Nonemp
   have g_iso : IsSimplicialIso g := by apply iso_inv_is_iso f g f_iso gf_inv
   unfold IsInverseSimplicialIso at gf_inv
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
-    id.def] at gf_inv
+    id] at gf_inv
   choose gf_id fg_id using gf_inv
   have f_inj : Set.InjOn f.map s :=
     by
     apply @Set.LeftInvOn.injOn _ _ _ _ g.map
     simp only [Set.LeftInvOn]
     intro x x_in_s
-    have x_in_vert : x ∈ vertices (simplex s) :=
-      by
+    have x_in_vert : x ∈ (simplex s).vertices :=
+    by
       rw [vertex_iff_in_simplex]
       use s; constructor
-      simp only [simplex, Finset.mem_coe]
+      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe]
+      constructor
       apply Finset.mem_powerset_self
-      rw [← Finset.mem_coe]
+      rw [← ne_eq, ← Finset.nonempty_iff_ne_empty, ← Finset.nonempty_coe_sort]
+      assumption
       assumption
     specialize gf_id x_in_vert
     assumption
@@ -81,35 +94,33 @@ theorem simplexBoundary_iso (s : Finset α) [Nonempty s] (t : Finset β) [Nonemp
     apply @Set.LeftInvOn.injOn _ _ _ _ f.map
     simp only [Set.LeftInvOn]
     intro x x_in_s
-    have x_in_vert : x ∈ vertices (simplex t) :=
-      by
+    have x_in_vert : x ∈ (simplex t).vertices :=
+    by
       rw [vertex_iff_in_simplex]
       use t; constructor
-      simp only [simplex, Finset.mem_coe]
+      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe]
+      constructor
       apply Finset.mem_powerset_self
-      rw [← Finset.mem_coe]
+      rw [← ne_eq, ← Finset.nonempty_iff_ne_empty, ← Finset.nonempty_coe_sort]
+      assumption
       assumption
     specialize fg_id x_in_vert
     assumption
   have f_simp : IsSimplicialMap (∂s) (∂t) f.map :=
     by
     simp only [IsSimplicialMap, simplexBoundary]
-    simp only [Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
-      Finset.mem_powerset]
+    simp only [Set.mem_union, Set.mem_diff, Set.mem_insert_iff, Set.mem_singleton_iff, Finset.mem_coe,
+      Finset.mem_powerset, not_or]
     intro u u_in_s
-    cases' u_in_s with u_ss_s u_empty
-    left
-    choose u_ss_s u_ne_s using u_ss_s
-    simp only [← Finset.coe_subset, ← Finset.coe_inj, ← simplex_vertices t]
+    choose u_sset_s u_ne_s u_ne using u_in_s
     constructor
+    simp only [← Finset.coe_subset, ← Finset.coe_inj, ← simplex_vertices t]
     apply simplex_subset_vertices
     apply f.is_simplicial
-    simp only [simplex, Finset.mem_coe, Finset.mem_powerset]
-    assumption
-    rw [simplicial_iso_vertices (simplex s) (simplex t) f, simplex_vertices s, Finset.coe_image]
-    revert u_ne_s
-    contrapose
-    simp only [Classical.not_not, Set.ext_iff, Finset.ext_iff, Set.mem_image]
+    simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset]
+    constructor <;> assumption
+
+    constructor
     intro fu_eq_fs a
     specialize fu_eq_fs (f.map a)
     cases' fu_eq_fs with fu_ss_fs fs_ss_fu
