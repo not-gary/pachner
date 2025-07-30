@@ -1,5 +1,4 @@
 import Mathlib.Tactic
-import Mathlib.Analysis.Convex.SimplicialComplex.Basic
 import Pachner.SimplicialComplex
 import Mathlib.Logic.Equiv.Defs
 

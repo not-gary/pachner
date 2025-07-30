@@ -1,22 +1,9 @@
--- standard proof tactics
--- standard proof tactics
-import Mathbin.Tactic.Default
-import Data.Set.Basic
-import Data.Set.Finite
-import Data.Finset.Basic
-import SimplicialComplex
-import SimplicialMap
+import Mathlib.Tactic
+import Mathlib.Analysis.Convex.SimplicialComplex.Basic
+import Pachner.SimplicialComplex
+import Pachner.SimplicialMap
 
-#align_import simplicial_subcomplex
-
--- basics on sets
--- basics on sets
--- basics on finite sets
--- basics on finite sets
--- type-level finite sets
--- type-level finite sets
 variable {α β : Type _}
-
 variable [DecidableEq α] [DecidableEq β]
 
 -- Boundary of a single simplex.
@@ -2004,4 +1991,3 @@ theorem disjoint_complexes_disjoint_simplices (X Y : SimplicialComplex α) (s t 
   apply simplex_subset_vertices
   assumption
   assumption
-

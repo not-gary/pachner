@@ -1,5 +1,3 @@
--- standard proof tactics
--- standard proof tactics
 import Mathlib.Tactic
 import Mathlib.Analysis.Convex.SimplicialComplex.Basic
 
