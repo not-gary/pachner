@@ -769,11 +769,11 @@ by
   apply f.is_simplicial
   assumption
 
--- what?
+set_option synthInstance.checkSynthOrder false
 noncomputable instance IsSimpliciallyIso.Fintype
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
     (Y : AbstractSimplicialComplex F)
-    (X_iso_Y : X ≅ Y)
+    (X_iso_Y : IsSimpliciallyIso X Y)
   : Fintype Y.faces :=
 by
   unfold IsSimpliciallyIso at X_iso_Y
@@ -3592,6 +3592,7 @@ by
     simp only [f, g, SimplicialMap.comp, Function.comp_apply, id]
     simp only [simplicialJoinIdForwardMap, simplicialJoinIdRightInverseMap]
 
+-- TODO: Remove this if it's not used anywhere.
 -- theorem simplicialJoin_natural_incl_left
 --     (X Y : AbstractSimplicialComplex E)
 --     (t : Finset E) [Nonempty t]
