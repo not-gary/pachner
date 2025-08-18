@@ -72,52 +72,49 @@ by
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
     id] at gf_inv
   choose gf_id fg_id using gf_inv
+
+  have fs_ss_t : f.map '' s ⊆ t :=
+  by
+    rw [← simplex_vertices t, AbstractSimplicialComplex.vertices]
+    intro y y_in_fs
+    rw [Set.mem_image] at y_in_fs
+    choose x x_in_s fx_eq_y using y_in_fs
+    subst fx_eq_y
+    simp only [Set.mem_setOf, ← Finset.image_singleton]
+    apply f.is_simplicial
+    simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset]
+    constructor
+    rw [Finset.singleton_subset_iff]; assumption
+    apply Finset.singleton_ne_empty
+
+  have gt_ss_s : g.map '' t ⊆ s :=
+  by
+    rw [← simplex_vertices s, AbstractSimplicialComplex.vertices]
+    intro y y_in_gt
+    rw [Set.mem_image] at y_in_gt
+    choose x x_in_s gx_eq_y using y_in_gt
+    subst gx_eq_y
+    simp only [Set.mem_setOf, ← Finset.image_singleton]
+    apply g.is_simplicial
+    simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset]
+    constructor
+    rw [Finset.singleton_subset_iff]; assumption
+    apply Finset.singleton_ne_empty
+
   have f_inj : Set.InjOn f.map s :=
-    by
+  by
     rw [← simplex_vertices]
     apply iso_is_injective_vertices
     assumption
-    /-
-    apply @Set.LeftInvOn.injOn _ _ _ _ g.map
-    simp only [Set.LeftInvOn]
-    intro x x_in_s
-    have x_in_vert : x ∈ (simplex s).vertices :=
-    by
-      rw [vertex_iff_in_simplex]
-      use s; constructor
-      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe]
-      constructor
-      apply Finset.mem_powerset_self
-      rw [← ne_eq, ← Finset.nonempty_iff_ne_empty, ← Finset.nonempty_coe_sort]
-      assumption
-      assumption
-    specialize gf_id x_in_vert
-    assumption
-    -/
+
   have g_inj : Set.InjOn g.map t :=
-    by
+  by
     rw [← simplex_vertices]
     apply iso_is_injective_vertices
     assumption
-    /-
-    apply @Set.LeftInvOn.injOn _ _ _ _ f.map
-    simp only [Set.LeftInvOn]
-    intro x x_in_s
-    have x_in_vert : x ∈ (simplex t).vertices :=
-    by
-      rw [vertex_iff_in_simplex]
-      use t; constructor
-      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe]
-      constructor
-      apply Finset.mem_powerset_self
-      rw [← ne_eq, ← Finset.nonempty_iff_ne_empty, ← Finset.nonempty_coe_sort]
-      assumption
-      assumption
-    specialize fg_id x_in_vert
-    assumption
-    -/
+
   have f_simp : IsSimplicialMap (∂s) (∂t) f.map :=
-    by
+  by
     simp only [IsSimplicialMap, simplexBoundary]
     simp only [Set.mem_union, Set.mem_diff, Set.mem_insert_iff, Set.mem_singleton_iff, Finset.mem_coe,
       Finset.mem_powerset, not_or]
@@ -131,82 +128,140 @@ by
     constructor <;> assumption
 
     constructor
-    intro fu_eq_fs a
-    specialize fu_eq_fs (f.map a)
-    cases' fu_eq_fs with fu_ss_fs fs_ss_fu
+    simp only [Finset.ext_iff, not_forall, not_iff] at ⊢ u_ne_s
+    choose x x_nin_u using u_ne_s
+    rw [iff_def] at x_nin_u
+    choose x_in_s x_nin_u using x_nin_u
+    use f.map x
     constructor
-    intro a_in_u
-    rw [Finset.subset_iff] at u_ss_s
-    specialize u_ss_s a_in_u
-    assumption
-    intro a_in_s
-    apply Set.InjOn.mem_of_mem_image f_inj u_ss_s
-    rw [Finset.mem_coe]
-    assumption
-    have Hs : ∃ x : α, x ∈ ↑s ∧ f.map x = f.map a :=
-      by
-      use a; constructor
-      rw [Finset.mem_coe]
+
+    intro fx_nin_fu
+    have x_nin_u : x ∉ u :=
+    by
+      revert fx_nin_fu
+      contrapose
+      simp only [not_not, Finset.mem_image]
+      intro x_in_u; use x
+    specialize x_in_s x_nin_u
+    rw [Set.subset_def] at fs_ss_t
+    have fx_in_fs : f.map x ∈ f.map '' ↑s :=
+    by
+      rw [Set.mem_image]
+      use x; constructor
       assumption
       rfl
-    specialize fs_ss_fu Hs
-    simp only [Finset.mem_val, Set.mem_image]
+    specialize fs_ss_t (f.map x) fx_in_fs
     assumption
-    assumption
-    simp only [u_empty, Finset.image_empty]
-    right; rfl
-  have g_simp : IsSimplicialMap (∂t) (∂s) g.map :=
+
+    have u_sset_s' : u ⊆ s := by assumption
+    rw [← Finset.coe_subset, Set.subset_def] at u_sset_s
+    specialize u_sset_s x
+    rw [Finset.mem_coe] at u_sset_s
+    have x_in_s : x ∈ s :=
     by
+      by_cases H : x ∈ u
+      specialize u_sset_s H; assumption
+      specialize x_in_s H; assumption
+    specialize x_nin_u x_in_s
+    intro fx_in_t
+    revert x_nin_u
+    contrapose
+    simp only [not_not]
+    simp only [not_not, Finset.mem_image]
+    intro x_in_u
+    choose a a_in_u fa_eq_fx using x_in_u
+    simp only [Set.InjOn] at f_inj
+    specialize f_inj x_in_s
+    have a_in_s : a ∈ s :=
+    by
+      revert a_in_u
+      apply Finset.mem_of_subset u_sset_s'
+    symm at fa_eq_fx
+    specialize f_inj a_in_s fa_eq_fx
+    subst f_inj
+    assumption
+
+    rw [Finset.image_eq_empty]; assumption
+
+  have g_simp : IsSimplicialMap (∂t) (∂s) g.map :=
+  by
     simp only [IsSimplicialMap, simplexBoundary]
-    simp only [Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
-      Finset.mem_powerset]
+    simp only [Set.mem_union, Set.mem_diff, Set.mem_insert_iff, Set.mem_singleton_iff, Finset.mem_coe,
+      Finset.mem_powerset, not_or]
     intro u u_in_t
-    cases' u_in_t with u_ss_t u_empty
-    left
-    choose u_ss_t u_ne_t using u_ss_t
-    simp only [← Finset.coe_subset, ← Finset.coe_inj, ← simplex_vertices s]
+    choose u_sset_t u_ne_t u_ne using u_in_t
     constructor
+    simp only [← Finset.coe_subset, ← Finset.coe_inj, ← simplex_vertices s]
     apply simplex_subset_vertices
     apply g.is_simplicial
-    simp only [simplex, Finset.mem_coe, Finset.mem_powerset]
-    assumption
-    rw [simplicial_iso_vertices (simplex t) (simplex s) g, simplex_vertices t, Finset.coe_image]
-    revert u_ne_t
-    contrapose
-    simp only [Classical.not_not, Set.ext_iff, Finset.ext_iff, Set.mem_image]
-    intro gu_eq_gt a
-    specialize gu_eq_gt (g.map a)
-    cases' gu_eq_gt with gu_ss_gt gs_ss_gt
+    simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset]
+    constructor <;> assumption
+
     constructor
-    intro a_in_u
-    rw [Finset.subset_iff] at u_ss_t
-    specialize u_ss_t a_in_u
-    assumption
-    intro a_in_t
-    apply Set.InjOn.mem_of_mem_image g_inj u_ss_t
-    rw [Finset.mem_coe]
-    assumption
-    have Ht : ∃ x : β, x ∈ ↑t ∧ g.map x = g.map a :=
-      by
-      use a; constructor
-      rw [Finset.mem_coe]
+    simp only [Finset.ext_iff, not_forall, not_iff] at ⊢ u_ne_t
+    choose x x_nin_u using u_ne_t
+    rw [iff_def] at x_nin_u
+    choose x_in_t x_nin_u using x_nin_u
+    use g.map x
+    constructor
+
+    intro gx_nin_gu
+    have x_nin_u : x ∉ u :=
+    by
+      revert gx_nin_gu
+      contrapose
+      simp only [not_not, Finset.mem_image]
+      intro x_in_u; use x
+    specialize x_in_t x_nin_u
+    rw [Set.subset_def] at gt_ss_s
+    have gx_in_gt : g.map x ∈ g.map '' ↑t :=
+    by
+      rw [Set.mem_image]
+      use x; constructor
       assumption
       rfl
-    specialize gs_ss_gt Ht
-    simp only [Finset.mem_val, Set.mem_image]
+    specialize gt_ss_s (g.map x) gx_in_gt
     assumption
+
+    have u_sset_t' : u ⊆ t := by assumption
+    rw [← Finset.coe_subset, Set.subset_def] at u_sset_t
+    specialize u_sset_t x
+    rw [Finset.mem_coe] at u_sset_t
+    have x_in_t : x ∈ t :=
+    by
+      by_cases H : x ∈ u
+      specialize u_sset_t H; assumption
+      specialize x_in_t H; assumption
+    specialize x_nin_u x_in_t
+    intro gx_in_s
+    revert x_nin_u
+    contrapose
+    simp only [not_not]
+    simp only [not_not, Finset.mem_image]
+    intro x_in_u
+    choose a a_in_u ga_eq_gx using x_in_u
+    simp only [Set.InjOn] at g_inj
+    specialize g_inj x_in_t
+    have a_in_t : a ∈ t :=
+    by
+      revert a_in_u
+      apply Finset.mem_of_subset u_sset_t'
+    symm at ga_eq_gx
+    specialize g_inj a_in_t ga_eq_gx
+    subst g_inj
     assumption
-    simp only [u_empty, Finset.image_empty]
-    right; rfl
+
+    rw [Finset.image_eq_empty]; assumption
+
   let f_bd : SimplicialMap (∂s) (∂t) := SimplicialMap.mk f.map f_simp
   let g_bd : SimplicialMap (∂t) (∂s) := SimplicialMap.mk g.map g_simp
   use f_bd; use g_bd
   unfold IsInverseSimplicialIso
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
-    id.def]
+    id]
   constructor
   · intro x x_in_bd
-    have x_in_s : x ∈ vertices (simplex s) :=
+    have x_in_s : x ∈ AbstractSimplicialComplex.vertices E (simplex s) :=
       by
       apply is_subcomplex_vertices _ (∂s)
       apply simplexBoundary_subcomplex_simplex
@@ -214,7 +269,7 @@ by
     specialize gf_id x_in_s
     assumption
   · intro x x_in_bd
-    have x_in_t : x ∈ vertices (simplex t) :=
+    have x_in_t : x ∈ AbstractSimplicialComplex.vertices F (simplex t) :=
       by
       apply is_subcomplex_vertices _ (∂t)
       apply simplexBoundary_subcomplex_simplex
