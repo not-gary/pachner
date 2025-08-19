@@ -524,62 +524,89 @@ by
 
 -- Star of a complex wrt a simplex.
 @[simp]
-def star (X : SimplicialComplex α) (s : Finset α) (s_in_X : s ∈ X.simplices) :
-    SimplicialComplex α :=
-  SimplicialComplex.mk ({t ∈ X.simplices | s ∪ t ∈ X.simplices})
+def star
+    (X : AbstractSimplicialComplex E)
+    (s : Finset E)
+    (s_in_X : s ∈ X.faces)
+    -- I am slightly concerned that this is not required for the proofs so something might be wrong here
+    -- even if it's not required in the proofs, it probably still makes sense to have it
+    -- since it _is_ part of the ''mathematical'' definition
+  : AbstractSimplicialComplex E :=
+    AbstractSimplicialComplex.mk ({t ∈ X.faces | s ∪ t ∈ X.faces})
     (by
-      rw [Set.nonempty_coe_sort, Set.nonempty_def]
-      use∅
-      rw [Set.mem_sep_iff]
-      constructor
-      apply simplicialComplex_empty_simplex
-      rw [Finset.union_empty]
+      simp
+      by_contra empty_in_X
+      simp at empty_in_X
+      choose empty_in_X _ using empty_in_X
+      apply X.empty_notMem
       assumption)
     (by
       simp
-      intro s_1 _ _ t _
-      have : t ⊆ s_1 → t ∈ X.faces := by apply X.subset_closed; assumption
-      have : s ⊆ s → t ⊆ s_1 → s ∪ t ⊆ s ∪ s_1 := Finset.union_subset_union
-      have : s ∪ t ⊆ s ∪ s_1 → s ∪ t ∈ X.simplices := by apply X.subset_closed; assumption)
+      intro s_1 t s_1_in_X s_s_1_in_X t_ss_s1 t_nonempty
+      constructor
+      · apply X.down_closed s_1_in_X t_ss_s1 t_nonempty
+      · apply X.down_closed s_s_1_in_X
+        apply Finset.union_subset_union
+        rfl
+        assumption
+        simp
+        intro
+        assumption)
 
 notation "St(" X ", " s ")" => star X s
 
-instance star.fintype (X : SimplicialComplex α) [Fintype X.simplices] (s : Finset α)
-    (s_in_X : s ∈ X.simplices) : Fintype (star X s s_in_X).simplices :=
-  by
-  unfold star
-  dsimp only [SimplicialComplex.simplices]
-  have H_dec : DecidablePred fun a : Finset α => s ∪ a ∈ X.simplices :=
+instance star.fintype
+    (X : AbstractSimplicialComplex E)
+    [Fintype X.faces]
+    (s : Finset E)
+    (s_in_X : s ∈ X.faces)
+  : Fintype (star X s s_in_X).faces :=
+by
+  unfold _root_.star
+  dsimp only [AbstractSimplicialComplex.faces]
+  have H_dec : DecidablePred fun a : Finset E => s ∪ a ∈ X.faces :=
     by
     unfold DecidablePred
     intro a
     apply Set.decidableMemOfFintype
-  apply @Set.fintypeSep _ _ _ _ H_dec
-  assumption
+  apply Set.fintypeSep
 
-theorem star_subcomplex_simplices (X : SimplicialComplex α) (s t : Finset α)
-    (s_in_X : s ∈ X.simplices) : t ∈ (St(X, s) s_in_X).simplices → t ∈ X.simplices :=
-  by
+theorem star_subcomplex_simplices
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E)
+    (s_in_X : s ∈ X.faces)
+  : t ∈ (St(X, s) s_in_X).faces → t ∈ X.faces :=
+by
   intro t_in_star
-  simp only [star, Set.mem_sep_iff] at t_in_star
+  simp only [_root_.star, Set.mem_sep_iff] at t_in_star
   choose t_in_X st_in_X using t_in_star
   assumption
 
-theorem star_subcomplex (X : SimplicialComplex α) (s : Finset α) (s_in_X : s ∈ X.simplices) :
-    St(X, s) s_in_X ⊆ X := by
+theorem star_subcomplex
+    (X : AbstractSimplicialComplex E)
+    (s : Finset E)
+    (s_in_X : s ∈ X.faces)
+  : IsSubcomplex (St(X, s) s_in_X) X := -- something with '⊆' notation seems to be a problem again
+by
   simp only [IsSubcomplex, Set.subset_def]
   intro t
   apply star_subcomplex_simplices
 
-theorem star_iso (X : SimplicialComplex α) (Y : SimplicialComplex β) (s : Finset α) (t : Finset β)
-    (f : SimplicialMap X Y) (s_in_X : s ∈ X.simplices) (t_in_Y : t ∈ Y.simplices)
+theorem star_iso
+    (X : AbstractSimplicialComplex E)
+    (Y : AbstractSimplicialComplex F)
+    (s : Finset E)
+    (t : Finset F)
+    (f : SimplicialMap X Y)
+    (s_in_X : s ∈ X.faces)
+    (t_in_Y : t ∈ Y.faces)
     (f_iso : IsSimplicialIso f) : Finset.image f.map s = t → St(X, s) s_in_X ≅ St(Y, t) t_in_Y :=
   by
   intro fs_eq_t
   unfold IsSimpliciallyIso
   have f_simp : IsSimplicialMap (St(X, s) s_in_X) (St(Y, t) t_in_Y) f.map :=
     by
-    simp only [IsSimplicialMap, star, Set.mem_sep_iff]
+    simp only [IsSimplicialMap, _root_.star, Set.mem_sep_iff]
     intro u u_in_X_star
     choose u_in_X su_in_X using u_in_X_star
     constructor
@@ -593,8 +620,7 @@ theorem star_iso (X : SimplicialComplex α) (Y : SimplicialComplex β) (s : Fins
   choose g gf_inv using f_iso
   unfold IsInverseSimplicialIso at gf_inv
   choose gf_id fg_id using gf_inv
-  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
-    id.def] at gf_id fg_id
+  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply] at gf_id fg_id
   have gt_eq_s : Finset.image g.map t = s :=
     by
     rw [← fs_eq_t, Finset.ext_iff, Finset.image_image]
@@ -603,23 +629,23 @@ theorem star_iso (X : SimplicialComplex α) (Y : SimplicialComplex β) (s : Fins
     intro x_in_img
     simp only [Finset.mem_image, Function.comp_apply] at x_in_img
     choose y y_in_s gfy_eq_x using x_in_img
-    have y_in_X : y ∈ vertices X := by
+    have y_in_X : y ∈ X.vertices := by
       rw [vertex_iff_in_simplex]
-      use s; constructor <;> assumption
+      use s
     specialize gf_id y_in_X
     rw [← gfy_eq_x, gf_id]
     assumption
     intro x_in_s
     simp only [Finset.mem_image, Function.comp_apply]
     use x; constructor; assumption
-    have x_in_X : x ∈ vertices X := by
+    have x_in_X : x ∈ X.vertices := by
       rw [vertex_iff_in_simplex]
-      use s; constructor <;> assumption
+      use s
     specialize gf_id x_in_X
     assumption
   have g_simp : IsSimplicialMap (St(Y, t) t_in_Y) (St(X, s) s_in_X) g.map :=
     by
-    simp only [IsSimplicialMap, star, Set.mem_sep_iff]
+    simp only [IsSimplicialMap, _root_.star, Set.mem_sep_iff]
     intro u u_in_Y_star
     choose u_in_Y tu_in_Y using u_in_Y_star
     constructor
@@ -633,18 +659,17 @@ theorem star_iso (X : SimplicialComplex α) (Y : SimplicialComplex β) (s : Fins
   unfold IsSimplicialIso
   use g_star
   unfold IsInverseSimplicialIso
-  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
-    id.def]
+  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply]
   constructor
   · intro x x_in_star
-    have x_in_X : x ∈ vertices X :=
+    have x_in_X : x ∈ X.vertices :=
       by
       apply is_subcomplex_vertices X (St(X, s) s_in_X) (star_subcomplex X s s_in_X)
       assumption
     specialize gf_id x_in_X
     assumption
   · intro x x_in_star
-    have x_in_Y : x ∈ vertices Y :=
+    have x_in_Y : x ∈ Y.vertices :=
       by
       apply is_subcomplex_vertices Y (St(Y, t) t_in_Y) (star_subcomplex Y t t_in_Y)
       assumption
