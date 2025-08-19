@@ -103,6 +103,17 @@ end AbstractSimplicialComplex
 
 variable {E : Type*}
 
+theorem face_nonempty
+    (X : AbstractSimplicialComplex E)
+    (s : Finset E)
+  : s ∈ X.faces → s ≠ ∅ :=
+by
+  contrapose
+  rw [ne_eq, not_not]
+  intro s_empty
+  rw [s_empty]
+  apply X.empty_notMem
+
 theorem vertices_setOf (X : AbstractSimplicialComplex E) :
     X.vertices = {x : E | ∃ s ∈ X.faces, x ∈ s} :=
 by
