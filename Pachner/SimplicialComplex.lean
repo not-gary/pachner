@@ -155,9 +155,9 @@ by
   rw [Set.mem_setOf]
   use s; constructor <;> assumption
 
-instance vertices.FiniteConverse [DecidableEq E]
+instance vertices.FintypeConverse [DecidableEq E]
     (X : AbstractSimplicialComplex E) [X_dec : DecidablePred fun s => s ∈ X.faces]
-  : Fintype (X.vertices) → Fintype X.faces :=
+  : Fintype X.vertices → Fintype X.faces :=
 by
   intro fin_vert_X
   apply Set.fintypeSubset ↑(Finset.powerset (@Set.toFinset _ (X.vertices) fin_vert_X))
@@ -166,6 +166,13 @@ by
   rw [Finset.mem_coe, Finset.mem_powerset, Set.subset_toFinset]
   apply simplex_subset_vertices
   assumption
+
+instance vertices.Fintype [DecidableEq E]
+    (X : AbstractSimplicialComplex E) [Fintype X.faces]
+  : Fintype X.vertices :=
+by
+  rw [AbstractSimplicialComplex.vertices_eq, Set.biUnion_eq_iUnion]
+  apply Set.fintypeiUnion
 
 theorem simplex_mem_is_vertex
     (X : AbstractSimplicialComplex E)

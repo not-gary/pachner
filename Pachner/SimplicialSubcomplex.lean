@@ -1374,83 +1374,119 @@ by
   assumption
 
 @[simp]
-def IsNegOneSphere {X : SimplicialComplex α} {s : Finset α} {s_in_X : s ∈ X.simplices}
-    (Y : SimplicialComplex α) (Y_link_X : Y = Lk(X, s) s_in_X) : Prop :=
-  Y = emptySc
+def IsNegOneSphere
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E}
+    (Y : AbstractSimplicialComplex E)
+    (Y_link_X : Y = Lk(X, s))
+  : Prop := Y = ⊥
 
 @[simp]
-def negOneBall {X : SimplicialComplex α} (x : α) (x_nin_X : x ∉ vertices X) : SimplicialComplex α :=
-  SimplicialComplex.mk {{x}, ∅}
-    (by
-      rw [Set.nonempty_coe_sort, Set.nonempty_def]
-      use∅
-      simp)
-    (by
-      simp
-      intro t t_sset_empty
-      rw [Finset.subset_empty] at t_sset_empty
-      tauto)
+def negOneBall (x : E) : AbstractSimplicialComplex E :=
+  AbstractSimplicialComplex.mk {{x}}
+  (by
+    rw [Set.mem_singleton_iff, ← ne_eq]
+    symm
+    apply Finset.singleton_ne_empty)
+  (by
+    intro s t s_eq_x t_sset_s t_ne
+    rw [Set.mem_singleton_iff] at ⊢ s_eq_x
+    subst s_eq_x
+    rw [Finset.subset_singleton_iff] at t_sset_s
+    cases t_sset_s
+    contradiction
+    assumption)
 
-instance negOneBall.fintype {X : SimplicialComplex α} (x : α) (x_nin_X : x ∉ vertices X) :
-    Fintype (negOneBall x x_nin_X).simplices :=
-  by
+instance negOneBall.fintype (x : α) : Fintype (negOneBall x).faces :=
+by
   simp only [negOneBall]
-  apply Set.fintypeInsert {x} {∅}
-  apply Finset.decidableEq
   apply Set.fintypeSingleton
 
-theorem dim_of_negOneBall {X : SimplicialComplex α} (x : α) (x_nin_X : x ∉ vertices X) :
-    dimOfComplex (negOneBall x x_nin_X) = 0 :=
-  by
-  simp only [dimOfComplex, negOneBall, dim, Set.toFinset_insert, Set.toFinset_singleton,
-    Finset.image_insert, Finset.card_singleton, Nat.cast_one, sub_self]
-  simp only [dim, Finset.image_singleton, Finset.card_empty, Nat.cast_zero, zero_sub]
+theorem dim_of_negOneBall (x : α) : (negOneBall x).dim = 0 :=
+by
+  simp only [AbstractSimplicialComplex.dim, negOneBall]
+  unfold face_dim
+  simp only [Set.toFinset_singleton, Finset.image_singleton, Finset.card_singleton, Nat.cast_one,
+    sub_self, Int.reduceNeg]
   unfold Finset.max'
-  simp only [Finset.singleton_nonempty, id.def, Finset.sup'_insert, Finset.sup'_singleton,
-    sup_of_le_left, Right.neg_nonpos_iff, zero_le_one]
+  rw [Finset.sup'_union]
+  simp only [id_eq, Finset.singleton_nonempty, Finset.sup'_singleton,
+    Int.reduceNeg, Left.neg_nonpos_iff, zero_le_one, sup_of_le_left]
+  all_goals { apply Finset.singleton_nonempty }
 
 -- The ball around a simplex.
-def mBall (X : SimplicialComplex α) [Fintype X.simplices] (s : Finset α)
-    (s_in_X : s ∈ X.simplices) : SimplicialComplex α :=
-  SimplicialComplex.mk (Finset.powerset (vertices (Lk(X, s) s_in_X)).toFinset)
+def mBall
+    (X : AbstractSimplicialComplex E) [Fintype X.faces]
+    (s : Finset E)
+  : AbstractSimplicialComplex E :=
+    AbstractSimplicialComplex.mk
+    ((Finset.powerset (Lk(X, s)).vertices.toFinset) \ {∅})
     (by
-      rw [Set.nonempty_coe_sort, Set.nonempty_def]
-      exists ∅
-      apply Finset.empty_mem_powerset)
+      rw [Set.mem_diff, not_and_or, not_not]
+      right; apply Set.mem_singleton)
     (by
-      unfold IsSubsetClosed
-      intro t t_in_link u u_ss_t
-      simp only [Finset.mem_coe, Finset.mem_powerset] at t_in_link ⊢
-      apply Finset.Subset.trans u_ss_t t_in_link)
+      intro t u t_in_ball u_sset_t u_ne
+      simp only [Set.mem_diff, Finset.mem_coe, Set.mem_singleton_iff] at ⊢ t_in_ball
+      choose t_in_power t_ne using t_in_ball
+      constructor
+
+      rw [Finset.mem_powerset] at ⊢ t_in_power
+      apply subset_trans u_sset_t t_in_power
+
+      assumption)
 
 notation "B(" X ", " s ")" => mBall X s
 
-instance Ball.fintype (X : SimplicialComplex α) [Fintype X.simplices] (s : Finset α)
-    (s_in_X : s ∈ X.simplices) : Fintype (mBall X s s_in_X).simplices :=
+instance Ball.fintype
+    (X : AbstractSimplicialComplex E) [Fintype X.faces]
+    (s : Finset E)
+  : Fintype (mBall X s).faces :=
+by
+  simp only [mBall, AbstractSimplicialComplex.faces, Finset.coe_sdiff]
+  have fin_power : Fintype ↑(AbstractSimplicialComplex.vertices E Lk(X, s)).toFinset.powerset :=
   by
-  simp only [mBall, SimplicialComplex.simplices]
-  apply FinsetCoe.fintype
+    apply FinsetCoe.fintype
+  apply Set.fintypeDiff
 
 -- The cone of a complex.
+variable {𝕜 : Type*} [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+variable [AddCommGroup E] [DecidableEq F] [AddCommGroup F]
+
 @[simp]
-def cone (X : SimplicialComplex α) (x : α) (x_nin_X : x ∉ vertices X) : SimplicialComplex (α × ℕ) :=
-  negOneBall x x_nin_X ⋆ X
+def cone
+  (X : AbstractSimplicialComplex E)
+  (x : E)
+  (x_nin_X : x ∉ X.vertices) -- Ensure that we use a new point for projection purposes.
+: AbstractSimplicialComplex (E × 𝕜) := (negOneBall x) ⋆ X
 
 notation "Cone(" X ", " x ")" => cone X x
 
-instance cone.fintype (X : SimplicialComplex α) [Fintype X.simplices] (x : α)
-    (x_nin_X : x ∉ vertices X) : Fintype (Cone(X, x) x_nin_X).simplices :=
-  by
+instance cone.Fintype
+    (X : AbstractSimplicialComplex E) [Fintype X.faces]
+    (x : E)
+    (x_nin_X : x ∉ X.vertices)
+  : Fintype ((Cone(X, x) x_nin_X) : AbstractSimplicialComplex (E × 𝕜)).faces :=
+by
   simp only [cone]
   apply simplicialJoin.fintype
 
-def coneIsoMap (y : β) (f : α → β) : α × ℕ → β × ℕ := fun x : α × ℕ =>
-  if x.snd = 0 then (y, 0) else (f x.fst, x.snd)
+def coneIsoMap
+    (y : F)
+    (f : E → F)
+  : E × 𝕜 → F × 𝕜 :=
+    fun x : E × 𝕜 =>
+      if x.snd = 0 then (y, 0) else (f x.fst, x.snd)
 
-theorem cone_iso_simplicial (X : SimplicialComplex α) (Y : SimplicialComplex β) (x : α) (y : β)
-    (x_nin_X : x ∉ vertices X) (y_nin_Y : y ∉ vertices Y) (f : SimplicialMap X Y) :
-    IsSimplicialMap (Cone(X, x) x_nin_X) (Cone(Y, y) y_nin_Y) (coneIsoMap y f.map) :=
-  by
+theorem cone_iso_simplicial
+    (X : AbstractSimplicialComplex E)
+    (Y : AbstractSimplicialComplex F)
+    (x : E)
+    (y : F)
+    (x_nin_X : x ∉ X.vertices)
+    (y_nin_Y : y ∉ Y.vertices)
+    (f : SimplicialMap X Y)
+  : IsSimplicialMap (Cone(X, x) x_nin_X) (Cone(Y, y) y_nin_Y : AbstractSimplicialComplex (F × 𝕜)) (coneIsoMap y f.map) :=
+by
   simp only [IsSimplicialMap, cone, negOneBall, simplicialJoin_mem]
   intro u u_in_X_cone
   choose s s_in_ball t t_in_X u_eq_st using u_in_X_cone
