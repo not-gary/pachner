@@ -1490,16 +1490,23 @@ by
   simp only [IsSimplicialMap, cone, negOneBall, simplicialJoin_mem]
   intro u u_in_X_cone
   choose s s_in_ball t t_in_X u_eq_st using u_in_X_cone
-  rw [Set.mem_insert_iff, Set.mem_singleton_iff] at s_in_ball
+  rw [Set.mem_union, Set.mem_singleton_iff] at s_in_ball
   cases' s_in_ball with s_eq_x s_empty
   -- s = {x} case.
   use{y};
   constructor
-  rw [Set.mem_insert_iff]
+  rw [Set.mem_union]
   left; rfl
   use Finset.image f.map t; constructor
+  rw [Set.mem_union] at t_in_X ⊢
+  cases' t_in_X with t_in_X t_empty
+  left
   apply f.is_simplicial
   assumption
+  right
+  rw [Set.mem_singleton_iff, Finset.image_eq_empty]
+  assumption
+  constructor
   simp only [u_eq_st, s_eq_x, simplexDisjointUnion, Finset.image_union, coneIsoMap, Finset.ext_iff]
   intro v
   simp only [Finset.mem_union, Finset.mem_image, Finset.mem_product, Finset.mem_singleton]
@@ -1509,30 +1516,36 @@ by
     choose w w_in_lhs w_eq_v using v_in_lhs
     choose w_eq_x w_zero using w_in_lhs
     revert w_eq_v
+    unfold coneIsoMap
     split_ifs
     intro y_eq_v
     simp only [Prod.ext_iff] at y_eq_v
     choose y_eq_v v_zero using y_eq_v
     rw [@comm _ Eq] at y_eq_v v_zero
-    left; constructor <;> assumption
+    left
+    constructor <;> assumption
     choose w w_in_rhs w_eq_v using v_in_rhs
     choose w_in_t w_one using w_in_rhs
     revert w_eq_v
-    split_ifs
-    have contra : w.snd ≠ 0 := by omega
-    contradiction
+    unfold coneIsoMap
+    split_ifs with w_zero
+    rw [w_one] at w_zero
+    simp at w_zero
     intro w_eq_v
     simp only [Prod.ext_iff] at w_eq_v
     choose w_eq_v v_one using w_eq_v
     rw [w_one, @comm _ Eq] at v_one
-    right; use w.fst; constructor <;> assumption
+    right
+    constructor
+    use w.fst
     assumption
   · intro v_in_union
     cases' v_in_union with v_in_lhs v_in_rhs
     choose v_eq_y v_zero using v_in_lhs
     left; use(x, 0); constructor
     simp only [Prod.fst, Prod.snd]
-    constructor <;> rfl
+    constructor <;> trivial
+    unfold coneIsoMap
     simp only [eq_self_iff_true, if_true, Prod.ext_iff]
     rw [@comm _ Eq] at v_eq_y v_zero
     constructor <;> assumption
@@ -1540,17 +1553,39 @@ by
     choose w w_in_t w_eq_v using w_eq_v
     right; use(w, 1); constructor
     simp only [Prod.fst, Prod.snd]
-    constructor; assumption; rfl
+    constructor; assumption; trivial
+    unfold coneIsoMap
     simp only [Nat.one_ne_zero, if_false, Prod.ext_iff]
     rw [@comm _ Eq] at v_one
-    constructor <;> assumption
+    constructor
+    split_ifs with one_ne_zero
+    simp at one_ne_zero
+    simp only [Prod.ext_iff]
+    assumption
+    split_ifs with one_ne_zero
+    simp at one_ne_zero
+    simp only [Prod.ext_iff]
+    assumption
+
+  simp [Finset.image_nonempty]
+  choose u_eq_st e_nonempty using u_eq_st
+  assumption
   -- s = ∅ case.
-  use∅;
-  constructor; apply simplicialComplex_empty_simplex
-  use Finset.image f.map t; constructor
+  use∅
+  constructor
+  simp
+  use Finset.image f.map t
+  constructor
+  simp only [Set.mem_union] at t_in_X ⊢
+  cases' t_in_X with t_in_X t_empty
+  left
   apply f.is_simplicial
   assumption
+  right
+  rw [Set.mem_singleton_iff, Finset.image_eq_empty]
+  assumption
   simp only [u_eq_st, s_empty, simplexDisjointUnion, Finset.image_union, coneIsoMap, Finset.ext_iff]
+  constructor
   intro v
   simp only [Finset.mem_union, Finset.mem_image, Finset.mem_product, Finset.mem_singleton]
   constructor
@@ -1558,109 +1593,160 @@ by
     cases' v_in_img with v_empty v_in_t
     choose w contra w_eq_v using v_empty
     choose contra w_zero using contra
-    have H : w.fst ∉ ∅ := by apply Set.not_mem_empty
-    contradiction
+    simp only [Set.mem_singleton_iff] at s_empty
+    rw [s_empty] at contra
+    simp at contra
     choose w w_in_t w_eq_v using v_in_t
     choose w_in_t w_one using w_in_t
     revert w_eq_v
-    split_ifs
-    have contra : w.snd ≠ 0 := by omega
-    contradiction
+    unfold coneIsoMap
+    split_ifs with w_zero
+    rw [w_one] at w_zero
+    simp at w_zero
     intro w_eq_v
     simp only [Prod.ext_iff] at w_eq_v
     choose w_eq_v v_one using w_eq_v
     rw [w_one, @comm _ Eq] at v_one
-    right; use w.fst; constructor <;> assumption
+    right
+    constructor
+    use w.fst
     assumption
   · intro v_in_union
     cases' v_in_union with contra v_in_t
     choose contra v_zero using contra
-    have H : v.fst ∉ ∅ := by apply Set.not_mem_empty
-    contradiction
+    simp at contra
     choose w_eq_v v_one using v_in_t
     choose w w_in_t w_eq_v using w_eq_v
     right; use(w, 1); constructor
     simp only [Prod.fst, Prod.snd]
-    constructor; assumption; rfl
+    constructor; assumption; trivial
+    unfold coneIsoMap
     simp only [Nat.one_ne_zero, if_false, Prod.ext_iff]
     rw [@comm _ Eq] at v_one
-    constructor <;> assumption
+    constructor
+    split_ifs with one_ne_zero
+    simp at one_ne_zero
+    simp only [Prod.ext_iff]
+    assumption
+    split_ifs with one_ne_zero
+    simp at one_ne_zero
+    simp only [Prod.ext_iff]
+    assumption
+  simp [Set.union_nonempty]
+  intro s_empty
+  choose u_eq_st u_nonempty using u_eq_st
+  rw [s_empty] at u_eq_st
+  revert u_nonempty
+  contrapose
+  rw [Classical.not_not]
+  intro t_empty
+  rw [t_empty] at u_eq_st
+  unfold simplexDisjointUnion at u_eq_st
+  simp at u_eq_st
+  simp [u_eq_st]
 
-theorem cone_iso (X : SimplicialComplex α) (Y : SimplicialComplex β) (x : α) (y : β)
-    (x_nin_X : x ∉ vertices X) (y_nin_Y : y ∉ vertices Y) :
-    X ≅ Y → Cone(X, x) x_nin_X ≅ Cone(Y, y) y_nin_Y :=
-  by
-  intro X_iso_Y
+theorem cone_iso
+    (X : AbstractSimplicialComplex E)
+    (Y : AbstractSimplicialComplex F)
+    (x : E)
+    (y : F)
+    (x_nin_X : x ∉ X.vertices)
+    (y_nin_Y : y ∉ Y.vertices)
+    (X_iso_Y : X ≅ Y)
+  : (Cone(X, x) x_nin_X : AbstractSimplicialComplex (E × 𝕜)) ≅ (Cone(Y, y) y_nin_Y : AbstractSimplicialComplex (F × 𝕜)) :=
+by
+  --intro X_iso_Y
   unfold IsSimpliciallyIso at X_iso_Y ⊢
   choose f f_iso using X_iso_Y
   unfold IsSimplicialIso at f_iso ⊢
   choose g gf_inv using f_iso
-  let f_cone : SimplicialMap (Cone(X, x) x_nin_X) (Cone(Y, y) y_nin_Y) :=
+  let f_cone : SimplicialMap (Cone(X, x) x_nin_X) (Cone(Y, y) y_nin_Y : AbstractSimplicialComplex (F × 𝕜)) :=
     SimplicialMap.mk (coneIsoMap y f.map) (cone_iso_simplicial X Y x y x_nin_X y_nin_Y f)
-  let g_cone : SimplicialMap (Cone(Y, y) y_nin_Y) (Cone(X, x) x_nin_X) :=
+  let g_cone : SimplicialMap (Cone(Y, y) y_nin_Y) (Cone(X, x) x_nin_X : AbstractSimplicialComplex (E × 𝕜)) :=
     SimplicialMap.mk (coneIsoMap x g.map) (cone_iso_simplicial Y X y x y_nin_Y x_nin_X g)
   use f_cone; use g_cone
   unfold IsInverseSimplicialIso at gf_inv ⊢
-  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
-    id.def] at gf_inv ⊢
+  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply, id] at gf_inv ⊢
   choose gf_id fg_id using gf_inv
   constructor
   · intro z z_in_X_cone
     rw [vertex_iff_in_simplex] at z_in_X_cone
     choose u u_in_cone z_in_u using z_in_X_cone
     simp only [cone, negOneBall, simplicialJoin] at u_in_cone
-    simp only [Set.mem_setOf, Set.mem_insert_iff, Set.mem_singleton_iff] at u_in_cone
+    simp only [Set.mem_diff, Set.mem_setOf, Set.mem_insert_iff, Set.mem_singleton_iff] at u_in_cone
+    choose u_in_cone u_nonempty using u_in_cone
     choose s s_in_ball t t_in_x st_eq_u using u_in_cone
     rw [← st_eq_u, simplex_disjoint_mem] at z_in_u
     cases' z_in_u with z_in_ball z_in_t
     cases' s_in_ball with s_eq_x contra
     rw [s_eq_x, Finset.mem_singleton] at z_in_ball
     choose z_eq_x z_zero using z_in_ball
-    simp only [coneIsoMap, Prod.ext_iff, z_zero, eq_self_iff_true, if_true]
-    constructor; symm; assumption
+    simp only [coneIsoMap, Prod.ext_iff, z_zero, eq_self_iff_true, if_true, f_cone, g_cone]
+    constructor
+    symm
+    assumption
     trivial
     rw [contra] at z_in_ball
     choose contra z_zero using z_in_ball
-    have H : z.fst ∉ ∅ := by apply Set.not_mem_empty
-    contradiction
+    simp at contra
     choose z_in_t z_one using z_in_t
-    have z_in_X : z.fst ∈ vertices X :=
+    have z_in_X : z.fst ∈ X.vertices :=
       by
       rw [vertex_iff_in_simplex]
-      use t; constructor <;> assumption
+      use t
+      constructor
+      simp only [Set.mem_union] at t_in_x
+      cases' t_in_x with t_in_X t_empty
+      assumption
+      rw [Set.mem_singleton_iff] at t_empty
+      rw [t_empty] at z_in_t
+      simp at z_in_t
+      assumption
     specialize gf_id z_in_X
-    simp only [coneIsoMap, z_one, Nat.one_ne_zero, if_false, Prod.ext_iff]
-    constructor; assumption; rfl
+    simp [coneIsoMap, z_one, Nat.one_ne_zero, if_false, Prod.ext_iff, f_cone, g_cone]
+    assumption
   · intro z z_in_Y_cone
     rw [vertex_iff_in_simplex] at z_in_Y_cone
     choose u u_in_cone z_in_u using z_in_Y_cone
     simp only [cone, negOneBall, simplicialJoin] at u_in_cone
-    simp only [Set.mem_setOf, Set.mem_insert_iff, Set.mem_singleton_iff] at u_in_cone
+    simp only [Set.mem_diff, Set.mem_setOf, Set.mem_insert_iff, Set.mem_singleton_iff] at u_in_cone
+    choose u_in_cone u_nonempty using u_in_cone
     choose s s_in_ball t t_in_x st_eq_u using u_in_cone
     rw [← st_eq_u, simplex_disjoint_mem] at z_in_u
     cases' z_in_u with z_in_ball z_in_t
     cases' s_in_ball with s_eq_x contra
     rw [s_eq_x, Finset.mem_singleton] at z_in_ball
     choose z_eq_x z_zero using z_in_ball
-    simp only [coneIsoMap, Prod.ext_iff, z_zero, eq_self_iff_true, if_true]
+    simp only [coneIsoMap, Prod.ext_iff, z_zero, eq_self_iff_true, if_true, f_cone, g_cone]
     constructor; symm; assumption
     trivial
     rw [contra] at z_in_ball
     choose contra z_zero using z_in_ball
-    have H : z.fst ∉ ∅ := by apply Set.not_mem_empty
-    contradiction
+    simp at contra
     choose z_in_t z_one using z_in_t
-    have z_in_Y : z.fst ∈ vertices Y :=
+    have z_in_Y : z.fst ∈ Y.vertices :=
       by
       rw [vertex_iff_in_simplex]
-      use t; constructor <;> assumption
+      use t
+      constructor
+      simp only [Set.mem_union] at t_in_x
+      cases' t_in_x with t_in_X t_empty
+      assumption
+      rw [Set.mem_singleton_iff] at t_empty
+      rw [t_empty] at z_in_t
+      simp at z_in_t
+      assumption
     specialize fg_id z_in_Y
-    simp only [coneIsoMap, z_one, Nat.one_ne_zero, if_false, Prod.ext_iff]
-    constructor; assumption; rfl
+    simp [coneIsoMap, z_one, Nat.one_ne_zero, if_false, Prod.ext_iff, f_cone, g_cone]
+    assumption
 
-theorem dim_of_cone (X : SimplicialComplex α) [Fintype X.simplices] (x : α)
-    (x_nin_X : x ∉ vertices X) : dimOfComplex (cone X x x_nin_X) = dimOfComplex X + 1 :=
-  by
+theorem dim_of_cone
+    (X : AbstractSimplicialComplex E)
+    [Fintype X.faces]
+    (x : E)
+    (x_nin_X : x ∉ X.vertices)
+  : (Cone(X, x) x_nin_X : AbstractSimplicialComplex (E × 𝕜)).dim = X.dim + 1 :=
+by
   dsimp only [cone]
   rw [dim_of_join, dim_of_negOneBall]
   simp only [zero_add]
@@ -1670,286 +1756,651 @@ theorem dim_of_cone (X : SimplicialComplex α) [Fintype X.simplices] (x : α)
 -/
 -- Distributive properties of join over certain subcomplexes.
 -- Lemma 2.2 (1), p.7
-theorem join_distl_link (X Y : SimplicialComplex α) (s : Finset α) (s_in_X : s ∈ X.simplices) :
-    Y ⋆ Lk(X, s) s_in_X ≅ Lk(X ⋆ Y, s ⊔ₛ ∅) (by apply simplicialJoin_incl_left; assumption) :=
-  by
-  apply simplicial_iso_trans (Y ⋆ Lk(X, s) s_in_X) (Lk(X, s) s_in_X ⋆ Y)
+theorem join_distl_link
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E)
+    (s_in_X : s ∈ X.faces)
+  : (Y ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜)) ≅ (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
+by
+  apply simplicial_iso_trans (Y ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜)) (Lk(X, s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜))
   apply simplicialJoin_comm
   apply simplicial_iso_preserves_equiv
-  dsimp only [simplicialJoin, link, SimplicialComplex.simplices]
+  dsimp only [simplicialJoin, link, AbstractSimplicialComplex.faces]
   rw [Set.ext_iff]
   intro x
   repeat' rw [Set.mem_setOf]
   constructor
   · intro H
+    rw [Set.mem_diff] at H
+    choose H x_nonempty using H
     rcases H with ⟨t, Ht, u, Hu, Hx⟩
+    rw [Set.mem_union] at Ht
     rw [Set.mem_sep_iff] at Ht
-    rcases Ht with ⟨Ht, Hst, Hst_empty⟩
-    constructor
-    use t; constructor; tauto
-    use u; tauto
-    constructor
-    subst Hx
-    rw [simplex_disjoint_distr_union]
-    use s ∪ t; constructor; tauto
-    use u; constructor; tauto
-    simp
-    subst Hx
-    rw [simplex_disjoint_distr_inter]
-    simp; tauto
+    cases' Ht with Ht t_empty
+    · rcases Ht with ⟨Ht, Hst, Hst_empty⟩
+      constructor
+      rw [Set.mem_diff]
+      constructor
+      · use t; constructor; tauto
+        use u
+      · assumption
+      constructor
+      rw [Set.mem_diff]
+      constructor
+      · subst Hx
+        rw [simplex_disjoint_distr_union]
+        use s ∪ t; constructor; tauto
+        use u; constructor; tauto
+        simp
+      · simp at x_nonempty ⊢
+        intro s_empty
+        assumption
+      subst Hx
+      rw [simplex_disjoint_distr_inter]
+      simp; tauto
+    · constructor
+      rw [Set.mem_diff]
+      constructor
+      · use t; constructor; tauto
+        use u
+      · assumption
+      constructor
+      rw [Set.mem_diff]
+      constructor
+      · subst Hx
+        rw [simplex_disjoint_distr_union]
+        use s ∪ t
+        constructor
+        simp at t_empty
+        simp [t_empty]
+        right
+        assumption
+        use u; constructor; tauto
+        simp
+      · simp at x_nonempty ⊢
+        intro s_empty
+        assumption
+      subst Hx
+      rw [simplex_disjoint_distr_inter]
+      simp
+      simp at t_empty
+      simp [t_empty]
   · intro H
     rcases H with ⟨Hx, Hx_union, Hsx_empty⟩
+    rw [Set.mem_diff] at Hx
+    choose Hx x_nonempty using Hx
     rcases Hx with ⟨t, Ht, u, Hu, Hx⟩
+    rw [Set.mem_diff] at Hx_union
+    choose Hx_union x_union_nonempty using Hx_union
     rcases Hx_union with ⟨t', Ht', u', Hu', Hx_union⟩
     subst Hx
     rw [simplex_disjoint_distr_union, simplex_disjoint_eq_unique] at Hx_union
-    cases' Hx_union with Ht' Hu'
-    simp at Hu'; subst Hu'
+    choose a b using Hx_union
+    simp at b
+    symm at b
+    subst b
+    subst a
     rw [simplex_disjoint_distr_inter, simplex_disjoint_empty] at Hsx_empty
+    rw [simplex_disjoint_distr_union] at x_union_nonempty
+    simp at x_union_nonempty
     cases' Hsx_empty with Hst_empty Hu'_trivial
-    use t; constructor
-    rw [Set.mem_sep_iff]
-    constructor <;> try subst Ht' <;> tauto
-    use u'; tauto
+    rw [Set.mem_diff]
+    cases' Ht with t_in_X t_empty
+    · constructor
+      use t
+      constructor
+      simp
+      right
+      constructor
+      constructor
+      assumption
+      cases' Ht' with st_in_X st_empty
+      · assumption
+      · simp at st_empty
+        choose s_empty t_empty using st_empty
+        subst s_empty t_empty
+        revert s_in_X
+        contrapose
+        intro empty_in_X
+        simp at empty_in_X
+        assumption
+      constructor
+      assumption
+      assumption
+      use u
+      assumption
+    · constructor
+      use ∅
+      constructor
+      simp
+      use u
+      constructor
+      assumption
+      rw [simplex_disjoint_eq_unique]
+      constructor
+      rw [Set.mem_singleton_iff] at t_empty
+      symm
+      assumption
+      trivial
+      assumption
 
 -- Lemma 2.2 (2), p.7
-theorem join_distl_star {a : Type _} [DecidableEq a] (X Y : SimplicialComplex a) (s : Finset a)
-    (s_in_X : s ∈ X.simplices) :
-    Y ⋆ St(X, s) s_in_X ≅ St(X ⋆ Y, s ⊔ₛ ∅) (by apply simplicialJoin_incl_left; assumption) :=
-  by
-  apply simplicial_iso_trans (Y ⋆ St(X, s) s_in_X) (St(X, s) s_in_X ⋆ Y)
+theorem join_distl_star
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E)
+    (s_in_X : s ∈ X.faces)
+  : (Y ⋆ St(X, s) : AbstractSimplicialComplex (E × 𝕜)) ≅ (St(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
+by
+  apply simplicial_iso_trans (Y ⋆ St(X, s)) (St(X, s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜))
   apply simplicialJoin_comm
   apply simplicial_iso_preserves_equiv
-  dsimp only [simplicialJoin, star, SimplicialComplex.simplices]
+  dsimp only [simplicialJoin, _root_.star, AbstractSimplicialComplex.faces]
   rw [Set.ext_iff]
   intro x
-  repeat' rw [Set.mem_setOf]
+  repeat' rw [Set.mem_setOf, Set.mem_diff, Set.mem_singleton_iff]
   constructor
   · intro H
+    choose H x_nonempty using H
     rcases H with ⟨t, Ht, u, Hu, Hx⟩
+    rw [Set.mem_union] at Ht
+    cases' Ht with Ht t_empty
     rw [Set.mem_sep_iff] at Ht
     cases' Ht with Ht Hst
+    constructor
     constructor
     use t; constructor; tauto
     use u; tauto
     subst Hx
+    constructor
     use s ∪ t; constructor; tauto
     use u
-    constructor <;> try rw [simplex_disjoint_distr_union]; simp <;> tauto
+    constructor <;> try rw [simplex_disjoint_distr_union]; simp
+    assumption
+    simp
+    intro s_empty
+    intro t_empty
+    subst t_empty
+    simp at x_nonempty
+    assumption
+    rw [Set.mem_singleton_iff] at t_empty
+    subst t_empty
+    constructor
+    constructor
+    use ∅
+    constructor
+    tauto
+    use u
+    assumption
+    subst Hx
+    constructor
+    use s
+    constructor
+    tauto
+    use u
+    constructor
+    assumption
+    rw [simplex_disjoint_distr_union, simplex_disjoint_eq_unique]
+    constructor
+    rw [Finset.union_empty]
+    rw [Finset.empty_union]
+    simp
+    intro
+    simp at x_nonempty
+    assumption
   · intro H
     cases' H with Hx Hx_union
+    choose Hx x_nonempty using Hx
     rcases Hx with ⟨t, Ht, u, Hu, Hx⟩
+    choose Hx_union x_union_nonempty using Hx_union
     rcases Hx_union with ⟨t', Ht', u', Hu', Hx_union⟩
     subst Hx
     rw [simplex_disjoint_distr_union, simplex_disjoint_eq_unique] at Hx_union
     cases' Hx_union with Ht' Hu'
     simp at Hu'
     subst Ht'; subst Hu'
-    use t; constructor
-    rw [Set.mem_sep_iff] <;> try simp <;> tauto
-    use u'; constructor <;> tauto
+    cases' Ht with t_in_X t_empty
+    · constructor
+      use t
+      constructor
+      rw [Set.mem_union, Set.mem_sep_iff]
+      left
+      constructor; assumption
+      cases' Ht' with st_in_X st_empty
+      · assumption
+      · simp at st_empty
+        choose s_empty t_empty using st_empty
+        subst s_empty t_empty
+        revert s_in_X
+        contrapose
+        intro empty_in_X
+        simp at empty_in_X
+        assumption
+      use u'
+      assumption
+    · constructor
+      use ∅
+      constructor; tauto
+      use u'
+      constructor; assumption
+      rw [Set.mem_singleton_iff] at t_empty
+      subst t_empty
+      trivial
+      assumption
 
-theorem join_distr_starComplement_simplices (X Y : SimplicialComplex α) (s : Finset α) [Nonempty s]
-    (s_in_X : s ∈ X.simplices) :
-    (starComplement X s s_in_X ⋆ Y).simplices =
-      (starComplement (X ⋆ Y) (s ⊔ₛ ∅) (by apply simplicialJoin_incl_left; assumption)).simplices :=
-  by
-  dsimp only [simplicialJoin, starComplement, SimplicialComplex.simplices]
+theorem join_distr_starComplement_simplices
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E)
+    [Nonempty s]
+    (s_in_X : s ∈ X.faces)
+  : (starComplement X s ⋆ Y).faces =
+      (starComplement (X ⋆ Y) (s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)).faces :=
+by
+  dsimp only [simplicialJoin, starComplement, AbstractSimplicialComplex.faces]
   rw [Set.ext_iff]
   intro x
-  repeat' rw [Set.mem_setOf]
+  repeat' rw [Set.mem_setOf, Set.mem_diff, Set.mem_singleton_iff]
   constructor
   · intro H
+    choose H x_nonempty using H
     rcases H with ⟨t, Ht, u, Hu, Hx⟩
+    rw [Set.mem_union] at Ht
     rw [Set.mem_sep_iff] at Ht
+    cases' Ht with Ht t_empty
     cases' Ht with Ht Hs_not_sset_t
+    constructor
     constructor
     use t; constructor; tauto
     use u; tauto
     subst Hx
     rw [simplex_disjoint_subset_unique]
     simp; tauto
+    rw [Set.mem_singleton_iff] at t_empty
+    subst t_empty
+    constructor
+    constructor
+    use ∅
+    constructor; tauto
+    use u; tauto
+    subst Hx
+    rw [simplex_disjoint_subset_unique]
+    simp
+    revert s_in_X
+    contrapose
+    rw [Classical.not_not]
+    intro s_empty
+    subst s_empty
+    apply X.empty_notMem
   · intro H
     cases' H with Hx Hs_not_sset_x
+    cases' Hx with Hx x_nonempty
     rcases Hx with ⟨t, Ht, u, Hu, Hx⟩
     subst Hx
     rw [simplex_disjoint_subset_unique] at Hs_not_sset_x
     simp at Hs_not_sset_x
-    use t; constructor
-    rw [Set.mem_sep_iff]; tauto
-    use u; constructor <;> tauto
+    cases' Ht with Ht t_empty
+    · constructor
+      use t; constructor
+      rw [Set.mem_union, Set.mem_sep_iff]
+      left
+      constructor <;> assumption
+      use u; assumption
+    · constructor
+      use ∅
+      constructor
+      tauto
+      use u
+      constructor
+      assumption
+      rw [t_empty]
+      assumption
 
-theorem join_distr_starComplement (X Y : SimplicialComplex α) (s : Finset α) [Nonempty s]
-    (s_in_X : s ∈ X.simplices) :
-    starComplement X s s_in_X ⋆ Y ≅
-      starComplement (X ⋆ Y) (s ⊔ₛ ∅) (by apply simplicialJoin_incl_left; assumption) :=
-  by
+theorem join_distr_starComplement
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E)
+    [Nonempty s]
+    (s_in_X : s ∈ X.faces)
+  : ((starComplement X s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) ≅
+      (starComplement (X ⋆ Y) (s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
+by
   apply simplicial_iso_preserves_equiv
   apply join_distr_starComplement_simplices
+  assumption
 
 -- Lemma 2.2 (3), p.7
-theorem join_distl_starComplement (X Y : SimplicialComplex α) (s : Finset α) [Nonempty s]
-    (s_in_X : s ∈ X.simplices) :
-    Y ⋆ starComplement X s s_in_X ≅
-      starComplement (X ⋆ Y) (s ⊔ₛ ∅) (by apply simplicialJoin_incl_left; assumption) :=
-  by
-  apply simplicial_iso_trans (Y ⋆ starComplement X s s_in_X) (starComplement X s s_in_X ⋆ Y)
+theorem join_distl_starComplement
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E)
+    [Nonempty s]
+    (s_in_X : s ∈ X.faces)
+  : (Y ⋆ (starComplement X s) : AbstractSimplicialComplex (E × 𝕜)) ≅
+      (starComplement (X ⋆ Y) (s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
+by
+  apply simplicial_iso_trans (Y ⋆ starComplement X s) (starComplement X s ⋆ Y : AbstractSimplicialComplex (E × 𝕜))
   apply simplicialJoin_comm
   apply join_distr_starComplement
+  assumption
 
 -- Lemma 2.3, p.8
-theorem join_fact_link (X Y : SimplicialComplex α) (s t : Finset α) (s_in_X : s ∈ X.simplices)
-    (t_in_Y : t ∈ Y.simplices) :
-    Lk(X ⋆ Y, s ⊔ₛ t) (by rw [simplicialJoin_sep]; tauto) ≅ Lk(X, s) s_in_X ⋆ Lk(Y, t) t_in_Y :=
-  by
+theorem join_fact_link
+    (X Y : AbstractSimplicialComplex E)
+    (s t : Finset E)
+    (s_in_X : s ∈ X.faces)
+    (t_in_Y : t ∈ Y.faces)
+  : (Lk(X ⋆ Y, s ⊔ₛ t) : AbstractSimplicialComplex (E × 𝕜))
+      ≅ (Lk(X, s) ⋆ Lk(Y, t) : AbstractSimplicialComplex (E × 𝕜)) :=
+by
   apply simplicial_iso_preserves_equiv
-  dsimp only [link, simplicialJoin, SimplicialComplex.simplices]
+  dsimp only [link, simplicialJoin, AbstractSimplicialComplex.faces]
   rw [Set.ext_iff]
   intro x
-  repeat' rw [Set.mem_setOf]
+  repeat' rw [Set.mem_setOf, Set.mem_diff, Set.mem_singleton_iff]
   constructor
   · intro H
-    cases H
+    cases' H with H_left H_right
+    cases' H_left with H_left x_nonempty
     rcases H_left with ⟨s', Hs', t', Ht', Hx⟩
     cases' H_right with H_left H_inter
+    cases' H_left with H_left st_x_nonempty
     rcases H_left with ⟨s'', Hs'', t'', Ht'', H_union⟩
     subst Hx
     rw [simplex_disjoint_distr_inter, simplex_disjoint_empty] at H_inter
     rw [simplex_disjoint_distr_union, simplex_disjoint_eq_unique] at H_union
     cases' H_union with H_s_union H_t_union
     subst H_s_union; subst H_t_union
-    use s'; constructor
-    rw [Set.mem_sep_iff]
-    constructor <;> tauto
-    use t'
-    rw [Set.mem_sep_iff]
-    constructor <;> tauto
-  · intro H
-    rcases H with ⟨s', Hs', t', Ht', Hx⟩
-    rw [Set.mem_sep_iff] at Hs' Ht'
     constructor
-    · use s'; constructor; tauto
-      use t'; tauto
-    · use s ∪ s'; constructor; tauto
-      use t ∪ t'; constructor; tauto
+    cases' Hs' with Hs' s_empty
+    use s'; constructor
+    rw [Set.mem_union, Set.mem_sep_iff]
+    left
+    constructor; assumption
+    constructor
+    cases' Hs'' with Hs'' s''_empty
+    assumption
+    simp at s''_empty
+    choose s_empty s'_empty using s''_empty
+    subst s_empty s'_empty
+    simp
+    assumption
+    tauto
+    use t'
+    constructor
+    rw [Set.mem_union, Set.mem_sep_iff]
+    cases' Ht' with Ht' t_empty
+    left
+    constructor; assumption
+    constructor
+    cases' Ht'' with Ht'' t''_empty
+    assumption
+    simp at t''_empty
+    choose t_empty t'_empty using t''_empty
+    subst t_empty t'_empty
+    iterate 4 tauto
+    use s'
+    constructor; tauto
+    use t'
+    constructor
+    cases' Ht' with Ht' t_empty
+    rw [Set.mem_union, Set.mem_sep_iff]
+    left
+    constructor; assumption
+    constructor
+    cases' Ht'' with Ht'' t''_empty
+    assumption
+    simp at t''_empty
+    choose t_empty t'_empty using t''_empty
+    subst t_empty t'_empty
+    iterate 5 tauto
+  · intro H
+    cases' H with H x_nonempty
+    rcases H with ⟨s', Hs', t', Ht', Hx⟩
+    constructor
+    · constructor
+      use s'
+      constructor
+      cases' Hs' with Hs' s_empty
+      rw [Set.mem_sep_iff] at Hs'
+      tauto
+      tauto
+      use t'
+      constructor
+      cases' Ht' with Ht' t_empty
+      rw [Set.mem_sep_iff] at Ht'
+      tauto
+      tauto
+      assumption
+      assumption
+    · constructor
+      constructor
+      use s ∪ s'
+      constructor
+      cases' Hs' with Hs' s_empty
+      rw [Set.mem_sep_iff] at Hs'
+      tauto
+      rw[ Set.mem_singleton_iff] at s_empty
+      subst s_empty
+      simp; tauto
+      use t ∪ t'
+      constructor
+      cases' Ht' with Ht' t_empty
+      rw [Set.mem_sep_iff] at Ht'
+      tauto
+      rw [Set.mem_singleton_iff] at t_empty
+      subst t_empty
+      simp; tauto
       subst Hx
       rw [simplex_disjoint_distr_union]
       subst Hx
+      simp
+      intro s_empty t_empty s'_empty
+      subst s_empty t_empty s'_empty
+      simp at x_nonempty
+      assumption
+      subst Hx
       rw [simplex_disjoint_distr_inter, simplex_disjoint_empty]
+      cases' Hs' with Hs' s_empty
+      rw [Set.mem_sep_iff] at Hs'
+      constructor; tauto
+      cases' Ht' with Ht' t_empty
+      rw [Set.mem_sep_iff] at Ht'
       tauto
+      rw [Set.mem_singleton_iff] at t_empty
+      subst t_empty
+      simp
+      constructor
+      rw [Set.mem_singleton_iff] at s_empty
+      subst s_empty
+      simp
+      cases' Ht' with Ht' t_empty
+      rw [Set.mem_sep_iff] at Ht'
+      tauto
+      rw [Set.mem_singleton_iff] at t_empty
+      subst t_empty
+      simp
 
 -- Lemma 2.4 (1), p.8
-theorem join_distr_union_left (X Y Z : SimplicialComplex α) : X ⋆ (Y ∪ Z) ≅ X ⋆ Y ∪ X ⋆ Z :=
-  by
+theorem join_distr_union_left
+    (X Y Z : AbstractSimplicialComplex E)
+  : (X ⋆ (Y ∪ Z) : AbstractSimplicialComplex (E × 𝕜)) ≅ (X ⋆ Y ∪ X ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) :=
+by
   apply simplicial_iso_preserves_equiv
-  dsimp only [simplicialJoin, simplicialUnion, SimplicialComplex.simplices]
+  dsimp only [simplicialJoin, simplicialUnion, AbstractSimplicialComplex.faces, AbstractSimplicialComplex.instHasUnion]
   rw [Set.ext_iff]
   intro x
-  repeat' rw [Set.mem_setOf]
   constructor
   · intro H
+    rw [Set.mem_diff] at H
+    cases' H with H x_empty
     rcases H with ⟨s, Hs, t, Ht, Hx⟩
-    rw [← Set.setOf_or, Set.mem_setOf]
-    rw [Set.mem_union] at Ht
-    destruct Ht
-    intro Hy
+    rw [Set.mem_union, Set.mem_diff, Set.mem_diff]
+    iterate 2 rw [Set.mem_setOf]
+    iterate 2 rw [Set.mem_union] at Ht
+    cases' Ht with Ht t_empty
+    cases' Ht with t_in_y t_in_Z
     left
-    use s; constructor; tauto
-    use t; tauto
-    intro Hz
-    right
-    use s; constructor; tauto
-    use t; tauto
-  · intro H
-    rw [← Set.setOf_or, Set.mem_setOf] at H
-    destruct H
-    intro Hy
-    rcases Hy with ⟨s, Hs, t, Ht, Hx⟩
-    use s; constructor; tauto
-    use t; rw [Set.mem_union]; tauto
-    intro Hz
-    rcases Hz with ⟨s, Hs, t, Ht, Hx⟩
-    use s; constructor; tauto
-    use t; rw [Set.mem_union]; tauto
-
--- Lemma 2.4 (2), p.8
-theorem join_distr_inter_left (X Y Z : SimplicialComplex α) : X ⋆ (Y ∩ Z) ≅ X ⋆ Y ∩ (X ⋆ Z) :=
-  by
-  apply simplicial_iso_preserves_equiv
-  dsimp only [simplicialJoin, simplicialInter, SimplicialComplex.simplices]
-  rw [Set.ext_iff]
-  intro x
-  repeat' rw [Set.mem_setOf]
-  constructor
-  · intro H
-    rcases H with ⟨s, Hs, t, Ht, Hx⟩
-    rw [← Set.setOf_and, Set.mem_setOf]
-    rw [Set.mem_inter_iff] at Ht
-    cases' Ht with Hy Hz
     constructor
     use s; constructor; tauto
     use t; tauto
+    assumption
+    right
+    constructor
     use s; constructor; tauto
     use t; tauto
+    assumption
+    right
+    constructor
+    use s; constructor; tauto
+    use t; tauto
+    assumption
   · intro H
-    rw [← Set.setOf_and, Set.mem_setOf] at H
+    rw [Set.mem_union, Set.mem_diff, Set.mem_diff] at H
     cases' H with Hy Hz
+    cases' Hy with Hy x_nonempty
+    rcases Hy with ⟨s, Hs, t, Ht, Hx⟩
+    rw [Set.mem_diff]
+    constructor
+    use s; constructor; tauto
+    use t
+    rw [Set.mem_union, Set.mem_union]
+    rw [Set.mem_union] at Ht
+    tauto
+    assumption
+    cases' Hz with Hz x_nonempty
+    rcases Hz with ⟨s, Hs, t, Ht, Hx⟩
+    rw [Set.mem_diff]
+    constructor
+    use s; constructor; tauto
+    use t
+    rw [Set.mem_union, Set.mem_union]
+    constructor
+    rw [Set.mem_union] at Ht
+    tauto
+    assumption
+    assumption
+
+-- Lemma 2.4 (2), p.8
+theorem join_distr_inter_left
+    (X Y Z : AbstractSimplicialComplex E)
+  : (X ⋆ (Y ∩ Z) : AbstractSimplicialComplex (E × 𝕜)) ≅ (X ⋆ Y ∩ (X ⋆ Z) : AbstractSimplicialComplex (E × 𝕜)) :=
+by
+  apply simplicial_iso_preserves_equiv
+  dsimp only [simplicialJoin, simplicialInter, AbstractSimplicialComplex.faces, AbstractSimplicialComplex.instHasInter]
+  rw [Set.ext_iff]
+  intro x
+  constructor
+  · intro H
+    rw [Set.mem_diff] at H
+    cases' H with H x_empty
+    rcases H with ⟨s, Hs, t, Ht, Hx⟩
+    rw [Set.mem_inter_iff, Set.mem_diff, Set.mem_diff]
+    iterate 2 rw [Set.mem_setOf]
+    rw [Set.mem_union] at Ht
+    rw [Set.mem_inter_iff] at Ht
+    cases' Ht with Ht t_empty
+    cases' Ht with Hy Hz
+    constructor
+    constructor
+    use s; constructor; tauto
+    use t; tauto
+    assumption
+    constructor
+    use s; constructor; tauto
+    use t; tauto
+    assumption
+    constructor
+    constructor
+    use s; constructor; tauto
+    use t; tauto
+    assumption
+    constructor
+    use s; constructor; tauto
+    use t; tauto
+    assumption
+  · intro H
+    rw [Set.mem_inter_iff, Set.mem_diff, Set.mem_diff] at H
+    cases' H with Hy Hz
+    cases' Hy with Hy x_nonempty
+    cases' Hz with Hz x_nonempty
     rcases Hy with ⟨sy, Hsy, ty, Hty, Hxy⟩
     rcases Hz with ⟨sz, Hsz, tz, Htz, Hxz⟩
     subst Hxy
     rw [simplex_disjoint_eq_unique] at Hxz
     cases' Hxz with Hsz Htz
     subst Hsz; subst Htz
+    rw [Set.mem_diff]
+    constructor
     use sz; constructor; tauto
-    use tz; rw [Set.mem_inter_iff]; tauto
+    use tz
+    rw [Set.mem_union, Set.mem_inter_iff]
+    constructor
+    cases' Htz with Htz t_empty
+    cases' Hty with Hty t_empty
+    iterate 5 tauto
 
 /-
 # Properties of Links
 -/
-theorem link_ident (X : SimplicialComplex α) :
-    (Lk(X, ∅) (by apply simplicialComplex_empty_simplex)).simplices = X.simplices :=
-  by
+theorem link_ident
+    (X : AbstractSimplicialComplex E)
+  : (Lk(X, ∅)).faces = X.faces :=
+by
   simp only [link, Set.ext_iff, Set.mem_sep_iff]
   simp only [Finset.empty_union, Finset.empty_inter]
-  simp only [eq_self_iff_true, and_true_iff, and_self_iff, iff_self_iff, forall_const]
+  simp only [and_true, and_self, forall_const]
 
-theorem link_ident_iso (X : SimplicialComplex α) :
-    Lk(X, ∅) (by apply simplicialComplex_empty_simplex) ≅ X :=
-  by
+theorem link_ident_iso
+    (X : AbstractSimplicialComplex E)
+  : Lk(X, ∅) ≅ X :=
+by
   apply simplicial_iso_preserves_equiv
   apply link_ident
 
-theorem link_disjoint_base (X : SimplicialComplex α) (s t : Finset α) (s_in_X : s ∈ X.simplices) :
-    t ∈ (Lk(X, s) s_in_X).simplices → Disjoint s t :=
-  by
+theorem link_disjoint_base
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E)
+    (s_in_X : s ∈ X.faces)
+  : t ∈ Lk(X, s).faces → Disjoint s t :=
+by
   intro t_in_link
   simp only [link, Set.mem_sep_iff] at t_in_link
   choose t_in_X st_in_X st_disj using t_in_link
   rw [Finset.disjoint_iff_inter_eq_empty]
   assumption
 
-theorem face_in_link_of_complement (X : SimplicialComplex α) (s t : Finset α)
-    (s_in_X : s ∈ X.simplices) (t_sset_s : t ⊆ s) :
-    s \ t ∈ (Lk(X, t) (by apply X.subset_closed s <;> assumption)).simplices :=
-  by
-  simp only [link, Set.mem_sep_iff]
+theorem face_in_link_of_complement
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E)
+    (s_in_X : s ∈ X.faces)
+    (t_sset_s : t ⊆ s)
+    (t_ne_s : t ≠ s)
+  : s \ t ∈ Lk(X, t).faces :=
+by
+  simp only [link, Set.mem_union, Set.mem_sep_iff]
   constructor
-  apply X.subset_closed s
-  assumption
+  apply X.down_closed s_in_X
   apply Finset.sdiff_subset
+  by_contra s_t_empty
+  rw [Finset.sdiff_eq_empty_iff_subset] at s_t_empty
+  revert t_ne_s
+  contrapose
+  simp
+  rw [subset_antisymm_iff]
+  tauto
   constructor
-  rw [Finset.union_comm, Finset.sdiff_union_self_eq_union, finset.union_eq_left_iff_subset.mpr] <;>
-    assumption
+  rw [Finset.union_comm, Finset.sdiff_union_self_eq_union]
+  have H : s = s ∪ t := by simp [Set.union_eq_left]; assumption
+  rw [← H]
+  assumption
   apply Finset.inter_sdiff_self
 
 -- Lemma 3.5, p.14
-theorem link_of_face_complement (X : SimplicialComplex α) (s t : Finset α)
-    (s_in_X : s ∈ X.simplices) (t_sset_s : t ⊆ s) :
-    Lk(X, s) s_in_X ≅
-      Lk(Lk(X, t) (by apply X.subset_closed s <;> assumption), s \ t)
-        (by apply face_in_link_of_complement) :=
-  by
-  by_cases s = t
+theorem link_of_face_complement
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E)
+    (s_in_X : s ∈ X.faces)
+    (t_sset_s : t ⊆ s)
+  : Lk(X, s) ≅ Lk(Lk(X, t), s \ t) :=
+by
+  by_cases h : s = t
   simp only [h, Finset.sdiff_self]
   rw [simplicial_iso_symm]
   apply link_ident_iso
@@ -1964,11 +2415,17 @@ theorem link_of_face_complement (X : SimplicialComplex α) (s t : Finset α)
     constructor
     constructor; assumption
     constructor
-    apply X.subset_closed (s ∪ u)
+    apply X.down_closed
     assumption
     apply Finset.union_subset_union
     assumption
     apply Finset.Subset.refl
+    simp
+    contrapose
+    rw [Classical.not_not]
+    intro u_empty
+    subst u_empty
+    simp [X.empty_notMem] at u_in_X
     rw [← su_empty]
     apply Finset.inter_congr_right
     rw [su_empty]
@@ -1977,11 +2434,17 @@ theorem link_of_face_complement (X : SimplicialComplex α) (s t : Finset α)
     apply Finset.inter_subset_left
     assumption
     constructor; constructor
-    apply X.subset_closed (s ∪ u)
+    apply X.down_closed
     assumption
     apply Finset.union_subset_union
     apply Finset.sdiff_subset
     apply Finset.Subset.refl
+    simp
+    contrapose
+    rw [Classical.not_not]
+    intro u_empty
+    subst u_empty
+    simp [X.empty_notMem] at u_in_X
     constructor
     rw [← Finset.union_assoc, Finset.union_comm t, Finset.sdiff_union_self_eq_union]
     have Hts : s ∪ t = s := by rw [Finset.union_eq_left]; assumption
@@ -2019,37 +2482,34 @@ theorem link_of_face_complement (X : SimplicialComplex α) (s t : Finset α)
     rw [← Hst, Finset.union_inter_distrib_right]
     assumption
 
-theorem barycenter_disjoint_boundary (X : SimplicialComplex α) (s : Finset α) (x : α)
-    (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) :
-    Disjoint (vertices (simplex {x})) (vertices (∂s)) :=
-  by
+theorem barycenter_disjoint_boundary
+    (X : AbstractSimplicialComplex E)
+    (s : Finset E)
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+  : Disjoint ((simplex {x}).vertices) ((∂s).vertices) :=
+by
   rw [Set.disjoint_left]
   intro y y_in_barycenter
-  apply @Set.not_mem_subset _ _ _ (vertices X)
+  apply @Set.notMem_subset _ _ _ (X.vertices)
   rw [Set.subset_def]
   intro z
   apply simplexBoundary_subcomplex_vert X s z s_in_X
-  dsimp only [vertices, simplex, SimplicialComplex.simplices] at y_in_barycenter
-  simp only [Set.mem_iUnion] at y_in_barycenter
-  choose t Ht y_in_t using y_in_barycenter
-  simp only [Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at Ht
-  cases' Ht with t_empty t_ne
-  rw [← Finset.coe_eq_empty, Set.eq_empty_iff_forall_not_mem] at t_empty
-  specialize t_empty y
-  contradiction
-  rw [Finset.eq_singleton_iff_unique_mem] at t_ne
-  cases' t_ne with x_in_t y_eq_x
-  specialize y_eq_x y
-  rw [Finset.mem_coe] at y_in_t
-  specialize y_eq_x y_in_t
-  rw [y_eq_x]
-  apply x_nin_X
+  dsimp only [AbstractSimplicialComplex.vertices, simplex, AbstractSimplicialComplex.faces] at y_in_barycenter
+  simp at y_in_barycenter
+  subst y_in_barycenter
+  assumption
 
-theorem barycenter_join_boundary_disjoint_link (X : SimplicialComplex α) (s : Finset α) (x : α)
-    (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) :
-    Disjoint (vertices (π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[simplex {x} ⋆ ∂s]))
-      (vertices (Lk(X, s) s_in_X)) :=
-  by
+theorem barycenter_join_boundary_disjoint_link
+    (X : AbstractSimplicialComplex E)
+    (s : Finset E)
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+  : Disjoint ((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[(simplex {x}) ⋆ ∂s]).vertices)
+       (Lk(X, s).vertices) :=
+by
   rw [Set.disjoint_left]
   intro y y_in_join
   rw [join_proj_vertices_mem] at y_in_join
@@ -2094,80 +2554,89 @@ theorem barycenter_join_boundary_disjoint_link (X : SimplicialComplex α) (s : F
   specialize t_empty y
   contradiction
 
-theorem boundary_disjoint_link (X : SimplicialComplex α) (s : Finset α) (s_in_X : s ∈ X.simplices) :
-    Disjoint (vertices (Lk(X, s) s_in_X)) (vertices (∂s)) :=
-  by
-  rw [Set.disjoint_iff_inter_eq_empty, Set.eq_empty_iff_forall_not_mem]
+theorem boundary_disjoint_link
+    (X : AbstractSimplicialComplex E)
+    (s : Finset E)
+    (s_in_X : s ∈ X.faces)
+  : Disjoint (Lk(X, s).vertices) ((∂s).vertices) :=
+by
+  rw [Set.disjoint_iff_inter_eq_empty, Set.eq_empty_iff_forall_notMem]
   intro x
   simp only [Set.mem_inter_iff, not_and, vertex_iff_in_simplex, not_exists]
   intro t_in_link u u_in_bd
   simp only [link, Set.mem_sep_iff] at t_in_link
   choose t t_in_link x_in_t using t_in_link
   choose t_in_X st_in_X st_disj using t_in_link
-  simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset] at
-    u_in_bd
-  cases' u_in_bd with u_in_bd u_empty
-  choose u_ss_s u_ne_s using u_in_bd
+  simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset] at u_in_bd
+  cases' u_in_bd with u_ss_s u_empty
+  simp at u_empty
+  choose u_ne_s u_nonempty using u_empty
   have ut_disj : u ∩ t = ∅ := by
     rw [← Finset.subset_empty]
     apply @Finset.Subset.trans _ _ (s ∩ t)
     apply Finset.inter_subset_inter_right u_ss_s
     rw [Finset.subset_empty]
     assumption
-  rw [Finset.eq_empty_iff_forall_not_mem] at ut_disj
+  rw [Finset.eq_empty_iff_forall_notMem] at ut_disj
   specialize ut_disj x
   rw [Finset.mem_inter, not_and] at ut_disj
   by_cases x_in_u : x ∈ u
   specialize ut_disj x_in_u
   contradiction
   assumption
-  rw [Set.mem_singleton_iff] at u_empty
-  rw [u_empty]
-  apply Finset.not_mem_empty
 
-theorem barycenter_disjoint_link (X : SimplicialComplex α) (s : Finset α) (x : α)
-    (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) :
-    Disjoint (vertices (Lk(X, s) s_in_X)) (vertices (simplex {x})) :=
-  by
-  rw [Set.disjoint_iff_inter_eq_empty, Set.eq_empty_iff_forall_not_mem]
+theorem barycenter_disjoint_link
+    (X : AbstractSimplicialComplex E)
+    (s : Finset E)
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+  : Disjoint (Lk(X, s).vertices) ((simplex {x}).vertices) :=
+by
+  rw [Set.disjoint_iff_inter_eq_empty, Set.eq_empty_iff_forall_notMem]
   intro y
   simp only [Set.mem_inter_iff, not_and, vertex_iff_in_simplex, not_exists]
   intro t_in_link u u_in_barycenter
   simp only [link, Set.mem_sep_iff] at t_in_link
   choose t t_in_link y_in_t using t_in_link
   choose t_in_X st_in_X st_disj using t_in_link
-  simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at
-    u_in_barycenter
-  cases' u_in_barycenter with u_empty u_eq_x
-  rw [u_empty]
-  apply Finset.not_mem_empty
+  simp only [simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u_in_barycenter
+  cases' u_in_barycenter with u_eq_x u_nonempty
+  rw [Set.mem_singleton_iff] at u_nonempty
+  cases' u_eq_x with u_empty u_eq_x
+  contradiction
   have ut_disj : u ∩ t = ∅ :=
     by
     rw [← Finset.coe_inj, Finset.coe_empty, ← Set.subset_empty_iff, Finset.coe_inter]
-    apply @Set.Subset.trans _ _ ({x} ∩ vertices X)
+    apply @Set.Subset.trans _ _ ({x} ∩ X.vertices)
     apply Set.inter_subset_inter
     simp only [u_eq_x, Finset.coe_singleton]
+    rfl
     apply simplex_subset_vertices
     assumption
-    rw [Set.subset_empty_iff, Set.eq_empty_iff_forall_not_mem]
+    rw [Set.subset_empty_iff, Set.eq_empty_iff_forall_notMem]
     intro y
     simp only [Set.mem_inter_iff, Set.mem_singleton_iff, not_and]
     intro y_eq_x
     subst y_eq_x
     assumption
-  simp only [Finset.eq_empty_iff_forall_not_mem, Finset.mem_inter, not_and] at ut_disj
+  simp only [Finset.eq_empty_iff_forall_notMem, Finset.mem_inter, not_and] at ut_disj
   specialize ut_disj y
   by_cases y_in_u : y ∈ u
   specialize ut_disj y_in_u
   contradiction
   assumption
 
-theorem disjoint_complexes_disjoint_simplices (X Y : SimplicialComplex α) (s t : Finset α)
-    (s_in_X : s ∈ X.simplices) (t_in_Y : t ∈ Y.simplices)
-    (XY_disj : Disjoint (vertices X) (vertices Y)) : Disjoint s t :=
-  by
+theorem disjoint_complexes_disjoint_simplices
+    (X Y : AbstractSimplicialComplex E)
+    (s t : Finset E)
+    (s_in_X : s ∈ X.faces)
+    (t_in_Y : t ∈ Y.faces)
+    (XY_disj : Disjoint (X.vertices) (Y.vertices))
+  : Disjoint s t :=
+by
   rw [← Finset.disjoint_coe]
-  apply @Set.disjoint_of_subset _ _ (vertices X) _ (vertices Y)
+  apply @Set.disjoint_of_subset _ _ (X.vertices) _ (Y.vertices)
   apply simplex_subset_vertices
   assumption
   apply simplex_subset_vertices
