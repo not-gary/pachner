@@ -2507,52 +2507,55 @@ theorem barycenter_join_boundary_disjoint_link
     (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : Disjoint ((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[(simplex {x}) ⋆ ∂s]).vertices)
+  : Disjoint (((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ ((simplex {x}) ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).vertices)
        (Lk(X, s).vertices) :=
 by
   rw [Set.disjoint_left]
   intro y y_in_join
   rw [join_proj_vertices_mem] at y_in_join
-  dsimp only [vertices, link, SimplicialComplex.simplices]
+  simp only [AbstractSimplicialComplex.vertices_eq, link, AbstractSimplicialComplex.faces]
   simp only [Set.mem_iUnion, not_exists]
   intro u u_in_link
   simp only [Set.mem_sep_iff] at u_in_link
   rcases u_in_link with ⟨u_in_X, su_in_X, su_empty⟩
   cases' y_in_join with y_in_barycenter y_in_bd
+
   -- y ∈ {x}
-  dsimp only [vertices, simplex, SimplicialComplex.simplices] at y_in_barycenter
+  simp only [AbstractSimplicialComplex.vertices_eq, simplex, AbstractSimplicialComplex.faces] at y_in_barycenter
   simp only [Set.mem_iUnion] at y_in_barycenter
   choose t Ht y_in_t using y_in_barycenter
-  rw [Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at Ht
+  rw [Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at Ht
+  choose Ht t_ne using Ht
+
   cases' Ht with t_empty t_ne
-  rw [← Finset.coe_eq_empty, Set.eq_empty_iff_forall_not_mem] at t_empty
-  specialize t_empty y
+  rw [Set.mem_singleton_iff] at t_ne
   contradiction
+
   rw [Finset.mem_coe, t_ne, Finset.mem_singleton] at y_in_t
-  simp only [vertices, Set.mem_iUnion, not_exists] at x_nin_X
+  simp only [AbstractSimplicialComplex.vertices_eq, Set.mem_iUnion, not_exists] at x_nin_X
   specialize x_nin_X u
   specialize x_nin_X u_in_X
   rw [y_in_t]
   apply x_nin_X
+
   -- y ∈ ∂s
-  dsimp only [vertices, simplexBoundary, SimplicialComplex.simplices] at y_in_bd
+  simp only [AbstractSimplicialComplex.vertices_eq, simplexBoundary, AbstractSimplicialComplex.faces] at y_in_bd
   simp only [Set.mem_iUnion] at y_in_bd
   choose t Ht y_in_t using y_in_bd
-  rw [Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_iff] at Ht
-  cases' Ht with t_ne t_empty
-  cases' t_ne with y_in_s t_eq_s
+  rw [Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_iff] at Ht
+  choose t_sset_s t_ne using Ht
+  rw [Set.mem_insert_iff, not_or] at t_ne
+  choose t_ne_s t_ne using t_ne
+
   rw [Finset.mem_coe] at y_in_t
-  specialize y_in_s y_in_t
-  rw [← Finset.coe_eq_empty, Set.eq_empty_iff_forall_not_mem] at su_empty
+  specialize t_sset_s y_in_t
+  rw [← Finset.coe_eq_empty, Set.eq_empty_iff_forall_notMem] at su_empty
   specialize su_empty y
   rw [Finset.mem_coe, Finset.mem_inter, not_and_or] at su_empty
   cases' su_empty with contra y_nin_u
   contradiction
   rw [Finset.mem_coe]
   apply y_nin_u
-  rw [Set.mem_singleton_iff, ← Finset.coe_eq_empty, Set.eq_empty_iff_forall_not_mem] at t_empty
-  specialize t_empty y
-  contradiction
 
 theorem boundary_disjoint_link
     (X : AbstractSimplicialComplex E)
