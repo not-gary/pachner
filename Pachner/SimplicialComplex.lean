@@ -233,6 +233,11 @@ instance simplex.Finite (s : Finset E) : Finite (@simplex E s).faces :=
 by
   simp only [simplex, Finite.Set.finite_diff]
 
+instance simplex.Fintype [DecidableEq E] (s : Finset E) : Fintype (@simplex E s).faces :=
+by
+  simp only [simplex]
+  apply Set.fintypeDiff
+
 theorem simplex_vertices
     (s : Finset E)
   : (@simplex E s).vertices = s :=

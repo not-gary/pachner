@@ -2357,7 +2357,6 @@ by
 theorem link_disjoint_base
     (X : AbstractSimplicialComplex E)
     (s t : Finset E)
-    (s_in_X : s ∈ X.faces)
   : t ∈ Lk(X, s).faces → Disjoint s t :=
 by
   intro t_in_link
@@ -2396,7 +2395,6 @@ by
 theorem link_of_face_complement
     (X : AbstractSimplicialComplex E)
     (s t : Finset E)
-    (s_in_X : s ∈ X.faces)
     (t_sset_s : t ⊆ s)
   : Lk(X, s) ≅ Lk(Lk(X, t), s \ t) :=
 by
@@ -2560,7 +2558,6 @@ by
 theorem boundary_disjoint_link
     (X : AbstractSimplicialComplex E)
     (s : Finset E)
-    (s_in_X : s ∈ X.faces)
   : Disjoint (Lk(X, s).vertices) ((∂s).vertices) :=
 by
   rw [Set.disjoint_iff_inter_eq_empty, Set.eq_empty_iff_forall_notMem]
@@ -2592,7 +2589,6 @@ theorem barycenter_disjoint_link
     (X : AbstractSimplicialComplex E)
     (s : Finset E)
     (x : E)
-    (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : Disjoint (Lk(X, s).vertices) ((simplex {x}).vertices) :=
 by
