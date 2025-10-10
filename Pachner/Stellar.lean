@@ -2119,51 +2119,55 @@ by
 @[simp]
 def StellarMove : AbstractSimplicialComplex E → AbstractSimplicialComplex E → Prop :=
   fun X Y : AbstractSimplicialComplex E =>
-  (∃ (t : Finset E) (Ht : t ∈ Y.faces) (Ht_ne : Nonempty t) (y : α) (Hy : y ∉ Y.vertices),
-      X ≅ @stellarSubdivision _ _ Y t Ht_ne y Ht Hy) ∨
-    (∃ (s : Finset α) (Hs : s ∈ X.simplices) (Hs_ne : Nonempty s) (x : α) (Hx : x ∉ vertices X),
-        Y ≅ @stellarSubdivision _ _ X s Hs_ne x Hs Hx) ∨
+  (∃ (t : Finset E) (Ht : t ∈ Y.faces) (Ht_ne : Nonempty t) (y : E) (Hy : y ∉ Y.vertices),
+      X ≅ @stellarSubdivision _ 𝕜 _ _ _ _ _ Y t y Ht Hy) ∨
+    (∃ (s : Finset E) (Hs : s ∈ X.faces) (Hs_ne : Nonempty s) (x : E) (Hx : x ∉ X.vertices),
+        Y ≅ @stellarSubdivision _ 𝕜 _ _ _ _ _ X s x Hs Hx) ∨
       X ≅ Y
 
-noncomputable instance StellarMove.Weld.fintype (X Y : SimplicialComplex α) [Fintype X.simplices]
+noncomputable instance StellarMove.Weld.fintype
+    (X Y : AbstractSimplicialComplex E) [Fintype X.faces]
     (X_weld_Y :
-      ∃ (t : Finset α) (Ht : t ∈ Y.simplices) (Ht_ne : Nonempty t) (y : α) (Hy : y ∉ vertices Y),
-        X ≅ @stellarSubdivision _ _ Y t Ht_ne y Ht Hy) :
-    Fintype Y.simplices :=
-  by
+      ∃ (t : Finset E) (Ht : t ∈ Y.faces) (Ht_ne : Nonempty t) (y : E) (Hy : y ∉ Y.vertices),
+        X ≅ @stellarSubdivision _ 𝕜 _ _ _ _ _ Y t y Ht Hy)
+  : Fintype Y.faces :=
+by
   choose t t_in_Y t_ne y y_nin_Y X_weld_Y using X_weld_Y
   apply
-    @stellarSubdivision.fintypeConverse _ _ Y t t_ne y t_in_Y y_nin_Y
-      (IsSimpliciallyIso.fintype X σ(Y, t, y; t_ne, t_in_Y, y_nin_Y) X_weld_Y)
+    @stellarSubdivision.fintypeConverse _ 𝕜 _ _ _ _ _ Y t _ y t_in_Y y_nin_Y
+      (IsSimpliciallyIso.Fintype X σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) X_weld_Y)
 
-noncomputable instance StellarMove.Subdiv.fintype (X Y : SimplicialComplex α)
-    [X_fin : Fintype X.simplices]
+noncomputable instance StellarMove.Subdiv.fintype
+    (X Y : AbstractSimplicialComplex E)
+    [X_fin : Fintype X.faces]
     (X_subdiv_Y :
-      ∃ (s : Finset α) (Hs : s ∈ X.simplices) (Hs_ne : Nonempty s) (x : α) (Hx : x ∉ vertices X),
-        Y ≅ @stellarSubdivision _ _ X s Hs_ne x Hs Hx) :
-    Fintype Y.simplices :=
-  by
+      ∃ (s : Finset E) (Hs : s ∈ X.faces) (Hs_ne : Nonempty s) (x : E) (Hx : x ∉ X.vertices),
+        Y ≅ @stellarSubdivision _ 𝕜 _ _ _ _ _ X s x Hs Hx)
+  : Fintype Y.faces :=
+by
   choose s s_in_X s_ne x x_nin_X X_subdiv_Y using X_subdiv_Y
   rw [simplicial_iso_symm] at X_subdiv_Y
   apply
-    @IsSimpliciallyIso.fintype _ _ _ _ σ(X, s, x; s_ne, s_in_X, x_nin_X)
-      (@stellarSubdivision.fintype _ _ X X_fin s s_ne x s_in_X x_nin_X) Y X_subdiv_Y
+    @IsSimpliciallyIso.Fintype _ _ _ _ σ(X, s, x; 𝕜, s_in_X, x_nin_X)
+      (@stellarSubdivision.fintype _ 𝕜 _ _ _ _ _ X X_fin s x s_in_X x_nin_X) Y X_subdiv_Y
 
-noncomputable instance StellarMove.fintype (X Y : SimplicialComplex α) [Fintype X.simplices]
-    (X_move_Y : StellarMove X Y) : Fintype Y.simplices :=
-  by
+noncomputable instance StellarMove.fintype
+    (X Y : AbstractSimplicialComplex E) [Fintype X.faces]
+    (X_move_Y : @StellarMove _ 𝕜 _ _ _ _ _ X Y)
+  : Fintype Y.faces :=
+by
   simp only [StellarMove] at X_move_Y
   by_cases X_weld_Y :
-    ∃ (t : Finset α) (Ht : t ∈ Y.simplices) (Ht_ne : Nonempty t) (y : α) (Hy : y ∉ vertices Y),
-      X ≅ @stellarSubdivision _ _ Y t Ht_ne y Ht Hy
+    ∃ (t : Finset E) (Ht : t ∈ Y.faces) (Ht_ne : Nonempty t) (y : E) (Hy : y ∉ Y.vertices),
+      X ≅ @stellarSubdivision _ 𝕜 _ _ _ _ _ Y t y Ht Hy
   apply StellarMove.Weld.fintype X Y X_weld_Y
   by_cases X_subdiv_Y :
-    ∃ (s : Finset α) (Hs : s ∈ X.simplices) (Hs_ne : Nonempty s) (x : α) (Hx : x ∉ vertices X),
-      Y ≅ @stellarSubdivision _ _ X s Hs_ne x Hs Hx
+    ∃ (s : Finset E) (Hs : s ∈ X.faces) (Hs_ne : Nonempty s) (x : E) (Hx : x ∉ X.vertices),
+      Y ≅ @stellarSubdivision _ 𝕜 _ _ _ _ _ X s x Hs Hx
   apply StellarMove.Subdiv.fintype X Y X_subdiv_Y
   by_cases X_iso_Y : X ≅ Y
-  apply IsSimpliciallyIso.fintype X Y X_iso_Y
-  have contra : ¬StellarMove X Y :=
+  apply IsSimpliciallyIso.Fintype X Y X_iso_Y
+  have contra : ¬@StellarMove _ 𝕜 _ _ _ _ _ X Y :=
     by
     simp only [StellarMove, not_or]
     constructor; assumption
@@ -2171,40 +2175,54 @@ noncomputable instance StellarMove.fintype (X Y : SimplicialComplex α) [Fintype
     assumption
   contradiction
 
-theorem stellarMove_preserves_dim (X Y : SimplicialComplex α) [X_fin : Fintype X.simplices]
-    [Y_fin : Fintype Y.simplices] (X_move_Y : StellarMove X Y) : dimOfComplex X = dimOfComplex Y :=
-  by
+theorem stellarMove_preserves_dim
+    (X Y : AbstractSimplicialComplex E) [X_fin : Fintype X.faces]
+    [Y_fin : Fintype Y.faces]
+    (X_move_Y : @StellarMove _ 𝕜 _ _ _ _ _ X Y)
+  : X.dim = Y.dim :=
+by
   simp only [StellarMove] at X_move_Y
   cases' X_move_Y with Y_subdiv_X X_move_Y
   choose t t_in_Y t_ne y y_nin_Y Y_subdiv_X using Y_subdiv_X
-  rw [@simplicial_iso_preserves_dim α α _ _ X _ σ(Y, t, y; t_ne, t_in_Y, y_nin_Y) Y_subdiv_X]
+  rw [simplicial_iso_preserves_dim X σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) Y_subdiv_X]
   symm
-  rw [@stellar_subdiv_preserves_dim α _ Y Y_fin t t_ne y t_in_Y y_nin_Y]
+  rw [@stellar_subdiv_preserves_dim _ 𝕜 _ _ _ _ _ Y  _ t y t_in_Y y_nin_Y]
   rotate_left
   cases' X_move_Y with X_subdiv_Y X_iso_Y
   choose s s_in_X s_ne x x_nin_X X_subdiv_Y using X_subdiv_Y
-  rw [@simplicial_iso_preserves_dim α α _ _ Y Y_fin σ(X, s, x; s_ne, s_in_X, x_nin_X) X_subdiv_Y]
-  rw [@stellar_subdiv_preserves_dim _ _ X X_fin s s_ne x s_in_X x_nin_X]
+  rw [simplicial_iso_preserves_dim Y σ(X, s, x; 𝕜, s_in_X, x_nin_X) X_subdiv_Y]
+  rw [@stellar_subdiv_preserves_dim _ 𝕜 _ _ _ _ _ X X_fin s x s_in_X x_nin_X]
   rotate_left
-  rw [@simplicial_iso_preserves_dim α α _ _ X _ Y X_iso_Y]
+  rw [simplicial_iso_preserves_dim X Y X_iso_Y]
   all_goals
-    unfold dimOfComplex
+    unfold AbstractSimplicialComplex.dim
     apply le_antisymm <;>
       · apply Finset.max'_le
         intro z z_in_img
-        simp only [Finset.mem_image, Set.mem_toFinset] at z_in_img
+        simp only [Finset.mem_image, Set.mem_toFinset, Finset.mem_union] at z_in_img
+        cases' z_in_img with z_in_img z_negative
+
         choose u u_in_K dim_u_z using z_in_img
         apply Finset.le_max'
-        simp only [Finset.mem_image, Set.mem_toFinset]
-        use u; constructor <;> assumption
+        simp only [Finset.mem_image, Set.mem_toFinset, Finset.mem_union]
+        left
+        use u
 
-def StellarEquiv (X : SimplicialComplex α) : SimplicialComplex α → Prop :=
-  Relation.ReflTransGen StellarMove X
+        apply Finset.le_max'
+        simp only [Finset.mem_image, Set.mem_toFinset, Finset.mem_union]
+        right
+        assumption
+
+def StellarEquiv
+    : AbstractSimplicialComplex E → AbstractSimplicialComplex E → Prop :=
+  Relation.ReflTransGen (@StellarMove _ 𝕜 _ _ _ _ _)
 
 infixl:50 " ≅ₛₜ " => StellarEquiv
 
-noncomputable instance StellarEquiv.fintype (X Y : SimplicialComplex α)
-    [X_fin : Fintype X.simplices] (X_eq_Y : X ≅ₛₜ Y) : Fintype Y.simplices :=
+noncomputable instance StellarEquiv.fintype
+    (X Y : AbstractSimplicialComplex E)
+    [X_fin : Fintype X.faces] (X_eq_Y : X ≅ₛₜ Y)
+  : Fintype Y.faces :=
   by
   apply Set.Finite.fintype
   induction' X_eq_Y with K L X_eq_K K_move_L L_dec
