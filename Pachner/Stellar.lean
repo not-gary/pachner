@@ -2217,11 +2217,11 @@ def StellarEquiv
     : AbstractSimplicialComplex E → AbstractSimplicialComplex E → Prop :=
   Relation.ReflTransGen (@StellarMove _ 𝕜 _ _ _ _ _)
 
-infixl:50 " ≅ₛₜ " => StellarEquiv
+notation X " ≅ₛₜ[" 𝕜 "] " Y => @StellarEquiv _ 𝕜 _ _ _ _ _ X Y
 
 noncomputable instance StellarEquiv.fintype
     (X Y : AbstractSimplicialComplex E)
-    [X_fin : Fintype X.faces] (X_eq_Y : X ≅ₛₜ Y)
+    [X_fin : Fintype X.faces] (X_eq_Y : X ≅ₛₜ[𝕜] Y)
   : Fintype Y.faces :=
   by
   apply Set.Finite.fintype
