@@ -2217,93 +2217,120 @@ def StellarEquiv
     : AbstractSimplicialComplex E → AbstractSimplicialComplex E → Prop :=
   Relation.ReflTransGen (@StellarMove _ 𝕜 _ _ _ _ _)
 
-notation X " ≅ₛₜ[" 𝕜 "] " Y => @StellarEquiv _ 𝕜 _ _ _ _ _ X Y
+notation X " ≅ₛₜ[" 𝕜 "] " Y : 50 => @StellarEquiv _ 𝕜 _ _ _ _ _ X Y
 
 noncomputable instance StellarEquiv.fintype
     (X Y : AbstractSimplicialComplex E)
-    [X_fin : Fintype X.faces] (X_eq_Y : X ≅ₛₜ[𝕜] Y)
+    [Fintype X.faces]
+    (X_eq_Y : X ≅ₛₜ[𝕜] Y)
   : Fintype Y.faces :=
-  by
+by
   apply Set.Finite.fintype
   induction' X_eq_Y with K L X_eq_K K_move_L L_dec
-  apply Set.Finite.intro
+  rw [Set.finite_def]
+  constructor
   assumption
-  apply Set.Finite.intro
-  have K_fin : Fintype K.simplices := by
+  rw [Set.finite_def]
+  have K_fin : Fintype K.faces := by
     apply Set.Finite.fintype
     assumption
-  apply @StellarMove.fintype _ _ K L K_fin K_move_L
+  constructor
+  apply @StellarMove.fintype _ 𝕜 _ _ _ _ _ K L _ K_move_L
 
-theorem stellarEquiv_preserves_dim (X Y : SimplicialComplex α) [X_fin : Fintype X.simplices]
-    (X_eq_Y : X ≅ₛₜ Y) :
-    dimOfComplex X = @dimOfComplex _ Y (@StellarEquiv.fintype α _ X Y X_fin X_eq_Y) :=
-  by
+theorem stellarEquiv_preserves_dim
+    (X Y : AbstractSimplicialComplex E)
+    [X_fin : Fintype X.faces]
+    (X_eq_Y : X ≅ₛₜ[𝕜] Y)
+  : X.dim = @AbstractSimplicialComplex.dim _ Y (@StellarEquiv.fintype _ 𝕜 _ _ _ _ _ X Y X_fin X_eq_Y) :=
+by
   induction' X_eq_Y with K L X_eq_K K_move_L H_ind
-  · unfold dimOfComplex
+  · unfold AbstractSimplicialComplex.dim
     apply le_antisymm <;>
       · rw [Finset.max'_le_iff]
         intro y y_max
         apply Finset.le_max'
-        simp only [Finset.mem_image, Set.mem_toFinset] at y_max ⊢
+        simp only [Finset.mem_image, Set.mem_toFinset, Finset.mem_union] at y_max ⊢
+        cases' y_max with y_max y_neg
+
+        left
         choose s s_in_img dim_s_y using y_max
-        use s; constructor <;> assumption
-  · trans @dimOfComplex _ K (@StellarEquiv.fintype α _ X K X_fin X_eq_K)
+        use s
+
+        right
+        assumption
+  · let K_fin : Fintype K.faces := by
+        apply @StellarEquiv.fintype _ 𝕜 _ _ _ _ _ X K _ X_eq_K
+    trans K.dim
     assumption
-    apply @stellarMove_preserves_dim _ _ K L (@StellarEquiv.fintype α _ X K X_fin X_eq_K)
+
+    let K_eq_L : K ≅ₛₜ[𝕜] L := by
+        unfold StellarEquiv
+        apply Relation.ReflTransGen.single
+        assumption
+    let L_fin : Fintype L.faces := by
+        apply @StellarEquiv.fintype _ 𝕜 _ _ _ _ _ K L K_fin K_eq_L
+    apply @stellarMove_preserves_dim _ 𝕜 _ _ _ _ _ K L K_fin L_fin
     assumption
 
 @[refl]
-theorem stellarEquiv_refl (X : SimplicialComplex α) : X ≅ₛₜ X := by unfold StellarEquiv
+theorem stellarEquiv_refl
+    (X : AbstractSimplicialComplex E)
+  : X ≅ₛₜ[𝕜] X :=
+by
+  unfold StellarEquiv
+  apply Relation.ReflTransGen.refl
 
 @[symm]
-theorem stellarEquiv_symm (X Y : SimplicialComplex α) : X ≅ₛₜ Y ↔ Y ≅ₛₜ X :=
-  by
+theorem stellarEquiv_symm
+    (X Y : AbstractSimplicialComplex E)
+  : X ≅ₛₜ[𝕜] Y ↔ Y ≅ₛₜ[𝕜] X :=
+by
   unfold StellarEquiv
   constructor <;>
     · apply Relation.ReflTransGen.symmetric
       rw [← swap_eq_iff]
-      simp only [StellarMove, Function.swap]
+      unfold StellarMove Function.swap
       apply funext; intro K
       apply funext; intro L
-      apply propext
+      simp only [eq_iff_iff]
       constructor
-      intro L_move_K
-      cases L_move_K
-      right; left
-      choose s Hs Hs_ne x Hx L_subdiv_K using L_move_K
-      use s; use Hs; use Hs_ne; use x; use Hx
-      assumption
-      cases L_move_K
-      left
-      choose t Ht Ht_ne y Hy K_subdiv_L using L_move_K
-      use t; use Ht; use Ht_ne; use y; use Hy
-      assumption
-      right; right
-      rw [simplicial_iso_symm]
-      assumption
-      intro K_move_L
-      cases K_move_L
-      right; left
-      choose s Hs Hs_ne x Hx K_subdiv_L using K_move_L
-      use s; use Hs; use Hs_ne; use x; use Hx
-      assumption
-      cases K_move_L
-      left
-      choose t Ht Ht_ne y Hy L_subdiv_K using K_move_L
-      use t; use Ht; use Ht_ne; use y; use Hy
-      assumption
-      right; right
-      rw [simplicial_iso_symm]
-      assumption
+      · intro L_move_K
+        cases' L_move_K with K_move_L L_move_K
+        · right; left
+          choose s Hs Hs_ne x Hx L_subdiv_K using K_move_L
+          use s; use Hs; use Hs_ne; use x; use Hx
+        · cases' L_move_K with L_move_K L_iso_K
+          · left
+            choose t Ht Ht_ne y Hy K_subdiv_L using L_move_K
+            use t; use Ht; use Ht_ne; use y; use Hy
+          · right; right
+            rw [simplicial_iso_symm]
+            assumption
+      · intro K_move_L
+        cases' K_move_L with L_move_K K_move_L
+        · right; left
+          choose s Hs Hs_ne x Hx K_subdiv_L using L_move_K
+          use s; use Hs; use Hs_ne; use x; use Hx
+        · cases' K_move_L with K_move_L K_iso_L
+          · left
+            choose t Ht Ht_ne y Hy L_subdiv_K using K_move_L
+            use t; use Ht; use Ht_ne; use y; use Hy
+          · right; right
+            rw [simplicial_iso_symm]
+            assumption
 
 @[trans]
-theorem stellarEquiv_trans (X Y Z : SimplicialComplex α) : X ≅ₛₜ Y → Y ≅ₛₜ Z → X ≅ₛₜ Z :=
-  by
+theorem stellarEquiv_trans
+    (X Y Z : AbstractSimplicialComplex E)
+  : X ≅ₛₜ[𝕜] Y → Y ≅ₛₜ[𝕜] Z → X ≅ₛₜ[𝕜] Z :=
+by
   unfold StellarEquiv
   apply Relation.transitive_reflTransGen
 
-theorem stellarEquiv_neg_trans (X Y Z : SimplicialComplex α) : X ≅ₛₜ Y → ¬Y ≅ₛₜ Z → ¬X ≅ₛₜ Z :=
-  by
+theorem stellarEquiv_neg_trans
+    (X Y Z : AbstractSimplicialComplex E)
+  : X ≅ₛₜ[𝕜] Y → ¬Y ≅ₛₜ[𝕜] Z → ¬X ≅ₛₜ[𝕜] Z :=
+by
   intro X_eq_Y Y_neq_Z
   revert Y_neq_Z
   contrapose
@@ -2313,8 +2340,11 @@ theorem stellarEquiv_neg_trans (X Y Z : SimplicialComplex α) : X ≅ₛₜ Y �
   revert X_eq_Y X_eq_Z
   apply stellarEquiv_trans
 
-theorem stellarEquiv_preserves_iso (X Y : SimplicialComplex α) : X ≅ Y → X ≅ₛₜ Y :=
-  by
+-- TODO: maybe fix precedence for ≅ so we don't need parenthesis here
+theorem stellarEquiv_preserves_iso
+    (X Y : AbstractSimplicialComplex E)
+  : (X ≅ Y) → X ≅ₛₜ[𝕜] Y :=
+by
   intro X_iso_Y
   simp only [StellarEquiv]
   apply Relation.ReflTransGen.single
@@ -2323,11 +2353,15 @@ theorem stellarEquiv_preserves_iso (X Y : SimplicialComplex α) : X ≅ Y → X 
   assumption
 
 @[simp]
-def stellarCoeMap (f : α → β) (x : α) (y : β) : α → β := fun a : α => if a = x then y else f a
+def stellarCoeMap (f : E → F) (x : E) (y : F) : E → F := fun a : E => if a = x then y else f a
 
-theorem stellar_coe_simplex_image (s : Finset α) (x : α) (y : β) (f : α → β) :
-    x ∉ s → Finset.image (stellarCoeMap f x y) s = Finset.image f s :=
-  by
+theorem stellar_coe_simplex_image
+    (s : Finset E)
+    (x : E)
+    (y : F)
+    (f : E → F)
+  : x ∉ s → Finset.image (stellarCoeMap f x y) s = Finset.image f s :=
+by
   rw [Finset.ext_iff]
   intro x_nin_s b
   simp only [Finset.mem_image, stellarCoeMap]
@@ -2335,16 +2369,16 @@ theorem stellar_coe_simplex_image (s : Finset α) (x : α) (y : β) (f : α → 
   · intro b_in_coe
     choose a a_in_s coe_a_b using b_in_coe
     revert coe_a_b
-    split_ifs
-    rw [h] at a_in_s
+    split_ifs with a_eq_x
+    rw [a_eq_x] at a_in_s
     contradiction
     intro fa_b
-    use a; constructor <;> assumption
+    use a
   · intro b_in_img
     choose a a_in_s fa_b using b_in_img
     use a; constructor; assumption
-    split_ifs
-    rw [h] at a_in_s
+    split_ifs with a_eq_x
+    rw [a_eq_x] at a_in_s
     contradiction
     assumption
 
