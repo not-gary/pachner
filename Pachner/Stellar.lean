@@ -2382,17 +2382,25 @@ by
     contradiction
     assumption
 
-theorem stellar_coe_forward_simplicial [Nonempty α] (X : SimplicialComplex α)
-    (φ : SimplicialCoe X β) (s : Finset α) [s_ne : Nonempty s] (x : α) (y : β)
-    (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) (y_nin_coe : y ∉ vertices (φ[X])) :
-    IsSimplicialMap σ(X, s, x; s_ne, s_in_X, x_nin_X)
-      σ(φ[X], Finset.image φ.coe s, y; _, by apply map_is_simplicial_onto_image; assumption,
-        y_nin_coe)
+theorem stellar_coe_forward_simplicial
+    --[Nonempty E] TODO: keep this or not? seems redundant to [Nonempty s]
+    (X : AbstractSimplicialComplex E)
+    (φ : SimplicialCoe X F)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (y : F)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
+  : IsSimplicialMap
+      σ(X, s, x; 𝕜, s_in_X, x_nin_X)
+      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply map_is_simplicial_onto_image; assumption, y_nin_coe)
       (stellarCoeMap φ.coe x y) :=
-  by
+by
   simp only [IsSimplicialMap, stellarSubdivision, simplicialUnion, Set.mem_union]
   intro t t_in_subdiv
   cases' t_in_subdiv with t_in_star_comp t_in_join
+
   left
   rw [starComplement_coe_image X s s_in_X φ, stellar_coe_simplex_image]
   apply map_is_simplicial_onto_image
@@ -2403,33 +2411,61 @@ theorem stellar_coe_forward_simplicial [Nonempty α] (X : SimplicialComplex α)
   revert x
   simp only [← Finset.mem_coe, ← Set.subset_def]
   apply simplex_subset_vertices
-  apply simplex_if_in_subcomplex
-  apply t_in_star_comp
-  apply starComplement_subcomplex
+  apply simplex_if_in_subcomplex X
+  exact starComplement_subcomplex_simplices X s t t_in_star_comp
+  simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
+  rfl
+
   right
-  simp only [join_proj_mem] at t_in_join ⊢
+  simp only [join_proj_mem, Set.mem_union] at t_in_join ⊢
   choose t' t'_in_join t₁ t₁_in_link t_decomp using t_in_join
+  cases' t'_in_join with t'_in_join t'_empty
+
   choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp using t'_in_join
+  choose t'_decomp t'_nonempty using t'_decomp
   subst t'_decomp
-  use Finset.image (stellarCoeMap φ.coe x y) (t₃ ∪ t₂); constructor
-  use Finset.image (stellarCoeMap φ.coe x y) t₃; constructor
-  simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at
-    t₃_in_barycenter ⊢
-  cases' t₃_in_barycenter with t₃_empty t₃_x
+  use Finset.image (stellarCoeMap φ.coe x y) (t₃ ∪ t₂)
+  constructor
+
   left
-  rw [t₃_empty]
+  use Finset.image (stellarCoeMap φ.coe x y) t₃
+  constructor
+
+  simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff, Set.mem_diff] at t₃_in_barycenter ⊢
+  rw [and_or_right, or_comm, Set.mem_singleton_iff, ← or_assoc, or_self_iff] at t₃_in_barycenter
+  choose t₃_in_barycenter _ using t₃_in_barycenter
+  cases' t₃_in_barycenter with t₃_empty t₃_x
+
+
+  subst t₃_empty
+  right
   apply Finset.image_empty
+
+  left
+  constructor
+
   right
   rw [t₃_x, Finset.image_singleton]
   simp only [stellarCoeMap, eq_self_iff_true, if_true]
-  use Finset.image (stellarCoeMap φ.coe x y) t₂; constructor
+
+  rw [Set.mem_singleton_iff, Finset.image_eq_empty]
+  subst t₃_x
+  apply Finset.singleton_ne_empty
+
+  use Finset.image (stellarCoeMap φ.coe x y) t₂
+  cases' t₂_in_bd with t₂_in_bd t₂_empty
+
+  constructor
+
+  left
   rw [simplexBoundary_coe_image, stellar_coe_simplex_image]
   apply map_is_simplicial_onto_image
   assumption
+
   revert x_nin_X
   contrapose
   simp only [Classical.not_not, ← Finset.mem_coe]
-  have t₂_in_X : ↑t₂ ⊆ vertices X :=
+  have t₂_in_X : ↑t₂ ⊆ X.vertices :=
     by
     apply simplex_subset_vertices
     apply simplex_if_in_subcomplex
@@ -2439,16 +2475,48 @@ theorem stellar_coe_forward_simplicial [Nonempty α] (X : SimplicialComplex α)
   rw [Set.subset_def] at t₂_in_X
   specialize t₂_in_X x
   assumption
+
   assumption
-  rw [Finset.image_union]
-  use Finset.image (stellarCoeMap φ.coe x y) t₁; constructor
+
+  constructor
+
+  apply Finset.image_union
+
+  rw [ne_eq, Finset.image_eq_empty]
+  assumption
+
+  subst t₂_empty
+  rw [Finset.image_empty]
+  rw [Finset.union_empty]
+  rw [Finset.union_empty] at t_decomp t'_nonempty ⊢
+  constructor
+
+  right
+  rfl
+
+  constructor
+
+  rfl
+
+  rw [ne_eq, Finset.image_eq_empty]
+  assumption
+
+  choose t_decomp t_nonempty using t_decomp
+  use Finset.image (stellarCoeMap φ.coe x y) t₁
+  rw [← Finset.image_union]
+
+  constructor
+
+  cases' t₁_in_link with t₁_in_link t₁_empty
+
+  left
   rw [link_coe_image, stellar_coe_simplex_image]
   apply map_is_simplicial_onto_image
   assumption
   revert x_nin_X
   contrapose
   simp only [Classical.not_not, ← Finset.mem_coe]
-  have t₁_in_X : ↑t₁ ⊆ vertices X :=
+  have t₁_in_X : ↑t₁ ⊆ X.vertices :=
     by
     apply simplex_subset_vertices
     apply simplex_if_in_subcomplex
@@ -2457,36 +2525,96 @@ theorem stellar_coe_forward_simplicial [Nonempty α] (X : SimplicialComplex α)
   rw [Set.subset_def] at t₁_in_X
   specialize t₁_in_X x
   assumption
-  rw [t_decomp, ← Finset.image_union]
+  assumption
 
-theorem stellar_coe_inverse_simplicial [Nonempty α] (X : SimplicialComplex α)
-    (φ : SimplicialCoe X β) (s : Finset α) [s_ne : Nonempty s] (x : α) (y : β)
-    (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) (y_nin_coe : y ∉ vertices (φ[X])) :
-    IsSimplicialMap
-      σ(φ[X], Finset.image φ.coe s, y; _, by apply map_is_simplicial_onto_image; assumption,
-        y_nin_coe)
-      σ(X, s, x; s_ne, s_in_X, x_nin_X) (stellarCoeMap φ⁻ᶜ.map y x) :=
-  by
+  right
+  subst t₁_empty
+  apply Finset.image_empty
+
+  constructor
+  subst t_decomp
+  rfl
+  rw [ne_eq, Finset.image_eq_empty]
+  assumption
+
+  subst t'_empty
+  rw [Finset.empty_union] at t_decomp
+  choose t_eq_t₁ t_nonempty using t_decomp
+  subst t_eq_t₁
+  cases' t₁_in_link with t_in_link t_empty
+
+  use ∅
+  constructor
+
+  right
+  rfl
+
+  use Finset.image (stellarCoeMap φ.coe x y) t
+  constructor
+
+  left
+  rw [link_coe_image, stellar_coe_simplex_image]
+  apply map_is_simplicial_onto_image
+  assumption
+  revert x_nin_X
+  contrapose
+  simp only [Classical.not_not, ← Finset.mem_coe]
+  have t_in_X : ↑t ⊆ X.vertices :=
+    by
+    apply simplex_subset_vertices
+    apply simplex_if_in_subcomplex
+    apply t_in_link
+    apply link_subcomplex
+  rw [Set.subset_def] at t_in_X
+  specialize t_in_X x
+  assumption
+  assumption
+
+  constructor
+
+  rw [Finset.empty_union]
+
+  rw [ne_eq, Finset.image_eq_empty]
+  assumption
+
+  contradiction
+
+theorem stellar_coe_inverse_simplicial
+    -- [Nonempty E] TODO: keep this or not? seems redundant to [Nonempty s]
+    (X : AbstractSimplicialComplex E)
+    (φ : SimplicialCoe X F)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (y : F)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
+  : IsSimplicialMap
+      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply map_is_simplicial_onto_image; assumption, y_nin_coe)
+      σ(X, s, x; 𝕜, s_in_X, x_nin_X)
+      (stellarCoeMap (φ⁻ᶜ.map) y x) :=
+by
   simp only [IsSimplicialMap, stellarSubdivision, simplicialUnion, Set.mem_union]
   intro t t_in_subdiv
   cases' t_in_subdiv with t_in_star_comp t_in_join
+
   left
   rw [stellar_coe_simplex_image]
-  rw [starComplement_coe_image, simplicialImage_is_lift_image ((X\St(X, s)) s_in_X),
-    Set.mem_image] at t_in_star_comp
+  rw [starComplement_coe_image, simplicialImage_is_lift_image, Set.mem_image] at t_in_star_comp
   choose u u_in_star_comp φu_t using t_in_star_comp
   simp only [simplicialMapLift] at φu_t
   rw [← φu_t]
-  have inv_u : Finset.image φ⁻ᶜ.map (Finset.image φ.coe u) = u :=
+  have inv_u : Finset.image (φ⁻ᶜ.map) (Finset.image φ.coe u) = u :=
     by
     simp only [← Finset.coe_inj, Finset.coe_image]
     apply Set.InjOn.invFunOn_image
-    apply φ.injective
+    apply φ.Injective
     apply simplex_subset_vertices
     apply simplex_if_in_subcomplex
     apply u_in_star_comp
     apply starComplement_subcomplex
   rw [inv_u]
+  assumption
   assumption
   revert y_nin_coe
   contrapose
@@ -2494,36 +2622,56 @@ theorem stellar_coe_inverse_simplicial [Nonempty α] (X : SimplicialComplex α)
   revert y
   simp only [← Finset.mem_coe, ← Set.subset_def]
   apply simplex_subset_vertices
-  apply simplex_if_in_subcomplex
-  apply t_in_star_comp
+  apply simplex_if_in_subcomplex ((φ.coe ''ˢ X)\St(φ.coe ''ˢ X, Finset.image φ.coe s))
+  assumption
   apply starComplement_subcomplex
+
   right
-  simp only [join_proj_mem] at t_in_join ⊢
+  simp only [join_proj_mem, Set.mem_union] at t_in_join ⊢
   choose t' t'_in_join t₁ t₁_in_link t_decomp using t_in_join
+  cases' t'_in_join with t'_in_join t'_empty
+
   choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp using t'_in_join
+  choose t'_decomp t'_nonempty using t'_decomp
   subst t'_decomp
-  use Finset.image (stellarCoeMap φ⁻ᶜ.map y x) (t₃ ∪ t₂); constructor
-  use Finset.image (stellarCoeMap φ⁻ᶜ.map y x) t₃; constructor
-  simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at
-    t₃_in_barycenter ⊢
-  cases' t₃_in_barycenter with t₃_empty t₃_x
+  use Finset.image (stellarCoeMap (φ⁻ᶜ.map) y x) (t₃ ∪ t₂)
+  constructor
+
   left
-  rw [t₃_empty]
-  apply Finset.image_empty
+  use Finset.image (stellarCoeMap (φ⁻ᶜ.map) y x) t₃
+  constructor
+
+  simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff, Set.mem_diff] at t₃_in_barycenter ⊢
+  rw [and_or_right, or_comm, Set.mem_singleton_iff, ← or_assoc, or_self_iff] at t₃_in_barycenter
+  choose t₃_in_barycenter _ using t₃_in_barycenter
+  cases' t₃_in_barycenter with t₃_empty t₃_x
+
+  subst t₃_empty
+  rw [Finset.image_empty]
   right
-  rw [t₃_x, Finset.image_singleton]
-  simp only [stellarCoeMap, eq_self_iff_true, if_true]
-  use Finset.image (stellarCoeMap φ⁻ᶜ.map y x) t₂; constructor
+  rfl
+
+  subst t₃_x
+  rw [Finset.image_singleton]
+  rw [and_or_right, or_comm, Set.mem_singleton_iff, ← or_assoc, or_self_iff]
+  simp only [stellarCoeMap, if_true, or_true, Finset.singleton_ne_empty, not_false_eq_true, or_false, and_true]
+
+  use Finset.image (stellarCoeMap (φ⁻ᶜ.map) y x) t₂
+  constructor
+
+  cases' t₂_in_bd with t₂_in_bd t₂_empty
+
+  left
   rw [stellar_coe_simplex_image]
   rw [simplexBoundary_coe_image, simplicialImage_is_lift_image, Set.mem_image] at t₂_in_bd
   choose u u_in_bd φu_t₂ using t₂_in_bd
   simp only [simplicialMapLift] at φu_t₂
   rw [← φu_t₂]
-  have inv_u : Finset.image φ⁻ᶜ.map (Finset.image φ.coe u) = u :=
+  have inv_u : Finset.image (φ⁻ᶜ.map) (Finset.image φ.coe u) = u :=
     by
     simp only [← Finset.coe_inj, Finset.coe_image]
     apply Set.InjOn.invFunOn_image
-    apply φ.injective
+    apply φ.Injective
     apply simplex_subset_vertices
     apply simplex_if_in_subcomplex
     apply u_in_bd
@@ -2535,7 +2683,7 @@ theorem stellar_coe_inverse_simplicial [Nonempty α] (X : SimplicialComplex α)
   revert y_nin_coe
   contrapose
   simp only [Classical.not_not, ← Finset.mem_coe]
-  have t₂_in_X : ↑t₂ ⊆ vertices (φ[X]) :=
+  have t₂_in_X : ↑t₂ ⊆ (φ.coe ''ˢ X).vertices :=
     by
     apply simplex_subset_vertices
     apply simplex_if_in_subcomplex
@@ -2546,28 +2694,48 @@ theorem stellar_coe_inverse_simplicial [Nonempty α] (X : SimplicialComplex α)
   rw [Set.subset_def] at t₂_in_X
   specialize t₂_in_X y
   assumption
+
+  right
+  subst t₂_empty
+  apply Finset.image_empty
+
+  constructor
+
   rw [Finset.image_union]
-  use Finset.image (stellarCoeMap φ⁻ᶜ.map y x) t₁; constructor
+  rw [ne_eq, Finset.image_eq_empty]
+  assumption
+
+  simp only [ne_eq, Finset.image_eq_empty, t'_nonempty, not_false_eq_true]
+
+  use Finset.image (stellarCoeMap (φ⁻ᶜ.map) y x) t₁
+  cases' t₁_in_link with t₁_in_link t₁_empty
+
+  constructor
+
   rw [stellar_coe_simplex_image]
-  rw [link_coe_image, simplicialImage_is_lift_image (Lk(X, s) s_in_X), Set.mem_image] at t₁_in_link
+  rw [link_coe_image, simplicialImage_is_lift_image, Set.mem_image] at t₁_in_link
+
+  left
   choose u u_in_link φu_t₁ using t₁_in_link
   simp only [simplicialMapLift] at φu_t₁
   rw [← φu_t₁]
-  have inv_u : Finset.image φ⁻ᶜ.map (Finset.image φ.coe u) = u :=
+  have inv_u : Finset.image (φ⁻ᶜ.map) (Finset.image φ.coe u) = u :=
     by
     simp only [← Finset.coe_inj, Finset.coe_image]
     apply Set.InjOn.invFunOn_image
-    apply φ.injective
+    apply φ.Injective
     apply simplex_subset_vertices
     apply simplex_if_in_subcomplex
     apply u_in_link
     apply link_subcomplex
   rw [inv_u]
   assumption
+  assumption
+
   revert y_nin_coe
   contrapose
   simp only [Classical.not_not, ← Finset.mem_coe]
-  have t₁_in_X : ↑t₁ ⊆ vertices (φ[X]) :=
+  have t₁_in_X : ↑t₁ ⊆ (φ.coe ''ˢ X).vertices :=
     by
     apply simplex_subset_vertices
     apply simplex_if_in_subcomplex
@@ -2576,36 +2744,131 @@ theorem stellar_coe_inverse_simplicial [Nonempty α] (X : SimplicialComplex α)
   rw [Set.subset_def] at t₁_in_X
   specialize t₁_in_X y
   assumption
-  rw [t_decomp, ← Finset.image_union]
 
-def stellarCoeForward [Nonempty α] (X : SimplicialComplex α) (φ : SimplicialCoe X β) (s : Finset α)
-    [s_ne : Nonempty s] (x : α) (y : β) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (y_nin_coe : y ∉ vertices (φ[X])) :
-    SimplicialMap σ(X, s, x; s_ne, s_in_X, x_nin_X)
-      σ(φ[X], Finset.image φ.coe s, y; _, by apply map_is_simplicial_onto_image; assumption,
-        y_nin_coe) :=
+  choose t_decomp t_nonempty using t_decomp
+  constructor
+
+  subst t_decomp
+  rw [← Finset.image_union]
+
+  assumption
+
+  subst t₁_empty
+  rw [Finset.image_empty]
+  constructor
+
+  right
+  rfl
+
+  choose t_decomp t_nonempty using t_decomp
+  constructor
+
+  rw [Finset.union_empty] at t_decomp ⊢
+  subst t_decomp
+  rw [Finset.image_union]
+
+  assumption
+
+  subst t'_empty
+  rw [Finset.empty_union] at t_decomp
+  choose t_eq_t₁ t_nonempty using t_decomp
+  subst t_eq_t₁
+  cases' t₁_in_link with t_in_link t_empty
+
+  use ∅
+
+  constructor
+
+  right
+  rfl
+
+  use Finset.image (stellarCoeMap (φ⁻ᶜ.map) y x) t
+  constructor
+
+  left
+  rw [stellar_coe_simplex_image]
+  rw [link_coe_image, simplicialImage_is_lift_image, Set.mem_image] at t_in_link
+  choose u u_in_link φu_t using t_in_link
+  simp only [simplicialMapLift] at φu_t
+  rw [← φu_t]
+  have inv_u : Finset.image (φ⁻ᶜ.map) (Finset.image φ.coe u) = u :=
+    by
+    simp only [← Finset.coe_inj, Finset.coe_image]
+    apply Set.InjOn.invFunOn_image
+    apply φ.Injective
+    apply simplex_subset_vertices
+    apply simplex_if_in_subcomplex
+    apply u_in_link
+    apply link_subcomplex
+  rw [inv_u]
+  assumption
+  assumption
+
+  revert y_nin_coe
+  contrapose
+  simp only [Classical.not_not, ← Finset.mem_coe]
+  have t₁_in_X : ↑t ⊆ (φ.coe ''ˢ X).vertices :=
+    by
+    apply simplex_subset_vertices
+    apply simplex_if_in_subcomplex
+    apply t_in_link
+    apply link_subcomplex
+  rw [Set.subset_def] at t₁_in_X
+  specialize t₁_in_X y
+  assumption
+
+  constructor
+
+  rw [Finset.empty_union]
+
+  rw [ne_eq, Finset.image_eq_empty]
+  assumption
+
+  contradiction
+
+def stellarCoeForward
+    -- [Nonempty E] TODO: keep this or not? seems redundant to [Nonempty s]
+    (X : AbstractSimplicialComplex E)
+    (φ : SimplicialCoe X F)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (y : F)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
+  : SimplicialMap
+      σ(X, s, x; 𝕜, s_in_X, x_nin_X)
+      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply map_is_simplicial_onto_image; assumption, y_nin_coe) :=
   SimplicialMap.mk (stellarCoeMap φ.coe x y)
     (stellar_coe_forward_simplicial X φ s x y s_in_X x_nin_X y_nin_coe)
 
-noncomputable def stellarCoeInverse [Nonempty α] (X : SimplicialComplex α) (φ : SimplicialCoe X β)
-    (s : Finset α) [s_ne : Nonempty s] (x : α) (y : β) (s_in_X : s ∈ X.simplices)
-    (x_nin_X : x ∉ vertices X) (y_nin_coe : y ∉ vertices (φ[X])) :
-    SimplicialMap
-      σ(φ[X], Finset.image φ.coe s, y; _, by apply map_is_simplicial_onto_image; assumption,
-        y_nin_coe)
-      σ(X, s, x; s_ne, s_in_X, x_nin_X) :=
-  SimplicialMap.mk (stellarCoeMap φ⁻ᶜ.map y x)
+noncomputable def stellarCoeInverse
+    -- [Nonempty E] TODO: keep this or not? seems redundant to [Nonempty s]
+    (X : AbstractSimplicialComplex E)
+    (φ : SimplicialCoe X F)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (y : F)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
+  : SimplicialMap
+      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply map_is_simplicial_onto_image; assumption, y_nin_coe)
+      σ(X, s, x; 𝕜, s_in_X, x_nin_X) :=
+  SimplicialMap.mk (stellarCoeMap (φ⁻ᶜ.map) y x)
     (stellar_coe_inverse_simplicial X φ s x y s_in_X x_nin_X y_nin_coe)
 
-theorem stellar_subdiv_congr_simplices (X Y : SimplicialComplex α) (s : Finset α)
-    [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (X_eq_Y : X.simplices = Y.simplices) :
-    σ(X, s, x; s_ne, s_in_X, x_nin_X).simplices =
-      σ(Y, s, x; s_ne, by rw [← X_eq_Y]; assumption, by rw [← vertices_congr X Y X_eq_Y];
-          assumption).simplices :=
-  by
-  simp only [stellarSubdivision, simplicialUnion, starComplement, link, simplex, simplexBoundary,
-    X_eq_Y]
+theorem stellar_subdiv_congr_simplices
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (X_eq_Y : X.faces = Y.faces)
+  : σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces =
+      σ(Y, s, x; 𝕜, by rw [← X_eq_Y]; assumption, by rw [← vertices_congr X Y X_eq_Y]; assumption).faces :=
+by
+  simp only [stellarSubdivision, simplicialUnion, starComplement, link, simplex, simplexBoundary, X_eq_Y]
   rfl
 
 theorem stellar_coe_vertices (X : SimplicialComplex α) (φ : SimplicialCoe X β) (s : Finset α)
