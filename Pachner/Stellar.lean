@@ -3160,27 +3160,40 @@ by
 
   simp only [Set.EqOn, implies_true, φY]
 
-theorem barycenter_injective_image {X : SimplicialComplex α} {x : α} {f : α → β} :
-    x ∉ vertices X → Function.Injective f → f x ∉ vertices (simplicialImage X f) :=
-  by
+theorem barycenter_injective_image
+    {X : AbstractSimplicialComplex E}
+    {x : E}
+    {f : E → F}
+  : x ∉ X.vertices → Function.Injective f → f x ∉ (simplicialImage f X).vertices :=
+by
   intro x_nin_X f_inj
   by_contra fx_in_X
   rw [simplicialImage_vertices] at fx_in_X
-  have contra : x ∈ vertices X := by
+  have contra : x ∈ X.vertices :=
+  by
     apply Set.InjOn.mem_of_mem_image
-    apply Function.Injective.injOn f_inj Set.univ
+    apply @Function.Injective.injOn _ _ f _ Set.univ
+    assumption
     apply Set.subset_univ
     apply Set.mem_univ
     assumption
   contradiction
 
-theorem stellar_subdiv_injective_image_simplices_left (X : SimplicialComplex α) (s : Finset α)
-    [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) (f : α → β)
-    (f_inj : Function.Injective f) :
-    (simplicialImage σ(X, s, x; s_ne, s_in_X, x_nin_X) f).simplices ⊆
-      σ(simplicialImage X f, Finset.image f s, f x; _, by apply map_is_simplicial_onto_image;
-          assumption, barycenter_injective_image x_nin_X f_inj).simplices :=
-  by
+theorem stellar_subdiv_injective_image_simplices_left
+    (X : AbstractSimplicialComplex E)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (f : E → F)
+    (f_inj : Function.Injective f)
+  : (simplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces ⊆
+      σ(simplicialImage f X, Finset.image f s, f x; 𝕜,
+        by
+          apply map_is_simplicial_onto_image
+          assumption,
+        barycenter_injective_image x_nin_X f_inj).faces :=
+by
   rw [Set.subset_def]
   intro t t_in_img
   simp only [simplicialImage, Set.mem_setOf] at t_in_img
@@ -3192,7 +3205,7 @@ theorem stellar_subdiv_injective_image_simplices_left (X : SimplicialComplex α)
   choose u_in_X s_nss_u using u_in_star_comp
   constructor
   simp only [simplicialImage, Set.mem_setOf]
-  use u; constructor <;> assumption
+  use u
   rw [← fu_t]
   revert s_nss_u
   contrapose
@@ -3203,23 +3216,40 @@ theorem stellar_subdiv_injective_image_simplices_left (X : SimplicialComplex α)
   rw [Function.Injective.mem_finset_image f_inj] at fs_ss_fu
   assumption
   right
-  simp only [join_proj_mem] at u_in_join ⊢
-  choose u' u'_in_join u₁ u₁_in_link u_decomp using u_in_join
-  choose u₃ u₃_in_barycenter u₂ u₂_in_bd u'_decomp using u'_in_join
+  simp only [join_proj_mem, Set.mem_union] at u_in_join ⊢
+  choose u' u'_in_join u₁ u₁_in_link u_decomp u_ne using u_in_join
+
+  cases' u'_in_join with u'_in_join u'_empty
+  choose u₃ u₃_in_barycenter u₂ u₂_in_bd u'_decomp u'_ne using u'_in_join
   subst u'_decomp
   use Finset.image f (u₃ ∪ u₂); constructor
-  use Finset.image f u₃; constructor
-  simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at
-    u₃_in_barycenter ⊢
-  cases' u₃_in_barycenter with u₃_empty u₃_eq_x
+
   left
+  use Finset.image f u₃; constructor
+  simp only [simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
+  cases' u₃_in_barycenter with u₃_eq_x u₃_empty
+
+  rotate_left
+  right
+  rw [Set.mem_singleton_iff] at u₃_empty ⊢
   rw [u₃_empty]
   apply Finset.image_empty
-  right
+
+  rotate_right
+  choose u₃_eq_x u₃_ne using u₃_eq_x
+  cases' u₃_eq_x with contra u₃_eq_x
+  rw [Set.mem_singleton_iff] at u₃_ne
+  contradiction
+
+  left
   rw [u₃_eq_x]
+  constructor; right
   apply Finset.image_singleton
+  rw [Set.mem_singleton_iff, Finset.image_eq_empty]
+  simp only [Finset.singleton_ne_empty, not_false_eq_true]
+
   use Finset.image f u₂; constructor
-  simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
+  simp only [simplexBoundary, Set.mem_union, Set.mem_insert_iff, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
     Set.mem_singleton_iff] at u₂_in_bd ⊢
   cases' u₂_in_bd with u₂_in_bd u₂_empty
   left
@@ -3230,7 +3260,11 @@ theorem stellar_subdiv_injective_image_simplices_left (X : SimplicialComplex α)
   revert u₂_ne_s
   contrapose
   simp only [Classical.not_not, Finset.ext_iff]
-  intro fu₂_eq_fs a
+  intro fu₂_eq_fs
+
+  cases' fu₂_eq_fs with fu₂_eq_fs fu₂_empty
+  left
+  intro a
   specialize fu₂_eq_fs (f a)
   cases' fu₂_eq_fs with fu₂_ss_fs fs_ss_fu₂
   constructor
@@ -3244,23 +3278,83 @@ theorem stellar_subdiv_injective_image_simplices_left (X : SimplicialComplex α)
   specialize fs_ss_fu₂ fa_in_fs
   rw [Function.Injective.mem_finset_image f_inj] at fs_ss_fu₂
   assumption
+
+  right
+  intro a
+  specialize fu₂_empty (f a)
+  cases' fu₂_empty with fu₂_ss_fs fs_ss_fu₂
+  constructor
+  intro a_in_u₂
+  have fa_in_fu₂ : f a ∈ Finset.image f u₂ := by apply Finset.mem_image_of_mem f a_in_u₂
+  specialize fu₂_ss_fs fa_in_fu₂
+  contradiction
+  rw [Function.Injective.mem_finset_image f_inj] at fu₂_ss_fs
+  intro a_in_s
+  contradiction
+
   right
   rw [u₂_empty]
   apply Finset.image_empty
+  constructor; rw [Finset.image_union]
+  rw [ne_eq, Finset.image_eq_empty]
+  assumption
+
   rw [Finset.image_union]
   use Finset.image f u₁; constructor
   simp only [link, Set.mem_sep_iff] at u₁_in_link ⊢
+
+  cases' u₁_in_link with u₁_in_link u₁_empty
   choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
-  constructor
+
+  left; constructor
   apply map_is_simplicial_onto_image
   assumption
+
   constructor
   rw [← Finset.image_union]
   apply map_is_simplicial_onto_image
   assumption
   rw [← Finset.image_inter s u₁ f_inj, Finset.image_eq_empty]
   assumption
+
+  right
+  rw [Set.mem_singleton_iff] at u₁_empty ⊢
+  rw [u₁_empty]
+  apply Finset.image_empty
+
   rw [← Finset.image_union, ← fu_t, u_decomp]
+  constructor
+  rw [Finset.image_union]
+  rw [ne_eq, Finset.image_eq_empty, Finset.union_eq_empty, not_and_or]
+  left; assumption
+
+  rw [Set.mem_singleton_iff] at u'_empty u₁_in_link
+  subst u'_empty
+  rw [Finset.empty_union] at u_decomp
+  subst u_decomp
+  use ∅; constructor
+  right; apply Set.mem_singleton
+
+  cases' u₁_in_link with u₁_in_link u₁_empty
+  use Finset.image f u; constructor; left
+  simp only [link, Set.mem_setOf] at u₁_in_link ⊢
+  choose u_in_X su_in_X su_disj using u₁_in_link
+  simp only [simplicialImage, Set.mem_setOf]
+
+  constructor; use u
+  constructor; use s ∪ u
+  constructor; assumption
+  rw [Finset.image_union]
+  rw [← Finset.image_inter s u f_inj, Finset.image_eq_empty]
+  assumption
+
+  constructor
+  rw [Finset.empty_union]
+  symm; assumption
+  rw [← fu_t, ne_eq, Finset.image_eq_empty]
+  assumption
+
+  contradiction
 
 theorem stellar_subdiv_injective_image_simplices_right_ac [Nonempty α] (X : SimplicialComplex α)
     (s : Finset α) [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
