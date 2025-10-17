@@ -2580,10 +2580,9 @@ by
   contradiction
 
 theorem stellar_coe_inverse_simplicial
-    -- [Nonempty E] TODO: keep this or not? seems redundant to [Nonempty s]
     (X : AbstractSimplicialComplex E)
     (φ : SimplicialCoe X F)
-    (s : Finset E) [s_ne : Nonempty s]
+    (s : Finset E)
     (x : E)
     (y : F)
     (s_in_X : s ∈ X.faces)
@@ -2827,7 +2826,6 @@ by
   contradiction
 
 def stellarCoeForward
-    -- [Nonempty E] TODO: keep this or not? seems redundant to [Nonempty s]
     (X : AbstractSimplicialComplex E)
     (φ : SimplicialCoe X F)
     (s : Finset E) [s_ne : Nonempty s]
@@ -2843,10 +2841,9 @@ def stellarCoeForward
     (stellar_coe_forward_simplicial X φ s x y s_in_X x_nin_X y_nin_coe)
 
 noncomputable def stellarCoeInverse
-    -- [Nonempty E] TODO: keep this or not? seems redundant to [Nonempty s]
     (X : AbstractSimplicialComplex E)
     (φ : SimplicialCoe X F)
-    (s : Finset E) [s_ne : Nonempty s]
+    (s : Finset E)
     (x : E)
     (y : F)
     (s_in_X : s ∈ X.faces)
@@ -2860,7 +2857,7 @@ noncomputable def stellarCoeInverse
 
 theorem stellar_subdiv_congr_simplices
     (X Y : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
+    (s : Finset E)
     (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
@@ -2871,11 +2868,15 @@ by
   simp only [stellarSubdivision, simplicialUnion, starComplement, link, simplex, simplexBoundary, X_eq_Y]
   rfl
 
-theorem stellar_coe_vertices (X : SimplicialComplex α) (φ : SimplicialCoe X β) (s : Finset α)
-    [s_ne : Nonempty s] (x : α) (y : β) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (y_nin_coe : y ∉ vertices (φ[X])) :
-    vertices (simplicialImage X (stellarCoeMap φ.coe x y)) = vertices (φ[X]) :=
-  by
+theorem stellar_coe_vertices
+    (X : AbstractSimplicialComplex E)
+    (φ : SimplicialCoe X F)
+    (s : Finset E)
+    (x : E)
+    (y : F)
+    (x_nin_X : x ∉ X.vertices)
+  : (simplicialImage (stellarCoeMap φ.coe x y) X).vertices = (φ.coe ''ˢ X).vertices :=
+by
   simp only [simplicialImage_vertices, Set.ext_iff, Set.mem_image]
   intro t
   constructor <;>
@@ -2889,23 +2890,32 @@ theorem stellar_coe_vertices (X : SimplicialComplex α) (φ : SimplicialCoe X β
         contradiction
       simp only [stellarCoeMap, u_ne_x, if_false]
 
-theorem stellar_coe_image (X : SimplicialComplex α) (φ : SimplicialCoe X β) (s : Finset α)
-    [s_ne : Nonempty s] (x : α) (y : β) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (y_nin_coe : y ∉ vertices (φ[X])) :
-    σ(simplicialImage X (stellarCoeMap φ.coe x y), Finset.image (stellarCoeMap φ.coe x y) s,
-        (stellarCoeMap φ.coe x y) x; _, by apply map_is_simplicial_onto_image; assumption,
+theorem stellar_coe_image
+    (X : AbstractSimplicialComplex E)
+    (φ : SimplicialCoe X F)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (y : F)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
+  : σ(simplicialImage (stellarCoeMap φ.coe x y) X, Finset.image (stellarCoeMap φ.coe x y) s,
+        (stellarCoeMap φ.coe x y) x; 𝕜, by apply map_is_simplicial_onto_image; assumption,
         by
-        simp only [stellarCoeMap, eq_self_iff_true, if_true]
-        rw [← stellarCoeMap, stellar_coe_vertices X φ s x y] <;> assumption) ≅
-      σ(simplicialImage X φ.coe, Finset.image φ.coe s, y; _, by apply map_is_simplicial_onto_image;
-        assumption, y_nin_coe) :=
-  by
+          simp only [stellarCoeMap, ↓reduceIte]
+          rw [stellar_coe_vertices X φ s x y] <;> assumption)
+      ≅ σ(simplicialImage φ.coe X, Finset.image φ.coe s, y; 𝕜,
+          by
+            apply map_is_simplicial_onto_image
+            assumption,
+          y_nin_coe) :=
+by
   apply simplicial_iso_preserves_equiv
   have x_nin_s : x ∉ s := by
     revert x_nin_X
     contrapose
     simp only [Classical.not_not, ← Finset.mem_coe]
-    have s_ss_X : ↑s ⊆ vertices X := by
+    have s_ss_X : ↑s ⊆ X.vertices := by
       apply simplex_subset_vertices
       assumption
     rw [Set.subset_def] at s_ss_X
@@ -2917,25 +2927,31 @@ theorem stellar_coe_image (X : SimplicialComplex α) (φ : SimplicialCoe X β) (
   apply simplicialImage_congr
   simp only [Set.EqOn]
   intro z z_in_X
-  split_ifs
+
+  simp only [stellarCoeMap, ite_eq_right_iff]
+  intros h
   rw [h] at z_in_X
   contradiction
-  rfl
 
-theorem stellar_coe_inv_iso [Nonempty α] (X : SimplicialComplex α) (φ : SimplicialCoe X β)
-    (s : Finset α) [s_ne : Nonempty s] (x : α) (y : β) (s_in_X : s ∈ X.simplices)
-    (x_nin_X : x ∉ vertices X) (y_nin_coe : y ∉ vertices (φ[X])) :
-    IsInverseSimplicialIso (stellarCoeForward X φ s x y s_in_X x_nin_X y_nin_coe)
-      (stellarCoeInverse X φ s x y s_in_X x_nin_X y_nin_coe) :=
-  by
+theorem stellar_coe_inv_iso
+    (X : AbstractSimplicialComplex E)
+    (φ : SimplicialCoe X F)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (y : F)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
+  : IsInverseSimplicialIso (stellarCoeForward X φ s x y s_in_X x_nin_X y_nin_coe)
+      (@stellarCoeInverse _ _ 𝕜 _ _ _ _ _ _ _ X φ s x y s_in_X x_nin_X y_nin_coe) :=
+by
   unfold IsInverseSimplicialIso
-  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
-    id.def]
+  simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply, id]
   simp only [stellarCoeInverse, stellarCoeForward]
   constructor
   · intro a a_in_subdiv
-    have a_in_union : a ∈ vertices X ∪ {x} :=
-      by
+    have a_in_union : a ∈ X.vertices ∪ {x} :=
+    by
       apply Set.mem_of_mem_of_subset a_in_subdiv
       apply stellar_subdiv_subset_vertices
     rw [Set.mem_union, Set.mem_singleton_iff] at a_in_union
@@ -2947,22 +2963,26 @@ theorem stellar_coe_inv_iso [Nonempty α] (X : SimplicialComplex α) (φ : Simpl
       assumption
     have φa_ne_y : ¬φ.coe a = y := by
       by_cases φa_eq_y : φ.coe a = y
-      have contra : y ∈ vertices (φ[X]) :=
+      have contra : y ∈ (φ.coe ''ˢ X).vertices :=
         by
         rw [simplicialImage_vertices, Set.mem_image]
-        use a; constructor <;> assumption
+        use a
       contradiction
       assumption
     simp only [stellarCoeMap, a_ne_x, φa_ne_y, if_false]
     apply Set.InjOn.leftInvOn_invFunOn
-    apply φ.injective
+    apply φ.Injective
     assumption
     simp only [stellarCoeMap, a_eq_x, eq_self_iff_true, if_true]
   · intro b b_in_coe
-    have b_in_union : b ∈ vertices (φ[X]) ∪ {y} :=
-      by
+    have b_in_union : b ∈ (φ.coe ''ˢ X).vertices ∪ {y} :=
+    by
       apply Set.mem_of_mem_of_subset
       apply b_in_coe
+      have φs_ne : Nonempty {x // x ∈ Finset.image φ.coe s} :=
+      by
+        rw [Finset.nonempty_coe_sort, Finset.image_nonempty, ← Finset.nonempty_coe_sort]
+        assumption
       apply stellar_subdiv_subset_vertices
     rw [Set.mem_union, Set.mem_singleton_iff] at b_in_union
     cases' b_in_union with b_in_X b_eq_y
@@ -2981,7 +3001,7 @@ theorem stellar_coe_inv_iso [Nonempty α] (X : SimplicialComplex α) (φ : Simpl
         by
         simp only [simplicialCoeInv]
         apply Set.InjOn.leftInvOn_invFunOn
-        apply φ.injective
+        apply φ.Injective
         assumption
       rw [inv_a] at φb_eq_x
       rw [φb_eq_x] at a_in_X
@@ -2990,26 +3010,36 @@ theorem stellar_coe_inv_iso [Nonempty α] (X : SimplicialComplex α) (φ : Simpl
     simp only [stellarCoeMap, b_ne_y, φb_ne_x, if_false]
     simp only [simplicialCoeInv]
     apply Function.invFunOn_eq
-    simp only [simplicialImage_vertices, Set.mem_image, ← exists_prop] at b_in_X
+    simp only [simplicialImage_vertices, Set.mem_image] at b_in_X
     assumption
     simp only [stellarCoeMap, b_eq_y, eq_self_iff_true, if_true]
 
-theorem stellar_coe_iso [Nonempty α] (X : SimplicialComplex α) (φ : SimplicialCoe X β)
-    (s : Finset α) [s_ne : Nonempty s] (x : α) (y : β) (s_in_X : s ∈ X.simplices)
-    (x_nin_X : x ∉ vertices X) (y_nin_coe : y ∉ vertices (φ[X])) :
-    IsSimplicialIso (stellarCoeForward X φ s x y s_in_X x_nin_X y_nin_coe) :=
-  by
+theorem stellar_coe_iso
+    (X : AbstractSimplicialComplex E)
+    (φ : SimplicialCoe X F)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (y : F)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
+  : IsSimplicialIso (@stellarCoeForward _ _ 𝕜 _ _ _ _ _ _ _ X φ s _ x y s_in_X x_nin_X y_nin_coe) :=
+by
   use stellarCoeInverse X φ s x y s_in_X x_nin_X y_nin_coe
   apply stellar_coe_inv_iso
 
-theorem stellar_weld_exists_iso [Nonempty α] (X Y : SimplicialComplex α) (Z : SimplicialComplex β)
-    (t : Finset α) [t_ne : Nonempty t] (y : α) (t_in_Y : t ∈ Y.simplices)
-    (y_nin_Y : y ∉ vertices Y) :
-    X ≅ Z → X ≅ σ(Y, t, y; t_ne, t_in_Y, y_nin_Y) → ∃ W : SimplicialComplex β, Y ≅ W ∧ Z ≅ₛₜ W :=
-  by
+theorem stellar_weld_exists_iso
+    (X Y : AbstractSimplicialComplex E)
+    (Z : AbstractSimplicialComplex F)
+    (t : Finset E) [t_ne : Nonempty t]
+    (y : E)
+    (t_in_Y : t ∈ Y.faces)
+    (y_nin_Y : y ∉ Y.vertices)
+  : (X ≅ Z) → X ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) → ∃ W : AbstractSimplicialComplex F, (Y ≅ W) ∧ Z ≅ₛₜ[𝕜] W :=
+by
   intro X_iso_Z Y_subdiv_X
-  have Z_iso_subdiv : Z ≅ σ(Y, t, y; t_ne, t_in_Y, y_nin_Y) :=
-    by
+  have Z_iso_subdiv : Z ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) :=
+  by
     apply simplicial_iso_trans Z X
     rw [simplicial_iso_symm]
     assumption
@@ -3023,7 +3053,7 @@ theorem stellar_weld_exists_iso [Nonempty α] (X Y : SimplicialComplex α) (Z : 
   let gf_inv' := gf_inv
   unfold IsInverseSimplicialIso at gf_inv'
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
-    id.def] at gf_inv'
+    id] at gf_inv'
   choose gf_id fg_id using gf_inv'
   have g_iso : IsSimplicialIso g := by apply iso_inv_is_iso f g f_iso gf_inv
   by_cases t_singleton : t.card = 1
@@ -3032,7 +3062,7 @@ theorem stellar_weld_exists_iso [Nonempty α] (X Y : SimplicialComplex α) (Z : 
   subst t_eq_a
   rw [stellar_subdiv_of_singleton_vertices] at fg_id
   use Z; constructor
-  apply simplicial_iso_trans Y σ(Y, {a}, y; t_ne, t_in_Y, y_nin_Y)
+  apply simplicial_iso_trans Y σ(Y, {a}, y; 𝕜, t_in_Y, y_nin_Y)
   rw [simplicial_iso_symm]
   apply stellar_subdiv_of_singleton
   rw [simplicial_iso_symm]
@@ -3042,23 +3072,22 @@ theorem stellar_weld_exists_iso [Nonempty α] (X Y : SimplicialComplex α) (Z : 
   right; right
   apply simplicial_iso_refl
   have t_nonsingleton : t.card > 1 :=
-    by
-    rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty, Ne.def, ← Finset.card_eq_zero] at
-      t_ne
+  by
+    rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty, ne_eq, ← Finset.card_eq_zero] at t_ne
     omega
-  have g_inj : Set.InjOn g.map (vertices Y) :=
-    by
-    apply @Set.InjOn.mono _ _ (vertices Y) (vertices Y ∪ {y})
+  have g_inj : Set.InjOn g.map Y.vertices :=
+  by
+    apply @Set.InjOn.mono _ _ Y.vertices (Y.vertices ∪ {y})
     apply Set.subset_union_left
-    rw [← stellar_subdiv_vertices Y t y t_in_Y y_nin_Y t_nonsingleton]
+    rw [← @stellar_subdiv_vertices _ 𝕜 _ _ _ _ _ Y t _ y t_in_Y y_nin_Y t_nonsingleton]
     apply iso_is_injective_vertices g g_iso
-  let g_coe : SimplicialCoe Y β := SimplicialCoe.mk g.map g_inj
-  have gy_nin_gY : g.map y ∉ vertices (g_coe[Y]) :=
-    by
-    by_cases gy_in_Y : g.map y ∈ vertices (g_coe[Y])
+  let g_coe : SimplicialCoe Y F := SimplicialCoe.mk g.map g_inj
+  have gy_nin_gY : g.map y ∉ (g_coe.coe ''ˢ Y).vertices :=
+  by
+    by_cases gy_in_Y : g.map y ∈ (g_coe.coe ''ˢ Y).vertices
     rw [simplicialImage_vertices] at gy_in_Y
-    have contra : y ∈ vertices Y :=
-      by
+    have contra : y ∈ Y.vertices :=
+    by
       apply Set.InjOn.mem_of_mem_image
       apply iso_is_injective_vertices g g_iso
       rw [stellar_subdiv_vertices Y t y t_in_Y y_nin_Y t_nonsingleton]
@@ -3067,18 +3096,18 @@ theorem stellar_weld_exists_iso [Nonempty α] (X Y : SimplicialComplex α) (Z : 
       assumption
     contradiction
     assumption
-  let φ := stellarCoeForward Y g_coe t y (g.map y) t_in_Y y_nin_Y gy_nin_gY
-  have φ_inj : Set.InjOn φ.map (vertices Y ∪ {y}) :=
-    by
-    rw [← stellar_subdiv_vertices Y t y t_in_Y y_nin_Y t_nonsingleton]
+  let φ := @stellarCoeForward _ _ 𝕜 _ _ _ _ _ _ _ Y g_coe t _ y (g.map y) t_in_Y y_nin_Y gy_nin_gY
+  have φ_inj : Set.InjOn φ.map (Y.vertices ∪ {y}) :=
+  by
+    rw [← @stellar_subdiv_vertices _ 𝕜 _ _ _ _ _ Y t _ y t_in_Y y_nin_Y t_nonsingleton]
     apply
       iso_is_injective_vertices φ (stellar_coe_iso Y g_coe t y (g.map y) t_in_Y y_nin_Y gy_nin_gY)
-  have φy_nin_φY : φ.map y ∉ vertices (simplicialImage Y φ.map) :=
+  have φy_nin_φY : φ.map y ∉ (simplicialImage φ.map Y).vertices :=
     by
-    by_cases φy_in_Y : φ.map y ∈ vertices (simplicialImage Y φ.map)
+    by_cases φy_in_Y : φ.map y ∈ (simplicialImage φ.map Y).vertices
     rw [simplicialImage_vertices] at φy_in_Y
-    have contra : y ∈ vertices Y :=
-      by
+    have contra : y ∈ Y.vertices :=
+    by
       apply Set.InjOn.mem_of_mem_image
       apply φ_inj
       apply Set.subset_union_left
@@ -3087,24 +3116,26 @@ theorem stellar_weld_exists_iso [Nonempty α] (X Y : SimplicialComplex α) (Z : 
       assumption
     contradiction
     assumption
-  use simplicialImage Y φ.map; constructor
-  have φY_inj : Set.InjOn φ.map (vertices Y) :=
-    by
-    apply @Set.InjOn.mono _ _ _ (vertices Y ∪ {y})
+  use simplicialImage φ.map Y; constructor
+  have φY_inj : Set.InjOn φ.map Y.vertices :=
+  by
+    apply @Set.InjOn.mono _ _ _ (Y.vertices ∪ {y})
     apply Set.subset_union_left
     assumption
   let φY := SimplicialCoe.mk φ.map φY_inj
-  apply simplicial_iso_trans _ (φY[Y])
+  apply simplicial_iso_trans _ (φY.coe ''ˢ Y)
   apply φY.iso_onto_image
   apply simplicial_iso_preserves_equiv
   apply simplicialImage_congr
-  simp only
+
+  rotate_left
+  dsimp only
   apply Relation.ReflTransGen.single
   unfold StellarMove
   left
   use Finset.image φ.map t
-  have φt_in_φY : Finset.image φ.map t ∈ (simplicialImage Y φ.map).simplices :=
-    by
+  have φt_in_φY : Finset.image φ.map t ∈ (simplicialImage φ.map Y).faces :=
+  by
     apply map_is_simplicial_onto_image Y φ.map
     assumption
   use φt_in_φY
@@ -3115,17 +3146,19 @@ theorem stellar_weld_exists_iso [Nonempty α] (X Y : SimplicialComplex α) (Z : 
   use φt_ne
   use φ.map y
   use φy_nin_φY
-  apply simplicial_iso_trans Z σ(Y, t, y; t_ne, t_in_Y, y_nin_Y)
+  apply simplicial_iso_trans Z σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y)
   assumption
   apply
     simplicial_iso_trans _
-      σ(simplicialImage Y g_coe.coe, Finset.image g_coe.coe t, g.map y; _, by
+      σ(simplicialImage g_coe.coe Y, Finset.image g_coe.coe t, g.map y; 𝕜, by
         apply map_is_simplicial_onto_image; assumption, gy_nin_gY)
   unfold IsSimpliciallyIso
   use φ
   apply stellar_coe_iso
   rw [simplicial_iso_symm]
   apply stellar_coe_image <;> assumption
+
+  simp only [Set.EqOn, implies_true, φY]
 
 theorem barycenter_injective_image {X : SimplicialComplex α} {x : α} {f : α → β} :
     x ∉ vertices X → Function.Injective f → f x ∉ vertices (simplicialImage X f) :=
