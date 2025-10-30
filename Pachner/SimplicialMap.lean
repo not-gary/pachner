@@ -4078,13 +4078,13 @@ def joinFst {X Y : AbstractSimplicialComplex E} (H : Disjoint X.vertices Y.verti
   : SimplicialCoe (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) E :=
       SimplicialCoe.mk Prod.fst (join_fst_proj_is_coe X Y H)
 
-notation "π₁" => joinFst
+notation "π₁[" 𝕜 "]" => @joinFst _ 𝕜 _ _ _ _ _ _ _
 
 theorem join_proj_vertices_mem
     (X Y : AbstractSimplicialComplex E)
     (x : E)
     (H : Disjoint X.vertices Y.vertices)
-  : x ∈ ((π₁ H).coe ''ˢ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜))).vertices ↔ x ∈ X.vertices ∨ x ∈ Y.vertices :=
+  : x ∈ ((π₁[𝕜] H).coe ''ˢ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜))).vertices ↔ x ∈ X.vertices ∨ x ∈ Y.vertices :=
 by
   simp only [vertices_setOf, simplicialImage, simplicialJoin, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf, joinFst]
   constructor
@@ -4221,7 +4221,7 @@ theorem join_proj_mem
     (X Y : AbstractSimplicialComplex E)
     (s : Finset E)
     (H : Disjoint X.vertices Y.vertices)
-  : s ∈ ((π₁ H).coe ''ˢ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜))).faces ↔ ∃ t ∈ X.faces ∪ {∅}, ∃ u ∈ Y.faces ∪ {∅}, s = t ∪ u ∧ s ≠ ∅ :=
+  : s ∈ ((π₁[𝕜] H).coe ''ˢ (X ⋆ Y)).faces ↔ ∃ t ∈ X.faces ∪ {∅}, ∃ u ∈ Y.faces ∪ {∅}, s = t ∪ u ∧ s ≠ ∅ :=
 by
   simp only [simplicialImage, simplicialJoin, joinFst, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf]
   constructor
@@ -4298,7 +4298,7 @@ theorem join_proj_disj_union_mem
     (X Y : AbstractSimplicialComplex E)
     (s t : Finset E)
     (H : Disjoint X.vertices Y.vertices)
-  : s ∪ t ∈ ((π₁ H).coe ''ˢ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜))).faces ↔
+  : s ∪ t ∈ ((π₁[𝕜] H).coe ''ˢ (X ⋆ Y)).faces ↔
       ∃ (s₁ : _) (_ : s₁ ∈ X.faces ∪ {∅}) (t₁ : _) (_ : t₁ ∈ X.faces ∪ {∅})
         (s₂ : _) (_ : s₂ ∈ Y.faces ∪ {∅}) (t₂ : _) (_ : t₂ ∈ Y.faces ∪ {∅}),
           s = s₁ ∪ s₂ ∧ t = t₁ ∪ t₂ ∧ s₁ ∪ t₁ ∈ X.faces ∪ {∅} ∧ s₂ ∪ t₂ ∈ Y.faces ∪ {∅} ∧ s ∪ t ≠ ∅ :=

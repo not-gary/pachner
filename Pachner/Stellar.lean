@@ -17,8 +17,8 @@ def stellarSubdivision
     (x_nin_X : x ∉ X.vertices)
   : AbstractSimplicialComplex E :=
     X\St(X, s) ∪
-      (π₁ (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe ''ˢ
-        (((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)))
+      (π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe ''ˢ
+        (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)))
           ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜))
 
 notation "σ(" X ", " s ", " x "; " 𝕜 ", " s_in_X ", " x_nin_X ")" =>
@@ -39,18 +39,18 @@ by
   have barycenter_bd_fin : Fintype ↥(simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)).faces := by
     apply @simplicialJoin.fintype _ _ _ _ _ _ _ (simplex {x}) barycenter_fin (∂s) bd_fin
   have proj_bary_bd_fin :
-    Fintype ((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).faces :=
+    Fintype ((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).faces :=
     by apply @SimplicialCoe.Fintype _ _ _ _ barycenter_bd_fin
   have link_fin : Fintype ↥Lk(X, s).faces := by apply link.fintype
   have proj_link_fin :
     Fintype
-      ↥((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))
+      ↥((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))
         ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜)).faces :=
     by apply @simplicialJoin.fintype _ _ _ _ _ _ _ _ proj_bary_bd_fin _ link_fin
   have join_fin :
     Fintype
-      ↥((π₁ (@barycenter_join_boundary_disjoint_link E _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe ''ˢ
-          (((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)))
+      ↥((π₁[𝕜] (@barycenter_join_boundary_disjoint_link E _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe ''ˢ
+          (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)))
             ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜))).faces :=
     by apply @SimplicialCoe.Fintype _ _ _ _ proj_link_fin
   apply @Set.fintypeUnion _ _ _ _ star_comp_fin join_fin
@@ -4428,41 +4428,52 @@ by
 /-
 # Properties of Stellar Subdivision
 -/
-theorem barycenter_join_left {X Y : SimplicialComplex α} {x : α} :
-    x ∉ vertices X → (x, 0) ∉ vertices (X ⋆ Y) :=
-  by
+theorem barycenter_join_left
+    {X Y : AbstractSimplicialComplex E}
+    {x : E}
+  :
+    x ∉ X.vertices → (x, 0) ∉ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).vertices :=
+by
   contrapose
   simp only [Classical.not_not, simplicialJoin_vertices_mem_left]
   exact Set.mem_of_eq_of_mem rfl
 
-theorem stellar_join_distr_join_left (X Y : SimplicialComplex α) (s : Finset α) [s_ne : Nonempty s]
-    (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) :
-    (π₁
-              (barycenter_join_boundary_disjoint_link X s x s_in_X
-                x_nin_X)[π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[simplex {x} ⋆ ∂s] ⋆
-              Lk(X, s) s_in_X] ⋆
-          Y).simplices ⊆
-      π₁
-            (barycenter_join_boundary_disjoint_link (X ⋆ Y) (s ⊔ₛ ∅) (x, 0)
-              (by apply simplicialJoin_incl_left; assumption)
-              (barycenter_join_left
-                x_nin_X))[π₁
-                (barycenter_disjoint_boundary (X ⋆ Y) (s ⊔ₛ ∅) (x, 0)
+theorem stellar_join_distr_join_left
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+  : (((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe
+      ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+        ''ˢ (simplex {x} ⋆ ∂s)) ⋆
+          Lk(X, s))) ⋆ Y).faces ⊆
+      ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) (s ⊔ₛ ∅) (x, 0)
+            (by apply simplicialJoin_incl_left; assumption)
+            (barycenter_join_left x_nin_X))).coe
+        ''ˢ ((π₁[𝕜]
+              (barycenter_disjoint_boundary (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) (s ⊔ₛ ∅) (x, 0)
                   (by apply simplicialJoin_incl_left; assumption)
-                  (barycenter_join_left x_nin_X))[simplex {(x, 0)} ⋆ ∂(s ⊔ₛ ∅)] ⋆
-            Lk(X ⋆ Y, s ⊔ₛ ∅) (by apply simplicialJoin_incl_left; assumption)].simplices :=
-  by
-  simp only [Set.subset_def, simplicialJoin_mem, join_proj_mem]
+                  (barycenter_join_left x_nin_X))).coe
+          ''ˢ ((simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) : AbstractSimplicialComplex ((E × 𝕜) × 𝕜)) ⋆
+            (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)))).faces :=
+by
+  simp only [Set.subset_def, Set.mem_union, simplicialJoin_mem, join_proj_mem]
   intro t t_in_join
   choose u u_in_join v v_in_Y t_eq_uv using t_in_join
-  choose u' u'_in_join u₁ u₁_in_link u_decomp using u_in_join
-  choose u₃ u₃_in_barycenter u₂ u₂_in_bd u'_decomp using u'_in_join
+  cases' u_in_join with u_in_join u_empty
+
+  choose u' u'_in_join u₁ u₁_in_link u_decomp u_ne using u_in_join
+  cases' u'_in_join with u'_in_join u'_empty
+
+  choose u₃ u₃_in_barycenter u₂ u₂_in_bd u'_decomp u'_ne using u'_in_join
   subst u'_decomp
-  use u₃ ⊔ₛ ∅ ∪ (u₂ ⊔ₛ ∅); constructor
+  use u₃ ⊔ₛ ∅ ∪ (u₂ ⊔ₛ ∅); constructor; left
   use u₃ ⊔ₛ ∅; constructor
-  simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at
-    u₃_in_barycenter ⊢
-  cases' u₃_in_barycenter with u₃_empty u₃_eq_x
+  simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
+  cases' u₃_in_barycenter with u₃_eq_x u₃_empty
+
+  rotate_left
   left
   rw [u₃_empty]
   simp only [simplexDisjointUnion, Finset.product_singleton, Finset.map_empty, Finset.empty_union]

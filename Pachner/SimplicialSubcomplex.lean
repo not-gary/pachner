@@ -2505,7 +2505,7 @@ theorem barycenter_join_boundary_disjoint_link
     (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : Disjoint (((π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ ((simplex {x}) ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).vertices)
+  : Disjoint (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ ((simplex {x}) ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).vertices)
        (Lk(X, s).vertices) :=
 by
   rw [Set.disjoint_left]
