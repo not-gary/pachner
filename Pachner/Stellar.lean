@@ -4468,43 +4468,440 @@ by
 
   choose u₃ u₃_in_barycenter u₂ u₂_in_bd u'_decomp u'_ne using u'_in_join
   subst u'_decomp
-  use u₃ ⊔ₛ ∅ ∪ (u₂ ⊔ₛ ∅); constructor; left
-  use u₃ ⊔ₛ ∅; constructor
-  simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
-  cases' u₃_in_barycenter with u₃_eq_x u₃_empty
 
-  rotate_left
-  left
-  rw [u₃_empty]
-  simp only [simplexDisjointUnion, Finset.product_singleton, Finset.map_empty, Finset.empty_union]
-  right
+  cases' u₂_in_bd with u₂_in_bd u₂_empty <;>
+  cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
+  choose u₃_in_barycenter u₃_ne using u₃_in_barycenter
+
+  use u₃ ⊔ₛ ∅ ∪ (u₂ ⊔ₛ ∅); constructor; left
+  use u₃ ⊔ₛ ∅; constructor; left
+  simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
+  constructor; right
+  cases' u₃_in_barycenter with u₃_empty u₃_eq_x
+  contradiction
+
   rw [u₃_eq_x]
   simp only [simplexDisjointUnion, Finset.product_singleton, Finset.map_singleton,
     Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
-  use u₂ ⊔ₛ ∅; constructor
-  rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd ⊢
-  choose u₂_ss_s u₂_ne_s using u₂_in_bd
-  simp only [Ne.def, simplex_disjoint_subset_unique, simplex_disjoint_eq_unique, not_and]
+
+  cases' u₃_in_barycenter with u₃_empty u₃_eq_x
+  rw [Set.mem_singleton_iff] at u₃_ne
+  contradiction
+
+  rw [u₃_eq_x, simplex_disjoint_empty, not_and_or]
+  left; apply Finset.singleton_ne_empty
+
+  use u₂ ⊔ₛ ∅; constructor; left
+  rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne, and_assoc] at u₂_in_bd ⊢
+  choose u₂_ss_s u₂_ne_s u₂_ne using u₂_in_bd
+
+  simp only [ne_eq, simplex_disjoint_subset_unique, simplex_disjoint_eq_unique, not_and]
   constructor; constructor; assumption; rfl
-  intro contra; contradiction
-  rfl
+  constructor; intro contra; contradiction
+
+  rw [simplex_disjoint_empty, not_and_or]
+  left; assumption
+
+  constructor; rfl
+  simp only [ne_eq, Finset.union_eq_empty, not_and_or, simplex_disjoint_empty]
+  left; left
+  rw [Set.mem_singleton_iff] at u₃_ne
+  assumption
+
   use u₁ ⊔ₛ v; constructor
+  cases' v_in_Y with v_in_Y v_empty <;>
+  cases' u₁_in_link with u₁_in_link u₁_empty
+
   simp only [link, Set.mem_sep_iff] at u₁_in_link ⊢
+  choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
+  left; constructor
+  rw [simplicialJoin_mem]
+  use u₁; constructor
+  rw [Set.mem_union]
+  left; assumption
+
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X u₁ u₁_in_X
+
+  constructor
+  rw [simplex_disjoint_distr_union, Finset.empty_union, simplicialJoin_mem]
+  use s ∪ u₁; constructor
+  rw [Set.mem_union]
+  left; assumption
+
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X (s ∪ u₁) su₁_in_X
+
+  rw [simplex_disjoint_distr_inter, Finset.empty_inter, su₁_disj]
+  simp only [simplexDisjointUnion, Finset.product_singleton, Finset.map_empty, Finset.empty_union]
+
+  left
+  rw [Set.mem_singleton_iff] at u₁_empty
+  subst u₁_empty
+  simp only [link, Set.mem_sep_iff]
+  constructor
+  apply simplicialJoin_incl_right; assumption
+  constructor
+  rw [simplex_disjoint_distr_union, Finset.union_empty, Finset.empty_union, simplicialJoin_mem]
+  use s; constructor
+  rw [Set.mem_union]
+  left; assumption
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X s s_in_X
+
+  rw [simplex_disjoint_distr_inter, Finset.inter_empty, Finset.empty_inter, simplex_disjoint_empty]
+  constructor <;> rfl
+
+  left
+  simp only [link, Set.mem_sep_iff] at u₁_in_link ⊢
+  rw [Set.mem_singleton_iff] at v_empty
+  subst v_empty
+  choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
+  constructor
+  apply simplicialJoin_incl_left; assumption
+  constructor
+  rw [simplex_disjoint_distr_union, Finset.union_empty]
+  apply simplicialJoin_incl_left; assumption
+  rw [simplex_disjoint_distr_inter, Finset.inter_empty, simplex_disjoint_empty]
+  constructor; assumption; rfl
+
+  right
+  rw [Set.mem_singleton_iff] at v_empty u₁_empty ⊢
+  subst v_empty u₁_empty
+  rw [simplex_disjoint_empty]
+  constructor <;> rfl
+
+  simp only [simplex_disjoint_distr_union, Finset.empty_union, ← u_decomp]
+  assumption
+
+  use ∅ ⊔ₛ ∅ ∪ (u₂ ⊔ₛ  ∅); constructor; left
+  use ∅ ⊔ₛ ∅; constructor; right
+  rw [Set.mem_singleton_iff, simplex_disjoint_empty]
+  constructor <;> rfl
+
+  use u₂ ⊔ₛ ∅; constructor; left
+  simp only [simplexBoundary, Set.mem_diff, Set.mem_insert_iff, Finset.mem_coe, Finset.mem_powerset, not_or, Set.mem_singleton_iff] at u₂_in_bd ⊢
+  choose u₂_ss_s u₂_ne_s u₂_ne using u₂_in_bd
+  constructor
+  rw [simplex_disjoint_subset_unique]
+  constructor; assumption; rfl
+  constructor
+  rw [simplex_disjoint_eq_unique, not_and_or]
+  left; assumption
+  rw [simplex_disjoint_empty, not_and_or]
+  left; assumption
+
+  constructor; rfl
+  simp only [simplex_disjoint_distr_union, Finset.empty_union, ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty (∂s) u₂ u₂_in_bd
+
+  use u₁ ⊔ₛ v; constructor
+  cases' u₁_in_link with u₁_in_link u₁_empty
+  simp only [link, Set.mem_sep_iff] at u₁_in_link ⊢
+  choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
+  left; constructor
+
+  cases' v_in_Y with v_in_Y v_empty
+  rw [simplicialJoin_mem]
+  use u₁; constructor
+  rw [Set.mem_union]
+  left; assumption
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X u₁ u₁_in_X
+
+  rw [Set.mem_singleton_iff] at v_empty
+  subst v_empty
+  apply simplicialJoin_incl_left; assumption
+  constructor
+  rw [simplex_disjoint_distr_union, Finset.empty_union]
+
+  cases' v_in_Y with v_in_Y v_empty
+  rw [simplicialJoin_mem]
+  use (s ∪ u₁); constructor
+  rw [Set.mem_union]
+  left; assumption
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X (s ∪ u₁) su₁_in_X
+
+  rw [Set.mem_singleton_iff] at v_empty
+  subst v_empty
+  apply simplicialJoin_incl_left; assumption
+  rw [simplex_disjoint_distr_inter, simplex_disjoint_empty]
+  constructor; assumption; rfl
+
+  rw [Set.mem_singleton_iff] at u₁_empty
+  subst u₁_empty
+  cases' v_in_Y with v_in_Y v_empty
+  left
+  simp only [link, Set.mem_sep_iff]
+  constructor
+  apply simplicialJoin_incl_right; assumption
+  constructor
+  rw [simplex_disjoint_distr_union, Finset.empty_union, Finset.union_empty, simplicialJoin_mem]
+  use s; constructor
+  rw [Set.mem_union]
+  left; assumption
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X s s_in_X
+  rw [simplex_disjoint_distr_inter, Finset.inter_empty, Finset.empty_inter, simplex_disjoint_empty]
+  constructor <;> rfl
+
+  right
+  rw [Set.mem_singleton_iff] at v_empty ⊢
+  subst v_empty
+  rw [simplex_disjoint_empty]
+  constructor <;> rfl
+
+  simp only [simplex_disjoint_distr_union, Finset.empty_union]
+  rw [Set.mem_singleton_iff] at u₃_empty
+  rw [u₃_empty, Finset.empty_union] at u_decomp
+  rw [u_decomp] at t_eq_uv
+  assumption
+
+  use u₃ ⊔ₛ ∅; constructor; left
+  use u₃ ⊔ₛ ∅; constructor; left
+  simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
+  choose u₃_in_barycenter u₃_ne using u₃_in_barycenter
+  cases' u₃_in_barycenter with u₃_empty u₃_in_barycenter
+  contradiction
+  constructor; right
+  rw [Finset.eq_singleton_iff_unique_mem] at u₃_in_barycenter ⊢
+  choose x_in_u₃ a_eq_x using u₃_in_barycenter
+  constructor; rw [simplex_disjoint_mem_left]; assumption
+  intro b b_in_u₃
+  rw [simplex_disjoint_mem] at b_in_u₃
+  cases' b_in_u₃ with b_in_u₃ contra
+  choose b1_in_u₃ b2_zero using b_in_u₃
+  specialize a_eq_x b.1 b1_in_u₃
+  simp only [← a_eq_x, ← b2_zero]
+
+  choose contra b2_one using contra
+  contradiction
+
+  rw [simplex_disjoint_empty, not_and_or]
+  left; assumption
+
+  use ∅ ⊔ₛ ∅; constructor; right
+  rw [Set.mem_singleton_iff, simplex_disjoint_empty]
+  constructor <;> rfl
+
+  constructor
+  simp only [simplex_disjoint_distr_union, Finset.union_empty]
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty (simplex {x}) u₃ u₃_in_barycenter
+
+  use u₁ ⊔ₛ v; constructor
+  simp only [link, Set.mem_sep_iff, Set.mem_singleton_iff] at u₁_in_link ⊢
+  cases' u₁_in_link with u₁_in_link u₁_empty <;>
+  cases' v_in_Y with v_in_Y v_empty
+
+  left
   choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
   constructor
   rw [simplicialJoin_mem]
-  use u₁; constructor; assumption
-  use v; constructor; assumption
-  rfl
+  use u₁; constructor
+  rw [Set.mem_union]
+  left; assumption
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X u₁ u₁_in_X
+
   constructor
   rw [simplex_disjoint_distr_union, Finset.empty_union, simplicialJoin_mem]
-  use s ∪ u₁; constructor; assumption
-  use v; constructor; assumption
-  rfl
-  rw [simplex_disjoint_distr_inter, Finset.empty_inter, su₁_disj]
-  simp only [simplexDisjointUnion, Finset.product_singleton, Finset.map_empty, Finset.empty_union]
-  simp only [simplex_disjoint_distr_union, Finset.empty_union, ← u_decomp]
+  use s ∪ u₁; constructor
+  rw [Set.mem_union]
+  left; assumption
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X (s ∪ u₁) su₁_in_X
+
+  rw [simplex_disjoint_distr_inter, Finset.empty_inter, simplex_disjoint_empty]
+  constructor; assumption; rfl
+
+  left
+  choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
+  rw [Set.mem_singleton_iff] at v_empty
+  subst v_empty
+  constructor
+  apply simplicialJoin_incl_left; assumption
+  constructor
+  rw [simplex_disjoint_distr_union, Finset.empty_union]
+  apply simplicialJoin_incl_left; assumption
+  rw [simplex_disjoint_distr_inter, Finset.empty_inter, simplex_disjoint_empty]
+  constructor; assumption; rfl
+
+  left
+  subst u₁_empty
+  constructor
+  apply simplicialJoin_incl_right; assumption
+  constructor
+  rw [simplex_disjoint_distr_union, Finset.empty_union, Finset.union_empty, simplicialJoin_mem]
+  use s; constructor
+  rw [Set.mem_union]
+  left; assumption
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X s s_in_X
+  rw [simplex_disjoint_distr_inter, Finset.empty_inter, Finset.inter_empty, simplex_disjoint_empty]
+  constructor <;> rfl
+
+  right
+  rw [Set.mem_singleton_iff] at v_empty
+  subst u₁_empty v_empty
+  rw [simplex_disjoint_empty]
+  constructor <;> rfl
+
+  rw [simplex_disjoint_distr_union, Finset.empty_union]
+  rw [Set.mem_singleton_iff] at u₂_empty
+  rw [u₂_empty, Finset.union_empty] at u_decomp
+  rw [← u_decomp]
   assumption
+
+  rw [Set.mem_singleton_iff] at u₂_empty u₃_empty
+  rw [u₂_empty, u₃_empty] at u'_ne
+  contradiction
+
+  rw [Set.mem_singleton_iff] at u'_empty
+  rw [u'_empty, Finset.empty_union] at u_decomp
+  subst u_decomp
+  cases' u₁_in_link with u₁_in_link u₁_empty <;>
+  cases' v_in_Y with v_in_Y v_empty
+
+  use ∅ ⊔ₛ ∅; constructor
+  right
+  rw [Set.mem_singleton_iff, simplex_disjoint_empty]
+  constructor <;> rfl
+
+  use u ⊔ₛ v; constructor; left
+  simp only [link, Set.mem_sep_iff] at u₁_in_link ⊢
+  choose u_in_X su_in_X su_disj using u₁_in_link
+
+  constructor
+  rw [simplicialJoin_mem]
+  use u; constructor
+  rw [Set.mem_union]
+  left; assumption
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X u u_in_X
+
+  constructor
+  simp only [simplex_disjoint_distr_union, simplicialJoin_mem, Finset.empty_union]
+  use s ∪ u; constructor
+  rw [Set.mem_union]
+  left; assumption
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X (s ∪ u) su_in_X
+
+  rw [simplex_disjoint_distr_inter, Finset.empty_inter, simplex_disjoint_empty]
+  constructor; assumption; rfl
+
+  simp only [simplex_disjoint_distr_union, Finset.empty_union]
+  assumption
+
+  rw [Set.mem_singleton_iff] at v_empty
+  subst v_empty
+  use ∅ ⊔ₛ ∅; constructor; right
+  rw [Set.mem_singleton_iff, simplex_disjoint_empty]
+  constructor <;> rfl
+
+  use u ⊔ₛ ∅; constructor; left
+  simp only [link, Set.mem_sep_iff] at u₁_in_link ⊢
+  choose u_in_X su_in_X su_disj using u₁_in_link
+  constructor
+  apply simplicialJoin_incl_left; assumption
+  constructor
+  rw [simplex_disjoint_distr_union, Finset.empty_union]
+  apply simplicialJoin_incl_left; assumption
+  rw [simplex_disjoint_distr_inter, Finset.empty_inter, simplex_disjoint_empty]
+  constructor; assumption; rfl
+
+  simp only [simplex_disjoint_distr_union, Finset.empty_union]
+  assumption
+
+  rw [Set.mem_singleton_iff] at u₁_empty
+  subst u₁_empty
+  contradiction
+
+  rw [Set.mem_singleton_iff] at u₁_empty v_empty
+  subst u₁_empty v_empty
+  contradiction
+
+  rw [Set.mem_singleton_iff] at u_empty
+  subst u_empty
+  cases' v_in_Y with v_in_Y v_empty
+  use ∅ ⊔ₛ ∅; constructor; right
+  rw [Set.mem_singleton_iff, simplex_disjoint_empty]
+  constructor <;> rfl
+
+  use ∅ ⊔ₛ v; constructor; left
+  simp only [link, Set.mem_sep_iff]
+  constructor
+  apply simplicialJoin_incl_right; assumption
+  constructor
+  rw [simplex_disjoint_distr_union, Finset.union_empty, Finset.empty_union, simplicialJoin_mem]
+  use s; constructor
+  rw [Set.mem_union]
+  left; assumption
+  use v; constructor
+  rw [Set.mem_union]
+  left; assumption
+  constructor; rfl
+  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  left; apply face_nonempty X s s_in_X
+  rw [simplex_disjoint_distr_inter, Finset.inter_empty, Finset.empty_inter, simplex_disjoint_empty]
+  constructor <;> rfl
+
+  simp only [simplex_disjoint_distr_union, Finset.empty_union]
+  assumption
+
+  rw [Set.mem_singleton_iff] at v_empty
+  choose t_empty t_ne using t_eq_uv
+  subst v_empty t_empty
+  rw [ne_eq, simplex_disjoint_empty, not_and_or] at t_ne
+  cases t_ne <;> contradiction
 
 theorem stellar_join_distr_join_right (X Y : SimplicialComplex α) (s : Finset α) [s_ne : Nonempty s]
     (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) :
