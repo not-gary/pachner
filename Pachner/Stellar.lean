@@ -4903,202 +4903,919 @@ by
   rw [ne_eq, simplex_disjoint_empty, not_and_or] at t_ne
   cases t_ne <;> contradiction
 
-theorem stellar_join_distr_join_right (X Y : SimplicialComplex α) (s : Finset α) [s_ne : Nonempty s]
-    (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) :
-    π₁
-            (barycenter_join_boundary_disjoint_link (X ⋆ Y) (s ⊔ₛ ∅) (x, 0)
-              (by apply simplicialJoin_incl_left; assumption)
-              (barycenter_join_left
-                x_nin_X))[π₁
-                (barycenter_disjoint_boundary (X ⋆ Y) (s ⊔ₛ ∅) (x, 0)
+theorem stellar_join_distr_join_right
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+  : ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) (s ⊔ₛ ∅) (x, 0)
+            (by apply simplicialJoin_incl_left; assumption)
+            (barycenter_join_left x_nin_X))).coe
+        ''ˢ ((π₁[𝕜]
+              (barycenter_disjoint_boundary (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) (s ⊔ₛ ∅) (x, 0)
                   (by apply simplicialJoin_incl_left; assumption)
-                  (barycenter_join_left x_nin_X))[simplex {(x, 0)} ⋆ ∂(s ⊔ₛ ∅)] ⋆
-            Lk(X ⋆ Y, s ⊔ₛ ∅) (by apply simplicialJoin_incl_left; assumption)].simplices ⊆
-      (π₁
-              (barycenter_join_boundary_disjoint_link X s x s_in_X
-                x_nin_X)[π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[simplex {x} ⋆ ∂s] ⋆
-              Lk(X, s) s_in_X] ⋆
-          Y).simplices :=
-  by
-  simp only [Set.subset_def, simplicialJoin_mem, join_proj_mem]
+                  (barycenter_join_left x_nin_X))).coe
+          ''ˢ ((simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) : AbstractSimplicialComplex ((E × 𝕜) × 𝕜)) ⋆
+            (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)))).faces ⊆
+      (((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe
+        ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+          ''ˢ (simplex {x} ⋆ ∂s)) ⋆
+            Lk(X, s))) ⋆ Y).faces :=
+by
+  simp only [Set.subset_def, Set.mem_union, Set.mem_singleton_iff, simplicialJoin_mem, join_proj_mem]
   intro t t_in_img
   choose t' t'_in_join t₁ t₁_in_link t_decomp using t_in_img
-  choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp using t'_in_join
-  subst t'_decomp
-  simp only [link, Set.mem_sep_iff] at t₁_in_link
-  choose t₁_in_XY st₁_in_XY st₁_disj using t₁_in_link
-  rw [simplicialJoin_mem] at t₁_in_XY
-  choose u₁ u₁_in_X v₁ v₁_in_Y t₁_eq_uv₁ using t₁_in_XY
-  subst t₁_eq_uv₁
-  have s_zero : ∀ a : α × ℕ, a ∈ s ⊔ₛ ∅ → a.snd = 0 :=
-    by
+
+  have s_zero : ∀ a : E × 𝕜, a ∈ s ⊔ₛ ∅ → a.snd = 0 :=
+  by
     intro a a_in_s
     rw [simplex_disjoint_mem] at a_in_s
     cases' a_in_s with a_in_s contra
     choose a_in_s a_zero using a_in_s
     assumption
     choose contra a_one using contra
-    have H : a.fst ∉ ∅ := by apply Finset.not_mem_empty
+    have H : a.1 ∉ (∅ : Finset E) := by apply Finset.notMem_empty
     contradiction
-  rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff] at t₂_in_bd
-  choose a a_nin_t₂ at₂_ss_s using t₂_in_bd
-  use Finset.image Prod.fst (t₃ ∪ t₂) ∪ u₁; constructor
-  use Finset.image Prod.fst (t₃ ∪ t₂); constructor
-  use Finset.image Prod.fst t₃; constructor
-  simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at
-    t₃_in_barycenter ⊢
-  cases' t₃_in_barycenter with t₃_empty t₃_eq_x
-  left
-  rw [t₃_empty]
-  apply Finset.image_empty
-  right
-  simp only [t₃_eq_x, Finset.image_singleton, Prod.fst]
-  use Finset.image Prod.fst t₂; constructor
-  rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff]
-  use Prod.fst a
-  have a_zero : a.snd = 0 :=
-    by
-    have a_in_s : a ∈ s ⊔ₛ ∅ := by
-      apply Finset.mem_of_subset at₂_ss_s
-      apply Finset.mem_insert_self
-    specialize s_zero a a_in_s
-    assumption
-  constructor
-  simp only [Finset.mem_image, exists_prop, Prod.exists, exists_and_right, exists_eq_right,
-    not_exists]
-  intro n
-  by_cases n_zero : n = 0
-  rw [n_zero, ← a_zero, Prod.mk.eta]
-  assumption
-  have a_nin_s : (a.fst, n) ∉ s ⊔ₛ ∅ := by
-    revert n_zero
-    contrapose
-    simp only [Classical.not_not]
-    specialize s_zero (a.fst, n)
-    assumption
-  revert a_nin_s
-  contrapose
-  simp only [Classical.not_not]
-  intro a_in_t₂
-  apply @Finset.mem_of_subset _ t₂
-  apply @Finset.Subset.trans _ _ (insert a t₂)
-  apply Finset.subset_insert
-  assumption
-  assumption
-  rw [Finset.subset_iff] at at₂_ss_s ⊢
-  intro b b_in_at₂
-  rw [Finset.mem_insert] at b_in_at₂
-  cases' b_in_at₂ with b_eq_a b_in_t₂
-  subst b_eq_a
-  specialize at₂_ss_s (Finset.mem_insert_self a t₂)
-  rw [← @Prod.mk.eta _ _ a, a_zero, simplex_disjoint_mem_left] at at₂_ss_s
-  assumption
-  rw [Finset.mem_image] at b_in_t₂
-  choose c c_in_t₂ proj_c_b using b_in_t₂
-  have c_in_s : c ∈ s ⊔ₛ ∅ := by
-    apply Finset.mem_of_subset at₂_ss_s
-    rw [Finset.mem_insert]
-    right; assumption
-  specialize s_zero c c_in_s
-  rw [← @Prod.mk.eta _ _ c, s_zero, simplex_disjoint_mem_left, proj_c_b] at c_in_s
-  assumption
-  rw [Finset.image_union]
-  use u₁; constructor
-  simp only [link, Set.mem_sep_iff]
-  constructor; assumption
-  constructor
-  rw [simplex_disjoint_distr_union, simplicialJoin_sep] at st₁_in_XY
-  choose su₁_in_X sv₁_in_Y using st₁_in_XY
-  assumption
-  rw [simplex_disjoint_distr_inter, simplex_disjoint_empty] at st₁_disj
-  choose su₁_disj sv₁_disj using st₁_disj
-  assumption
-  rfl
-  use v₁; constructor; assumption
-  rw [← Finset.empty_union v₁, ← Finset.empty_union ∅, ← simplex_disjoint_distr_union,
-    Finset.image_union, ← simplex_disjoint_distr_union]
-  have t₂_lift : Finset.image Prod.fst t₂ ⊔ₛ ∅ = t₂ :=
-    by
-    simp only [Finset.ext_iff, simplex_disjoint_mem, Finset.mem_image]
-    intro b
-    constructor
-    intro b_in_img
-    cases' b_in_img with b_in_t₂ contra
-    choose proj_c_b b_zero using b_in_t₂
-    choose c c_in_t₂ proj_c_b using proj_c_b
-    have c_in_s : c ∈ s ⊔ₛ ∅ := by
-      apply Finset.mem_of_subset at₂_ss_s
-      rw [Finset.mem_insert]
-      right; assumption
-    specialize s_zero c c_in_s
-    rw [← @Prod.mk.eta _ _ c, s_zero, proj_c_b, ← b_zero, Prod.mk.eta] at c_in_t₂
-    assumption
-    choose contra b_one using contra
-    have H : b.fst ∉ ∅ := by apply Finset.not_mem_empty
-    contradiction
-    intro b_in_t₂
-    left
-    use b; constructor; assumption
-    rfl
-    have b_in_s : b ∈ s ⊔ₛ ∅ := by
-      apply Finset.mem_of_subset at₂_ss_s
-      rw [Finset.mem_insert]
-      right; assumption
-    specialize s_zero b b_in_s
-    assumption
-  have t₃_lift : Finset.image Prod.fst t₃ ⊔ₛ ∅ = t₃ :=
-    by
-    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at
-      t₃_in_barycenter
-    cases' t₃_in_barycenter with t₃_empty t₃_eq_x
-    rw [t₃_empty, Finset.image_empty, simplex_disjoint_empty]
-    constructor <;> rfl
-    rw [t₃_eq_x]
-    simp only [simplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
-      Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
-  rw [t₂_lift, t₃_lift]
-  assumption
 
-theorem stellar_join_distr_join (X Y : SimplicialComplex α) (s : Finset α) [s_ne : Nonempty s]
-    (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) :
-    (π₁
-              (barycenter_join_boundary_disjoint_link X s x s_in_X
-                x_nin_X)[π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[simplex {x} ⋆ ∂s] ⋆
-              Lk(X, s) s_in_X] ⋆
-          Y).simplices =
-      π₁
-            (barycenter_join_boundary_disjoint_link (X ⋆ Y) (s ⊔ₛ ∅) (x, 0)
-              (by apply simplicialJoin_incl_left; assumption)
-              (barycenter_join_left
-                x_nin_X))[π₁
-                (barycenter_disjoint_boundary (X ⋆ Y) (s ⊔ₛ ∅) (x, 0)
+  cases' t'_in_join with t'_in_join t'_empty
+  · choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp t'_ne using t'_in_join
+    subst t'_decomp
+
+    simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
+      Finset.subset_singleton_iff] at t₃_in_barycenter
+    simp only [simplexBoundary_mem_iff_subset, Finset.ssubset_iff] at t₂_in_bd
+
+    cases' t₃_in_barycenter with t₃_in_barycenter t₃_empty <;>
+    cases' t₂_in_bd with t₂_in_bd t₂_empty <;>
+    cases' t₁_in_link with t₁_in_link t₁_empty
+    · choose t₃_in_barycenter t₃_ne using t₃_in_barycenter
+      cases' t₃_in_barycenter with t₃_empty t₃_in_barycenter
+      contradiction
+
+      choose t₂_ss_s t₂_ne using t₂_in_bd
+      choose a a_nin_t₂ at₂_ss_s using t₂_ss_s
+
+      simp only [link, Set.mem_sep_iff] at t₁_in_link
+      choose t₁_in_XY st₁_in_XY st₁_disj using t₁_in_link
+      rw [simplicialJoin_mem] at t₁_in_XY
+      choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
+      subst t₁_eq_u₁u₂
+
+      rw [simplex_disjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
+      choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
+      rw [simplex_disjoint_eq_unique] at su₁u₂_eq_v₁v₂
+      choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
+      subst su₁_eq_v₁ u₂_eq_v₂
+
+      rw [simplex_disjoint_distr_inter, Finset.empty_inter, simplex_disjoint_empty] at st₁_disj
+      choose su₁_disj taut using st₁_disj
+
+      use Finset.image Prod.fst (t₃ ∪ t₂) ∪ u₁; constructor; left
+      use Finset.image Prod.fst (t₃ ∪ t₂); constructor; left
+      use Finset.image Prod.fst t₃; constructor; left
+
+      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
+        Finset.subset_singleton_iff]
+      simp only [t₃_in_barycenter, Finset.image_singleton, Prod.fst]
+      constructor; right; trivial
+      apply Finset.singleton_ne_empty
+
+      use Finset.image Prod.fst t₂; constructor; left
+      rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff]
+      constructor
+
+      use Prod.fst a
+      have a_zero : a.snd = 0 :=
+      by
+        have a_in_s : a ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          apply Finset.mem_insert_self
+        specialize s_zero a a_in_s
+        assumption
+      constructor
+      simp only [Finset.mem_image, exists_prop, Prod.exists, exists_and_right, exists_eq_right,
+        not_exists]
+      intro n
+      by_cases n_zero : n = 0
+      rw [n_zero, ← a_zero, Prod.mk.eta]
+      assumption
+      have a_nin_s : (a.fst, n) ∉ s ⊔ₛ ∅ := by
+        revert n_zero
+        contrapose
+        simp only [Classical.not_not]
+        specialize s_zero (a.fst, n)
+        assumption
+      revert a_nin_s
+      contrapose
+      simp only [Classical.not_not]
+      intro a_in_t₂
+      apply @Finset.mem_of_subset _ t₂
+      apply @Finset.Subset.trans _ _ (insert a t₂)
+      apply Finset.subset_insert
+      assumption
+      assumption
+      rw [Finset.subset_iff] at at₂_ss_s ⊢
+      intro b b_in_at₂
+      rw [Finset.mem_insert] at b_in_at₂
+      cases' b_in_at₂ with b_eq_a b_in_t₂
+      subst b_eq_a
+      specialize at₂_ss_s (Finset.mem_insert_self a t₂)
+      rw [← @Prod.mk.eta _ _ a, a_zero, simplex_disjoint_mem_left] at at₂_ss_s
+      assumption
+      rw [Finset.mem_image] at b_in_t₂
+      choose c c_in_t₂ proj_c_b using b_in_t₂
+      have c_in_s : c ∈ s ⊔ₛ ∅ := by
+        apply Finset.mem_of_subset at₂_ss_s
+        rw [Finset.mem_insert]
+        right; assumption
+      specialize s_zero c c_in_s
+      rw [← @Prod.mk.eta _ _ c, s_zero, simplex_disjoint_mem_left, proj_c_b] at c_in_s
+      assumption
+
+      rw [ne_eq, Finset.image_eq_empty]
+      assumption
+
+      constructor
+      rw [Finset.image_union]
+      rw [ne_eq, Finset.image_eq_empty]
+      assumption
+
+      cases' u₁_in_X with u₁_in_X u₁_empty
+      · use u₁; constructor; left
+        simp only [link, Set.mem_sep_iff]
+        constructor; assumption
+        constructor
+
+        rw [Set.mem_union, Set.mem_singleton_iff] at v₁_in_X
+        cases' v₁_in_X with su₁_in_X su₁_empty
+        · assumption
+        · have s_empty : s = ∅ :=
+          by
+            rw [← Finset.subset_empty] at su₁_empty ⊢
+            apply @subset_trans _ _ _ s (s ∪ u₁)
+            apply Finset.subset_union_left
+            assumption
+          subst s_empty
+          rw [Finset.empty_union]
+          assumption
+        assumption
+
+        constructor; rfl
+        rw [ne_eq, Finset.union_eq_empty, not_and_or]
+        right; apply face_nonempty X u₁ u₁_in_X
+      · rw [Set.mem_singleton_iff] at u₁_empty
+        subst u₁_empty
+        use ∅; constructor; right; rfl
+        constructor; rfl
+        rw [Finset.union_empty, ne_eq, Finset.image_eq_empty]
+        assumption
+
+      use u₂; constructor
+      rw [Set.mem_union, Set.mem_singleton_iff] at u₂_in_Y
+      assumption
+
+      have t₂_lift : Finset.image Prod.fst t₂ ⊔ₛ ∅ = t₂ :=
+      by
+        simp only [Finset.ext_iff, simplex_disjoint_mem, Finset.mem_image]
+        intro b
+        constructor
+        intro b_in_img
+        cases' b_in_img with b_in_t₂ contra
+        choose proj_c_b b_zero using b_in_t₂
+        choose c c_in_t₂ proj_c_b using proj_c_b
+        have c_in_s : c ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          rw [Finset.mem_insert]
+          right; assumption
+        specialize s_zero c c_in_s
+        rw [← @Prod.mk.eta _ _ c, s_zero, proj_c_b, ← b_zero, Prod.mk.eta] at c_in_t₂
+        assumption
+        choose contra b_one using contra
+        have H : b.fst ∉ (∅ : Finset E) := by apply Finset.notMem_empty
+        contradiction
+        intro b_in_t₂
+        left; constructor
+        use b
+        have b_in_s : b ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          rw [Finset.mem_insert]
+          right; assumption
+        specialize s_zero b b_in_s
+        assumption
+      have t₃_lift : Finset.image Prod.fst t₃ ⊔ₛ ∅ = t₃ :=
+      by
+        simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+        rw [t₃_in_barycenter]
+        simp only [simplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+          Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
+
+      rw [← t₂_lift, ← t₃_lift] at t_decomp
+      simp only [simplex_disjoint_distr_union, ← Finset.image_union, Finset.empty_union] at t_decomp
+      assumption
+    · subst t₁_empty
+      choose t₃_in_barycenter t₃_ne using t₃_in_barycenter
+      cases' t₃_in_barycenter with t₃_empty t₃_in_barycenter
+      contradiction
+
+      choose t₂_ss_s t₂_ne using t₂_in_bd
+      choose a a_nin_t₂ at₂_ss_s using t₂_ss_s
+
+      use Finset.image Prod.fst (t₃ ∪ t₂) ∪ ∅; constructor; left
+      use Finset.image Prod.fst (t₃ ∪ t₂); constructor; left
+      use Finset.image Prod.fst t₃; constructor; left
+
+      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
+        Finset.subset_singleton_iff]
+      simp only [t₃_in_barycenter, Finset.image_singleton, Prod.fst]
+      constructor; right; trivial
+      apply Finset.singleton_ne_empty
+
+      use Finset.image Prod.fst t₂; constructor; left
+      rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff]
+      constructor
+
+      use Prod.fst a
+      have a_zero : a.snd = 0 :=
+      by
+        have a_in_s : a ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          apply Finset.mem_insert_self
+        specialize s_zero a a_in_s
+        assumption
+      constructor
+      simp only [Finset.mem_image, exists_prop, Prod.exists, exists_and_right, exists_eq_right,
+        not_exists]
+      intro n
+      by_cases n_zero : n = 0
+      rw [n_zero, ← a_zero, Prod.mk.eta]
+      assumption
+      have a_nin_s : (a.fst, n) ∉ s ⊔ₛ ∅ := by
+        revert n_zero
+        contrapose
+        simp only [Classical.not_not]
+        specialize s_zero (a.fst, n)
+        assumption
+      revert a_nin_s
+      contrapose
+      simp only [Classical.not_not]
+      intro a_in_t₂
+      apply @Finset.mem_of_subset _ t₂
+      apply @Finset.Subset.trans _ _ (insert a t₂)
+      apply Finset.subset_insert
+      assumption
+      assumption
+      rw [Finset.subset_iff] at at₂_ss_s ⊢
+      intro b b_in_at₂
+      rw [Finset.mem_insert] at b_in_at₂
+      cases' b_in_at₂ with b_eq_a b_in_t₂
+      subst b_eq_a
+      specialize at₂_ss_s (Finset.mem_insert_self a t₂)
+      rw [← @Prod.mk.eta _ _ a, a_zero, simplex_disjoint_mem_left] at at₂_ss_s
+      assumption
+      rw [Finset.mem_image] at b_in_t₂
+      choose c c_in_t₂ proj_c_b using b_in_t₂
+      have c_in_s : c ∈ s ⊔ₛ ∅ := by
+        apply Finset.mem_of_subset at₂_ss_s
+        rw [Finset.mem_insert]
+        right; assumption
+      specialize s_zero c c_in_s
+      rw [← @Prod.mk.eta _ _ c, s_zero, simplex_disjoint_mem_left, proj_c_b] at c_in_s
+      assumption
+
+      rw [ne_eq, Finset.image_eq_empty]
+      assumption
+
+      constructor
+      rw [Finset.image_union]
+      rw [ne_eq, Finset.image_eq_empty]
+      assumption
+
+      use ∅; constructor; right; rfl
+      constructor; rfl
+      simp only [ne_eq, Finset.union_eq_empty, not_and_or, Finset.image_union, Finset.image_eq_empty]
+      left; left; assumption
+
+      use ∅; constructor; right; rfl
+      have t₂_lift : Finset.image Prod.fst t₂ ⊔ₛ ∅ = t₂ :=
+      by
+        simp only [Finset.ext_iff, simplex_disjoint_mem, Finset.mem_image]
+        intro b
+        constructor
+        intro b_in_img
+        cases' b_in_img with b_in_t₂ contra
+        choose proj_c_b b_zero using b_in_t₂
+        choose c c_in_t₂ proj_c_b using proj_c_b
+        have c_in_s : c ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          rw [Finset.mem_insert]
+          right; assumption
+        specialize s_zero c c_in_s
+        rw [← @Prod.mk.eta _ _ c, s_zero, proj_c_b, ← b_zero, Prod.mk.eta] at c_in_t₂
+        assumption
+        choose contra b_one using contra
+        have H : b.fst ∉ (∅ : Finset E) := by apply Finset.notMem_empty
+        contradiction
+        intro b_in_t₂
+        left; constructor
+        use b
+        have b_in_s : b ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          rw [Finset.mem_insert]
+          right; assumption
+        specialize s_zero b b_in_s
+        assumption
+      have t₃_lift : Finset.image Prod.fst t₃ ⊔ₛ ∅ = t₃ :=
+      by
+        simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+        rw [t₃_in_barycenter]
+        simp only [simplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+          Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
+
+      rw [← t₂_lift, ← t₃_lift] at t_decomp
+      simp only [simplex_disjoint_distr_union, ← Finset.image_union, Finset.union_empty] at t_decomp
+      rw [Finset.union_empty]
+      assumption
+    · subst t₂_empty
+      choose t₃_in_barycenter t₃_ne using t₃_in_barycenter
+      cases' t₃_in_barycenter with t₃_empty t₃_in_barycenter
+      contradiction
+
+      simp only [link, Set.mem_sep_iff] at t₁_in_link
+      choose t₁_in_XY st₁_in_XY st₁_disj using t₁_in_link
+      rw [simplicialJoin_mem] at t₁_in_XY
+      choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
+      subst t₁_eq_u₁u₂
+
+      rw [simplex_disjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
+      choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
+      rw [simplex_disjoint_eq_unique] at su₁u₂_eq_v₁v₂
+      choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
+      subst su₁_eq_v₁ u₂_eq_v₂
+
+      rw [simplex_disjoint_distr_inter, Finset.empty_inter, simplex_disjoint_empty] at st₁_disj
+      choose su₁_disj taut using st₁_disj
+
+      use Finset.image Prod.fst (t₃ ∪ ∅) ∪ u₁; constructor; left
+      use Finset.image Prod.fst (t₃ ∪ ∅); constructor; left
+      use Finset.image Prod.fst t₃; constructor; left
+
+      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
+        Finset.subset_singleton_iff]
+      simp only [t₃_in_barycenter, Finset.image_singleton, Prod.fst]
+      constructor; right; trivial
+      apply Finset.singleton_ne_empty
+
+      use ∅; constructor; right; rfl
+      constructor
+      rw [Finset.image_union, Finset.image_empty]
+      rw [ne_eq, Finset.image_eq_empty, Finset.union_empty]
+      assumption
+
+      cases' u₁_in_X with u₁_in_X u₁_empty
+      · use u₁; constructor; left
+        simp only [link, Set.mem_sep_iff]
+        constructor; assumption
+        constructor
+
+        rw [Set.mem_union, Set.mem_singleton_iff] at v₁_in_X
+        cases' v₁_in_X with su₁_in_X su₁_empty
+        · assumption
+        · have s_empty : s = ∅ :=
+          by
+            rw [← Finset.subset_empty] at su₁_empty ⊢
+            apply @subset_trans _ _ _ s (s ∪ u₁)
+            apply Finset.subset_union_left
+            assumption
+          subst s_empty
+          rw [Finset.empty_union]
+          assumption
+        assumption
+
+        constructor; rfl
+        rw [ne_eq, Finset.union_eq_empty, not_and_or]
+        right; apply face_nonempty X u₁ u₁_in_X
+      · rw [Set.mem_singleton_iff] at u₁_empty
+        subst u₁_empty
+        use ∅; constructor; right; rfl
+        constructor; rfl
+        rw [Finset.union_empty, ne_eq, Finset.image_eq_empty]
+        assumption
+
+      use u₂; constructor
+      rw [Set.mem_union, Set.mem_singleton_iff] at u₂_in_Y
+      assumption
+
+      have t₃_lift : Finset.image Prod.fst t₃ ⊔ₛ ∅ = t₃ :=
+      by
+        simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+        rw [t₃_in_barycenter]
+        simp only [simplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+          Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
+
+      rw [← t₃_lift] at t_decomp
+      simp only [Finset.union_empty, simplex_disjoint_distr_union, Finset.empty_union] at t_decomp
+      rw [Finset.image_union, Finset.image_empty, Finset.union_empty]
+      assumption
+    · subst t₁_empty t₂_empty
+      choose t₃_in_barycenter t₃_ne using t₃_in_barycenter
+      cases' t₃_in_barycenter with t₃_empty t₃_in_barycenter
+      contradiction
+
+      use Finset.image Prod.fst (t₃ ∪ ∅) ∪ ∅; constructor; left
+      use Finset.image Prod.fst (t₃ ∪ ∅); constructor; left
+      use Finset.image Prod.fst t₃; constructor; left
+
+      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
+        Finset.subset_singleton_iff]
+      simp only [t₃_in_barycenter, Finset.image_singleton, Prod.fst]
+      constructor; right; trivial
+      apply Finset.singleton_ne_empty
+
+      use ∅; constructor; right; rfl
+      constructor
+      rw [Finset.image_union, Finset.image_empty]
+
+      rw [ne_eq, Finset.image_eq_empty]
+      assumption
+
+      use ∅; constructor; right; rfl
+      constructor; rfl
+
+      simp only [Finset.union_empty, ne_eq, Finset.image_eq_empty]
+      assumption
+
+      use ∅; constructor; right; rfl
+
+      have t₃_lift : Finset.image Prod.fst t₃ ⊔ₛ ∅ = t₃ :=
+      by
+        simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+        rw [t₃_in_barycenter]
+        simp only [simplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+          Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
+
+      rw [← t₃_lift] at t_decomp
+      simp only [Finset.union_empty] at t_decomp ⊢
+      assumption
+    · subst t₃_empty
+      choose t₂_ss_s t₂_ne using t₂_in_bd
+      choose a a_nin_t₂ at₂_ss_s using t₂_ss_s
+
+      simp only [link, Set.mem_sep_iff] at t₁_in_link
+      choose t₁_in_XY st₁_in_XY st₁_disj using t₁_in_link
+      rw [simplicialJoin_mem] at t₁_in_XY
+      choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
+      subst t₁_eq_u₁u₂
+
+      rw [simplex_disjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
+      choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
+      rw [simplex_disjoint_eq_unique] at su₁u₂_eq_v₁v₂
+      choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
+      subst su₁_eq_v₁ u₂_eq_v₂
+
+      rw [simplex_disjoint_distr_inter, Finset.empty_inter, simplex_disjoint_empty] at st₁_disj
+      choose su₁_disj taut using st₁_disj
+
+      use Finset.image Prod.fst (∅ ∪ t₂) ∪ u₁; constructor; left
+      use Finset.image Prod.fst (∅ ∪ t₂); constructor; left
+      use ∅; constructor; right; rfl
+
+      use Finset.image Prod.fst t₂; constructor; left
+      rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff]
+      constructor
+
+      use Prod.fst a
+      have a_zero : a.snd = 0 :=
+      by
+        have a_in_s : a ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          apply Finset.mem_insert_self
+        specialize s_zero a a_in_s
+        assumption
+      constructor
+      simp only [Finset.mem_image, exists_prop, Prod.exists, exists_and_right, exists_eq_right,
+        not_exists]
+      intro n
+      by_cases n_zero : n = 0
+      rw [n_zero, ← a_zero, Prod.mk.eta]
+      assumption
+      have a_nin_s : (a.fst, n) ∉ s ⊔ₛ ∅ := by
+        revert n_zero
+        contrapose
+        simp only [Classical.not_not]
+        specialize s_zero (a.fst, n)
+        assumption
+      revert a_nin_s
+      contrapose
+      simp only [Classical.not_not]
+      intro a_in_t₂
+      apply @Finset.mem_of_subset _ t₂
+      apply @Finset.Subset.trans _ _ (insert a t₂)
+      apply Finset.subset_insert
+      assumption
+      assumption
+      rw [Finset.subset_iff] at at₂_ss_s ⊢
+      intro b b_in_at₂
+      rw [Finset.mem_insert] at b_in_at₂
+      cases' b_in_at₂ with b_eq_a b_in_t₂
+      subst b_eq_a
+      specialize at₂_ss_s (Finset.mem_insert_self a t₂)
+      rw [← @Prod.mk.eta _ _ a, a_zero, simplex_disjoint_mem_left] at at₂_ss_s
+      assumption
+      rw [Finset.mem_image] at b_in_t₂
+      choose c c_in_t₂ proj_c_b using b_in_t₂
+      have c_in_s : c ∈ s ⊔ₛ ∅ := by
+        apply Finset.mem_of_subset at₂_ss_s
+        rw [Finset.mem_insert]
+        right; assumption
+      specialize s_zero c c_in_s
+      rw [← @Prod.mk.eta _ _ c, s_zero, simplex_disjoint_mem_left, proj_c_b] at c_in_s
+      assumption
+
+      rw [ne_eq, Finset.image_eq_empty]
+      assumption
+
+      constructor
+      rw [Finset.image_union, Finset.image_empty]
+      rw [ne_eq, Finset.image_eq_empty]
+      assumption
+
+      cases' u₁_in_X with u₁_in_X u₁_empty
+      · use u₁; constructor; left
+        simp only [link, Set.mem_sep_iff]
+        constructor; assumption
+        constructor
+
+        rw [Set.mem_union, Set.mem_singleton_iff] at v₁_in_X
+        cases' v₁_in_X with su₁_in_X su₁_empty
+        · assumption
+        · have s_empty : s = ∅ :=
+          by
+            rw [← Finset.subset_empty] at su₁_empty ⊢
+            apply @subset_trans _ _ _ s (s ∪ u₁)
+            apply Finset.subset_union_left
+            assumption
+          subst s_empty
+          rw [Finset.empty_union]
+          assumption
+        assumption
+
+        constructor; rfl
+        rw [ne_eq, Finset.union_eq_empty, not_and_or]
+        right; apply face_nonempty X u₁ u₁_in_X
+      · rw [Set.mem_singleton_iff] at u₁_empty
+        subst u₁_empty
+        use ∅; constructor; right; rfl
+        constructor; rfl
+        rw [Finset.union_empty, ne_eq, Finset.image_eq_empty]
+        assumption
+
+      use u₂; constructor
+      rw [Set.mem_union, Set.mem_singleton_iff] at u₂_in_Y
+      assumption
+
+      have t₂_lift : Finset.image Prod.fst t₂ ⊔ₛ ∅ = t₂ :=
+      by
+        simp only [Finset.ext_iff, simplex_disjoint_mem, Finset.mem_image]
+        intro b
+        constructor
+        intro b_in_img
+        cases' b_in_img with b_in_t₂ contra
+        choose proj_c_b b_zero using b_in_t₂
+        choose c c_in_t₂ proj_c_b using proj_c_b
+        have c_in_s : c ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          rw [Finset.mem_insert]
+          right; assumption
+        specialize s_zero c c_in_s
+        rw [← @Prod.mk.eta _ _ c, s_zero, proj_c_b, ← b_zero, Prod.mk.eta] at c_in_t₂
+        assumption
+        choose contra b_one using contra
+        have H : b.fst ∉ (∅ : Finset E) := by apply Finset.notMem_empty
+        contradiction
+        intro b_in_t₂
+        left; constructor
+        use b
+        have b_in_s : b ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          rw [Finset.mem_insert]
+          right; assumption
+        specialize s_zero b b_in_s
+        assumption
+
+      rw [← t₂_lift] at t_decomp
+      simp only [Finset.empty_union, simplex_disjoint_distr_union] at t_decomp
+      rw [Finset.empty_union]
+      assumption
+    · subst t₁_empty t₃_empty
+      choose t₂_ss_s t₂_ne using t₂_in_bd
+      choose a a_nin_t₂ at₂_ss_s using t₂_ss_s
+
+      use Finset.image Prod.fst (∅ ∪ t₂) ∪ ∅; constructor; left
+      use Finset.image Prod.fst (∅ ∪ t₂); constructor; left
+      use ∅; constructor; right; rfl
+
+      use Finset.image Prod.fst t₂; constructor; left
+      rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff]
+      constructor
+
+      use Prod.fst a
+      have a_zero : a.snd = 0 :=
+      by
+        have a_in_s : a ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          apply Finset.mem_insert_self
+        specialize s_zero a a_in_s
+        assumption
+      constructor
+      simp only [Finset.mem_image, exists_prop, Prod.exists, exists_and_right, exists_eq_right,
+        not_exists]
+      intro n
+      by_cases n_zero : n = 0
+      rw [n_zero, ← a_zero, Prod.mk.eta]
+      assumption
+      have a_nin_s : (a.fst, n) ∉ s ⊔ₛ ∅ := by
+        revert n_zero
+        contrapose
+        simp only [Classical.not_not]
+        specialize s_zero (a.fst, n)
+        assumption
+      revert a_nin_s
+      contrapose
+      simp only [Classical.not_not]
+      intro a_in_t₂
+      apply @Finset.mem_of_subset _ t₂
+      apply @Finset.Subset.trans _ _ (insert a t₂)
+      apply Finset.subset_insert
+      assumption
+      assumption
+      rw [Finset.subset_iff] at at₂_ss_s ⊢
+      intro b b_in_at₂
+      rw [Finset.mem_insert] at b_in_at₂
+      cases' b_in_at₂ with b_eq_a b_in_t₂
+      subst b_eq_a
+      specialize at₂_ss_s (Finset.mem_insert_self a t₂)
+      rw [← @Prod.mk.eta _ _ a, a_zero, simplex_disjoint_mem_left] at at₂_ss_s
+      assumption
+      rw [Finset.mem_image] at b_in_t₂
+      choose c c_in_t₂ proj_c_b using b_in_t₂
+      have c_in_s : c ∈ s ⊔ₛ ∅ := by
+        apply Finset.mem_of_subset at₂_ss_s
+        rw [Finset.mem_insert]
+        right; assumption
+      specialize s_zero c c_in_s
+      rw [← @Prod.mk.eta _ _ c, s_zero, simplex_disjoint_mem_left, proj_c_b] at c_in_s
+      assumption
+
+      rw [ne_eq, Finset.image_eq_empty]
+      assumption
+
+      constructor
+      rw [Finset.image_union, Finset.image_empty]
+      rw [ne_eq, Finset.image_eq_empty]
+      assumption
+
+      use ∅; constructor; right; rfl
+      constructor; rfl
+      rw [Finset.image_union, Finset.image_empty, Finset.empty_union, Finset.union_empty,
+        ne_eq, Finset.image_eq_empty]
+      assumption
+
+      use ∅; constructor; right; rfl
+
+      have t₂_lift : Finset.image Prod.fst t₂ ⊔ₛ ∅ = t₂ :=
+      by
+        simp only [Finset.ext_iff, simplex_disjoint_mem, Finset.mem_image]
+        intro b
+        constructor
+        intro b_in_img
+        cases' b_in_img with b_in_t₂ contra
+        choose proj_c_b b_zero using b_in_t₂
+        choose c c_in_t₂ proj_c_b using proj_c_b
+        have c_in_s : c ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          rw [Finset.mem_insert]
+          right; assumption
+        specialize s_zero c c_in_s
+        rw [← @Prod.mk.eta _ _ c, s_zero, proj_c_b, ← b_zero, Prod.mk.eta] at c_in_t₂
+        assumption
+        choose contra b_one using contra
+        have H : b.fst ∉ (∅ : Finset E) := by apply Finset.notMem_empty
+        contradiction
+        intro b_in_t₂
+        left; constructor
+        use b
+        have b_in_s : b ∈ s ⊔ₛ ∅ := by
+          apply Finset.mem_of_subset at₂_ss_s
+          rw [Finset.mem_insert]
+          right; assumption
+        specialize s_zero b b_in_s
+        assumption
+
+      rw [← t₂_lift] at t_decomp
+      rw [Finset.empty_union, Finset.union_empty] at t_decomp ⊢
+      assumption
+    · subst t₂_empty t₃_empty
+      simp only [link, Set.mem_sep_iff] at t₁_in_link
+      choose t₁_in_XY st₁_in_XY st₁_disj using t₁_in_link
+      rw [simplicialJoin_mem] at t₁_in_XY
+      choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
+      subst t₁_eq_u₁u₂
+
+      rw [simplex_disjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
+      choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
+      rw [simplex_disjoint_eq_unique] at su₁u₂_eq_v₁v₂
+      choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
+      subst su₁_eq_v₁ u₂_eq_v₂
+
+      rw [simplex_disjoint_distr_inter, Finset.empty_inter, simplex_disjoint_empty] at st₁_disj
+      choose su₁_disj taut using st₁_disj
+
+      use Finset.image Prod.fst (∅ ∪ ∅ : Finset (E × 𝕜)) ∪ u₁; constructor; left
+      use Finset.image Prod.fst (∅ ∪ ∅ : Finset (E × 𝕜)); constructor; right
+      rw [Finset.image_eq_empty, Finset.empty_union]
+
+      cases' u₁_in_X with u₁_in_X u₁_empty
+      · use u₁; constructor; left
+        simp only [link, Set.mem_sep_iff]
+        constructor; assumption
+        constructor
+
+        rw [Set.mem_union, Set.mem_singleton_iff] at v₁_in_X
+        cases' v₁_in_X with su₁_in_X su₁_empty
+        · assumption
+        · have s_empty : s = ∅ :=
+          by
+            rw [← Finset.subset_empty] at su₁_empty ⊢
+            apply @subset_trans _ _ _ s (s ∪ u₁)
+            apply Finset.subset_union_left
+            assumption
+          subst s_empty
+          rw [Finset.empty_union]
+          assumption
+        assumption
+
+        constructor; rfl
+        rw [ne_eq, Finset.union_eq_empty, not_and_or]
+        right; apply face_nonempty X u₁ u₁_in_X
+      · rw [Set.mem_singleton_iff] at u₁_empty
+        subst u₁_empty
+        use ∅; constructor; right; rfl
+        constructor; rfl
+        rw [Finset.union_empty, ne_eq, Finset.image_eq_empty]
+        assumption
+
+      use u₂; constructor
+      rw [Set.mem_union, Set.mem_singleton_iff] at u₂_in_Y
+      assumption
+
+      simp only [Finset.empty_union] at t_decomp
+      simp only [Finset.empty_union, Finset.image_empty]
+      assumption
+    · subst t₁_empty t₂_empty t₃_empty
+      contradiction
+  · subst t'_empty
+    cases' t₁_in_link with t₁_in_link t₁_empty
+    · simp only [link, Set.mem_sep_iff] at t₁_in_link
+      choose t₁_in_XY st₁_in_XY st₁_disj using t₁_in_link
+      simp only [simplicialJoin_mem, Set.mem_union, Set.mem_singleton_iff] at t₁_in_XY
+      choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
+      subst t₁_eq_u₁u₂
+      cases' u₁_in_X with u₁_in_X u₁_empty <;>
+      cases' u₂_in_Y with u₂_in_Y u₂_empty
+      · use u₁; constructor; left
+        use ∅; constructor; right; rfl
+        use u₁; constructor; left
+        simp only [link, Set.mem_sep_iff]
+        constructor; assumption
+        constructor
+
+        rw [simplex_disjoint_distr_union, simplicialJoin_mem] at st₁_in_XY
+        choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
+        rw [simplex_disjoint_eq_unique] at su₁u₂_eq_v₁v₂
+        choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
+        subst su₁_eq_v₁
+        cases' v₁_in_X with su₁_in_X su₁_empty
+        · assumption
+        · rw [Set.mem_singleton_iff] at su₁_empty
+          have s_empty : s = ∅ :=
+          by
+            rw [← Finset.subset_empty] at su₁_empty ⊢
+            apply @subset_trans _ _ _ s (s ∪ u₁)
+            apply Finset.subset_union_left
+            assumption
+          subst s_empty
+          rw [Finset.empty_union]
+          assumption
+        rw [simplex_disjoint_distr_inter, simplex_disjoint_empty] at st₁_disj
+        choose su₁_disj u₂_empty using st₁_disj
+        assumption
+        constructor
+        rw [Finset.empty_union]
+        apply face_nonempty X u₁ u₁_in_X
+
+        use u₂; constructor; left; assumption
+        rw [Finset.empty_union] at t_decomp
+        assumption
+      · subst u₂_empty
+        use u₁; constructor; left
+        use ∅; constructor; right; rfl
+        use u₁; constructor; left
+        simp only [link, Set.mem_sep_iff]
+        constructor; assumption
+        constructor
+
+        rw [simplex_disjoint_distr_union, simplicialJoin_mem] at st₁_in_XY
+        choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
+        rw [simplex_disjoint_eq_unique] at su₁u₂_eq_v₁v₂
+        choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
+        subst su₁_eq_v₁
+        cases' v₁_in_X with su₁_in_X su₁_empty
+        · assumption
+        · rw [Set.mem_singleton_iff] at su₁_empty
+          have s_empty : s = ∅ :=
+          by
+            rw [← Finset.subset_empty] at su₁_empty ⊢
+            apply @subset_trans _ _ _ s (s ∪ u₁)
+            apply Finset.subset_union_left
+            assumption
+          subst s_empty
+          rw [Finset.empty_union]
+          assumption
+        rw [simplex_disjoint_distr_inter, simplex_disjoint_empty] at st₁_disj
+        choose su₁_disj u₂_empty using st₁_disj
+        assumption
+        constructor
+        rw [Finset.empty_union]
+        apply face_nonempty X u₁ u₁_in_X
+
+        use ∅; constructor; right; rfl
+        rw [Finset.empty_union] at t_decomp
+        assumption
+      · subst u₁_empty
+        use ∅; constructor; right; rfl
+        use u₂; constructor; left; assumption
+        rw [Finset.empty_union] at t_decomp
+        assumption
+      · subst u₁_empty u₂_empty
+        rw [ne_eq, simplex_disjoint_empty, not_and_or] at t₁_ne
+        cases t₁_ne <;> contradiction
+    · subst t₁_empty
+      choose t_empty t_ne using t_decomp
+      rw [Finset.empty_union] at t_empty
+      contradiction
+
+theorem stellar_join_distr_join
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+  : (((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe
+      ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+        ''ˢ (simplex {x} ⋆ ∂s)) ⋆
+          Lk(X, s))) ⋆ Y).faces =
+      ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) (s ⊔ₛ ∅) (x, 0)
+            (by apply simplicialJoin_incl_left; assumption)
+            (barycenter_join_left x_nin_X))).coe
+        ''ˢ ((π₁[𝕜]
+              (barycenter_disjoint_boundary (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) (s ⊔ₛ ∅) (x, 0)
                   (by apply simplicialJoin_incl_left; assumption)
-                  (barycenter_join_left x_nin_X))[simplex {(x, 0)} ⋆ ∂(s ⊔ₛ ∅)] ⋆
-            Lk(X ⋆ Y, s ⊔ₛ ∅) (by apply simplicialJoin_incl_left; assumption)].simplices :=
-  by
+                  (barycenter_join_left x_nin_X))).coe
+          ''ˢ ((simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) : AbstractSimplicialComplex ((E × 𝕜) × 𝕜)) ⋆
+            (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)))).faces :=
+by
   rw [Set.Subset.antisymm_iff]
   constructor
-  apply stellar_join_distr_join_left
-  apply stellar_join_distr_join_right
+  apply stellar_join_distr_join_left <;> assumption
+  apply stellar_join_distr_join_right <;> assumption
 
-theorem stellar_subdiv_distr_join_left (X Y : SimplicialComplex α) (s : Finset α)
-    [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) :
-    σ(X, s, x; s_ne, s_in_X, x_nin_X) ⋆ Y ≅
-      σ(X ⋆ Y, s ⊔ₛ ∅, (x, 0); _, by apply simplicialJoin_incl_left; assumption,
+theorem stellar_subdiv_distr_join_left
+    (X Y : AbstractSimplicialComplex E)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+  : (σ(X, s, x; 𝕜, s_in_X, x_nin_X) ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) ≅
+      σ(X ⋆ Y, s ⊔ₛ ∅, (x, 0); 𝕜,
+        by apply @simplicialJoin_incl_left _ 𝕜; assumption,
         barycenter_join_left x_nin_X) :=
-  by
+by
   apply
-    simplicial_iso_trans (σ(X, s, x; s_ne, s_in_X, x_nin_X) ⋆ Y)
-      ((X\St(X, s)) s_in_X ⋆ Y ∪ π₁ _[π₁ _[simplex {x} ⋆ ∂s] ⋆ Lk(X, s) _] ⋆ Y)
+    @simplicial_iso_trans (E × 𝕜) (E × 𝕜) _ _ _ _ (σ(X, s, x; 𝕜, s_in_X, x_nin_X) ⋆ Y)
+      (X\St(X, s) ⋆ Y ∪ (π₁[𝕜] _).coe ''ˢ ((π₁[𝕜] _).coe ''ˢ (simplex {x} ⋆ ∂s) ⋆ Lk(X, s)) ⋆ Y)
   apply simplicial_iso_preserves_equiv
   apply simplicialJoin_distr_union_right
   apply simplicial_iso_preserves_equiv
-  simp only [stellarSubdivision, simplicialUnion]
+  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, simplicialUnion]
   rw [join_distr_starComplement_simplices, stellar_join_distr_join]
+  all_goals { assumption }
 
-theorem barycenter_join_right {X Y : SimplicialComplex α} {x : α} :
-    x ∉ vertices Y → (x, 1) ∉ vertices (X ⋆ Y) :=
-  by
+theorem barycenter_join_right
+    {X Y : AbstractSimplicialComplex E}
+    {x : E}
+  : x ∉ Y.vertices → (x, 1) ∉ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).vertices :=
+by
   contrapose
   simp only [Classical.not_not, simplicialJoin_vertices_mem_right]
   exact Set.mem_of_eq_of_mem rfl
