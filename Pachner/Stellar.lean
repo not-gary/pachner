@@ -6777,7 +6777,6 @@ theorem star_boundary_mem_link
     {X : AbstractSimplicialComplex E}
     {s t : Finset E} [s_ne : Nonempty s]
     {s_in_X : s ∈ X.faces}
-    {t_in_X : t ∈ X.faces}
   : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
       s \ t ∈ Lk(X, t).faces :=
 by
@@ -6876,21 +6875,24 @@ by
   apply is_subcomplex_vertices
   apply link_subcomplex
 
-theorem stellar_subdiv_anticomm_link_left_ac (X : SimplicialComplex α) (s t : Finset α)
-    [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (t_in_X : t ∈ X.simplices)
-    (t_in_star_bd : t ∈ π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices) :
-    ∀ u : Finset α,
-      u ∈ (starComplement X s s_in_X).simplices →
-        t ∪ u ∈ (starComplement X s s_in_X).simplices →
+theorem stellar_subdiv_anticomm_link_left_ac
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
+  : ∀ u : Finset E,
+      u ∈ (starComplement X s).faces →
+        t ∪ u ∈ (starComplement X s).faces →
           t ∩ u = ∅ →
             u ∈
-              σ(Lk(X, t) t_in_X, s \ t, x; star_boundary_diff_ne t_in_star_bd,
-                  star_boundary_mem_link t_in_star_bd, not_mem_link_vertices x_nin_X).simplices :=
-  by
+              σ(Lk(X, t), s \ t, x; 𝕜,
+                @star_boundary_mem_link _ _ _ _ _ _ _ X s t s_ne s_in_X t_in_star_bd,
+                not_mem_link_vertices x_nin_X).faces :=
+by
   intro u u_in_star_comp tu_in_star_comp tu_disj
-  simp only [link, stellarSubdivision, starComplement, simplicialUnion] at u_in_star_comp
-    tu_in_star_comp ⊢
+  simp only [link, stellarSubdivision, starComplement, simplicialUnion] at u_in_star_comp tu_in_star_comp ⊢
   simp only [Set.mem_union, Set.mem_sep_iff] at u_in_star_comp tu_in_star_comp ⊢
   choose u_in_X s_nss_u using u_in_star_comp
   choose tu_in_X s_nss_tu using tu_in_star_comp
@@ -6908,12 +6910,25 @@ theorem stellar_subdiv_anticomm_link_left_ac (X : SimplicialComplex α) (s t : F
   constructor <;> assumption
   assumption
 
-theorem stellar_subdiv_anticomm_link_left_ad_tu_in_X (X : SimplicialComplex α)
-    (s t u t₁ u₁ t₂ u₂ : Finset α) [s_ne : Nonempty ↥s] (stu₁_in_X : s ∪ (t₁ ∪ u₁) ∈ X.simplices)
-    (t₂_in_bd : t₂ ⊂ s) (u₂_in_bd : u₂ ⊂ s) (t_decomp : t = t₁ ∪ t₂) (u_decomp : u = u₁ ∪ u₂) :
-    t ∪ u ∈ X.simplices := by
-  rw [u_decomp, t_decomp]
-  apply X.subset_closed (t₁ ∪ u₁ ∪ s)
+theorem stellar_subdiv_anticomm_link_left_ad_tu_in_X
+    (X : AbstractSimplicialComplex E)
+    (s t u t₁ u₁ t₂ u₂ : Finset E) [s_ne : Nonempty ↥s]
+    (stu₁_in_X : s ∪ (t₁ ∪ u₁) ∈ X.faces)
+    (t₂_in_bd : t₂ ⊂ s)
+    (u₂_in_bd : u₂ ⊂ s)
+    (t_decomp : t = t₁ ∪ t₂)
+    (u_decomp : u = u₁ ∪ u₂)
+  : t ∪ u ∈ X.faces ∪ {∅} :=
+by
+  rw [u_decomp, t_decomp, Set.mem_union, Set.mem_singleton_iff]
+  by_cases t_ne : t = ∅
+  by_cases u_ne : u = ∅
+
+  right
+  rw [← t_decomp, t_ne, ← u_decomp, u_ne, Finset.union_empty]
+
+  left
+  apply @X.down_closed (t₁ ∪ u₁ ∪ s)
   rw [Finset.union_comm]
   exact stu₁_in_X
   have tu_ss_s : t₂ ∪ u₂ ⊆ s :=
@@ -6927,6 +6942,28 @@ theorem stellar_subdiv_anticomm_link_left_ad_tu_in_X (X : SimplicialComplex α)
     Finset.union_comm (t₂ ∪ u₂), ← Finset.union_assoc]
   apply Finset.union_subset_union_right
   exact tu_ss_s
+
+  rw [ne_eq, Finset.union_eq_empty, not_and_or]
+  right; rw [← u_decomp]; assumption
+
+  left
+  apply @X.down_closed (t₁ ∪ u₁ ∪ s)
+  rw [Finset.union_comm]
+  exact stu₁_in_X
+  have tu_ss_s : t₂ ∪ u₂ ⊆ s :=
+    by
+    apply Finset.union_subset <;> rw [Finset.ssubset_iff_subset_ne] at t₂_in_bd u₂_in_bd
+    choose t₂_ss_s t₂_ne_s using t₂_in_bd
+    exact t₂_ss_s
+    choose u₂_ss_s u₂_ne_s using u₂_in_bd
+    exact u₂_ss_s
+  rw [Finset.union_assoc, Finset.union_comm u₁ u₂, ← Finset.union_assoc t₂,
+    Finset.union_comm (t₂ ∪ u₂), ← Finset.union_assoc]
+  apply Finset.union_subset_union_right
+  exact tu_ss_s
+
+  rw [ne_eq, Finset.union_eq_empty, not_and_or]
+  left; rw [← t_decomp]; assumption
 
 theorem stellar_subdiv_anticomm_link_left_ad_st_nss_u (X : SimplicialComplex α)
     (s t u t₁ u₁ t₂ u₂ : Finset α) [s_ne : Nonempty ↥s] (x : α) (s_in_X : s ∈ X.simplices)
@@ -7019,26 +7056,27 @@ theorem stellar_subdiv_anticomm_link_left_ad_st_nss_u (X : SimplicialComplex α)
   exact y_nin_u₁
   exact y_nin_u₂
 
-theorem stellar_subdiv_anticomm_link_left_ad (X : SimplicialComplex α) (s t : Finset α)
-    [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (t_in_X : t ∈ X.simplices)
-    (t_in_star_bd : t ∈ π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices) :
-    ∀ u : Finset α,
-      u ∈ (starComplement X s s_in_X).simplices →
-        t ∪ u ∈
-            π₁
-                  (barycenter_join_boundary_disjoint_link X s x s_in_X
-                    x_nin_X)[π₁
-                      (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[simplex {x} ⋆ ∂s] ⋆
-                  Lk(X, s) s_in_X].simplices →
+theorem stellar_subdiv_anticomm_link_left_ad
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (t_in_X : t ∈ X.faces)
+    (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
+  : ∀ u : Finset E,
+      u ∈ (starComplement X s).faces →
+        t ∪ u ∈ ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe
+                  ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+                    ''ˢ (simplex {x} ⋆ ∂s)) ⋆
+                      Lk(X, s))).faces →
           t ∩ u = ∅ →
-            u ∈
-              σ(Lk(X, t) t_in_X, s \ t, x; star_boundary_diff_ne t_in_star_bd,
-                  star_boundary_mem_link t_in_star_bd, not_mem_link_vertices x_nin_X).simplices :=
-  by
+            u ∈ σ(Lk(X, t), s \ t, x; 𝕜,
+                  @star_boundary_mem_link _ _ _ _ _ _ _ X s t s_ne s_in_X t_in_star_bd,
+                  not_mem_link_vertices x_nin_X).faces :=
+by
   intro u u_in_star_comp tu_in_join tu_disj
-  simp only [link, stellarSubdivision, starComplement, simplicialUnion] at u_in_star_comp tu_in_join
-    ⊢
+  simp only [link, stellarSubdivision, starComplement, simplicialUnion] at u_in_star_comp tu_in_join ⊢
   simp only [Set.mem_union, Set.mem_sep_iff] at u_in_star_comp ⊢
   choose u_in_X s_nss_u using u_in_star_comp
   rw [join_proj_disj_union_mem] at tu_in_join
@@ -7055,9 +7093,8 @@ theorem stellar_subdiv_anticomm_link_left_ad (X : SimplicialComplex α) (s t : F
   subst t'_decomp
   rw [simplexBoundary_mem_iff_subset] at u₂_in_bd t₂_in_bd
   have u₃_empty : u₃ = ∅ :=
-    by
-    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at
-      u₃_in_barycenter
+  by
+    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
     cases' u₃_in_barycenter with u₃_empty u₃_eq_x
     exact u₃_empty
     have contra : x ∈ vertices X := by
@@ -7068,12 +7105,12 @@ theorem stellar_subdiv_anticomm_link_left_ad (X : SimplicialComplex α) (s t : F
       apply Finset.subset_union_left
     contradiction
   have t₃_empty : t₃ = ∅ :=
-    by
-    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at
-      t₃_in_barycenter
+  by
+    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
     cases' t₃_in_barycenter with t₃_empty t₃_eq_x
     exact t₃_empty
-    have contra : x ∈ vertices X := by
+    have contra : x ∈ vertices X :=
+    by
       rw [vertex_iff_singleton]
       apply X.subset_closed t
       exact t_in_X
@@ -7093,7 +7130,7 @@ theorem stellar_subdiv_anticomm_link_left_ad (X : SimplicialComplex α) (s t : F
   exact tu_disj
   rw [t_decomp, Finset.sdiff_union_distrib]
   have st₁_sdiff_ident : s \ t₁ = s :=
-    by
+  by
     apply Finset.sdiff_eq_self_of_disjoint
     rw [Finset.disjoint_iff_inter_eq_empty]
     exact st₁_disj
@@ -7102,26 +7139,27 @@ theorem stellar_subdiv_anticomm_link_left_ad (X : SimplicialComplex α) (s t : F
     stellar_subdiv_anticomm_link_left_ad_st_nss_u X s t u t₁ u₁ t₂ u₂ x s_in_X x_nin_X t_in_X u_in_X
       tu_disj su₁_disj t₂_in_bd tu_in_join t_decomp u_decomp
 
-theorem stellar_subdiv_anticomm_link_left_bc (X : SimplicialComplex α) (s t : Finset α)
-    [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (t_in_X : t ∈ X.simplices)
-    (t_in_star_bd : t ∈ π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices) :
-    ∀ u : Finset α,
-      u ∈
-          π₁
-                (barycenter_join_boundary_disjoint_link X s x s_in_X
-                  x_nin_X)[π₁
-                    (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[simplex {x} ⋆ ∂s] ⋆
-                Lk(X, s) s_in_X].simplices →
-        t ∪ u ∈ (starComplement X s s_in_X).simplices →
+theorem stellar_subdiv_anticomm_link_left_bc
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (t_in_X : t ∈ X.faces)
+    (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
+  : ∀ u : Finset E,
+      u ∈ ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe
+            ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+              ''ˢ (simplex {x} ⋆ ∂s)) ⋆
+                Lk(X, s))).faces →
+        t ∪ u ∈ (starComplement X s).faces →
           t ∩ u = ∅ →
-            u ∈
-              σ(Lk(X, t) t_in_X, s \ t, x; star_boundary_diff_ne t_in_star_bd,
-                  star_boundary_mem_link t_in_star_bd, not_mem_link_vertices x_nin_X).simplices :=
-  by
+            u ∈ σ(Lk(X, t), s \ t, x; 𝕜,
+                  @star_boundary_mem_link _ _ _ _ _ _ _ X s t s_ne s_in_X t_in_star_bd,
+                  not_mem_link_vertices x_nin_X).faces :=
+by
   intro u u_in_join tu_in_star_comp tu_disj
-  simp only [link, stellarSubdivision, starComplement, simplicialUnion] at u_in_join tu_in_star_comp
-    ⊢
+  simp only [link, stellarSubdivision, starComplement, simplicialUnion] at u_in_join tu_in_star_comp ⊢
   simp only [Set.mem_union, Set.mem_sep_iff] at tu_in_star_comp ⊢
   choose tu_in_X s_nss_tu using tu_in_star_comp
   rw [join_proj_mem] at u_in_join
@@ -7249,28 +7287,28 @@ theorem stellar_subdiv_anticomm_link_left_bd_stu_mem_link (X : SimplicialComplex
   rw [Finset.subset_empty]
   apply su₁_disj
 
-theorem stellar_subdiv_anticomm_link_left_bd (X : SimplicialComplex α) (s t : Finset α)
-    [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (t_in_X : t ∈ X.simplices)
-    (t_in_star_bd : t ∈ π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices) :
-    ∀ u : Finset α,
-      u ∈
-          π₁
-                (barycenter_join_boundary_disjoint_link X s x s_in_X
-                  x_nin_X)[π₁
-                    (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[simplex {x} ⋆ ∂s] ⋆
-                Lk(X, s) s_in_X].simplices →
-        t ∪ u ∈
-            π₁
-                  (barycenter_join_boundary_disjoint_link X s x s_in_X
-                    x_nin_X)[π₁
-                      (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[simplex {x} ⋆ ∂s] ⋆
-                  Lk(X, s) s_in_X].simplices →
+theorem stellar_subdiv_anticomm_link_left_bd
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (t_in_X : t ∈ X.faces)
+    (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
+  : ∀ u : Finset E,
+      u ∈ ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe
+            ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+              ''ˢ (simplex {x} ⋆ ∂s)) ⋆
+                Lk(X, s))).faces →
+        t ∪ u ∈ ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe
+                  ''ˢ ((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+                    ''ˢ (simplex {x} ⋆ ∂s) ⋆
+                     Lk(X, s))).faces →
           t ∩ u = ∅ →
-            u ∈
-              σ(Lk(X, t) t_in_X, s \ t, x; star_boundary_diff_ne t_in_star_bd,
-                  star_boundary_mem_link t_in_star_bd, not_mem_link_vertices x_nin_X).simplices :=
-  by
+            u ∈ σ(Lk(X, t), s \ t, x; 𝕜,
+                  @star_boundary_mem_link _ _ _ _ _ _ _ X s t s_ne s_in_X t_in_star_bd,
+                  not_mem_link_vertices x_nin_X).faces :=
+by
   intro u u_in_join tu_in_join tu_disj
   simp only [link, stellarSubdivision, starComplement, simplicialUnion] at u_in_join tu_in_join ⊢
   rw [join_proj_disj_union_mem] at tu_in_join
@@ -7284,9 +7322,8 @@ theorem stellar_subdiv_anticomm_link_left_bd (X : SimplicialComplex α) (s t : F
   choose t₃ t₃_in_barycenter u₃ u₃_in_barycenter t₂ t₂_in_bd u₂ u₂_in_bd tu₂_decomp using tu_in_join
   choose t₂_decomp u₂_decomp tu₃_in_barycenter tu₂_in_bd using tu₂_decomp
   have t₃_empty : t₃ = ∅ :=
-    by
-    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at
-      t₃_in_barycenter
+  by
+    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
     cases' t₃_in_barycenter with t₃_empty t₃_eq_x
     apply t₃_empty
     have contra : x ∈ vertices X := by
@@ -7301,11 +7338,11 @@ theorem stellar_subdiv_anticomm_link_left_bd (X : SimplicialComplex α) (s t : F
   rw [simplexBoundary_mem_iff_subset] at tu₂_in_bd u₂_in_bd t₂_in_bd
   rw [t₂_decomp] at *
   rw [u₂_decomp] at *
-  clear t₂_decomp u₂_decomp u_in_join u'₂_in_join t'₂_in_join tu₃_in_barycenter t₃_in_barycenter t'₂
-    u'₂
+  clear t₂_decomp u₂_decomp u_in_join u'₂_in_join t'₂_in_join tu₃_in_barycenter t₃_in_barycenter t'₂ u'₂
   right
   rw [join_proj_mem]
-  have tu₂_disj : t₂ ∩ u₂ = ∅ := by
+  have tu₂_disj : t₂ ∩ u₂ = ∅ :=
+  by
     rw [← Finset.subset_empty]
     apply @Finset.Subset.trans _ _ (t ∩ u)
     apply Finset.inter_subset_inter
@@ -7316,16 +7353,17 @@ theorem stellar_subdiv_anticomm_link_left_bd (X : SimplicialComplex α) (s t : F
     rw [Finset.subset_empty]
     apply tu_disj
   have st₁_sdiff_ident : s \ t₁ = s :=
-    by
+  by
     apply Finset.sdiff_eq_self_of_disjoint
     rw [Finset.disjoint_iff_inter_eq_empty]
     apply st₁_disj
-  have u₂_ss_st₂_sdiff : u₂ ⊂ s \ t₂ := by
+  have u₂_ss_st₂_sdiff : u₂ ⊂ s \ t₂ :=
+  by
     apply
       stellar_subdiv_anticomm_link_left_bd_u_ss_st X s t u t₁ u₁ t₂ u₂ u₃ x s_in_X x_nin_X t_in_X
         t_in_star_bd tu_disj t₂_in_bd tu₂_in_bd t_decomp u_decomp
   have u₂_ss_st : u₂ ⊂ s \ t :=
-    by
+  by
     rw [t_decomp, Finset.sdiff_union_distrib, st₁_sdiff_ident, Finset.inter_comm,
       Finset.inter_sdiff, Finset.inter_self]
     apply u₂_ss_st₂_sdiff
@@ -7374,40 +7412,45 @@ theorem star_boundary_mem_subdiv {X : SimplicialComplex α} {s t : Finset α} [s
   rw [Finset.empty_union, Finset.union_comm]
   assumption
 
-theorem stellar_subdiv_anticomm_link_left (X : SimplicialComplex α) (s t : Finset α)
-    [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (t_in_X : t ∈ X.simplices)
-    (t_in_star_bd : t ∈ π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices) :
-    (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t) (star_boundary_mem_subdiv t_in_star_bd)).simplices ⊆
-      σ(Lk(X, t) t_in_X, s \ t, x; star_boundary_diff_ne t_in_star_bd,
-          star_boundary_mem_link t_in_star_bd, not_mem_link_vertices x_nin_X).simplices :=
-  by
+theorem stellar_subdiv_anticomm_link_left
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (t_in_X : t ∈ X.faces)
+    (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
+  : Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces ⊆
+      σ(Lk(X, t), s \ t, x; 𝕜,
+          @star_boundary_mem_link _ _ _ _ _ _ _ X s t s_ne s_in_X t_in_star_bd,
+          not_mem_link_vertices x_nin_X).faces :=
+by
   simp only [stellarSubdivision, simplicialUnion]
   simp only [Set.subset_def]
   intro u u_in_link
   simp only [link, Set.mem_sep_iff] at u_in_link
   choose u_in_subdiv tu_in_subdiv tu_disj using u_in_link
-  cases' u_in_subdiv with u_in_star_comp u_in_join <;>-- Cases A, B resp.
-    cases' tu_in_subdiv with tu_in_star_comp tu_in_join
+  cases' u_in_subdiv with u_in_star_comp u_in_join <;>
+
+  -- Cases A, B resp.
+  cases' tu_in_subdiv with tu_in_star_comp tu_in_join
+
   -- Cases C, D resp.
-    apply stellar_subdiv_anticomm_link_left_ac <;>
-    assumption
+  apply stellar_subdiv_anticomm_link_left_ac <;> assumption
   apply stellar_subdiv_anticomm_link_left_ad <;> assumption
   apply stellar_subdiv_anticomm_link_left_bc <;> assumption
   apply stellar_subdiv_anticomm_link_left_bd <;> assumption
 
-theorem stellar_subdiv_anticomm_link_right_e (X : SimplicialComplex α) (s t : Finset α)
-    [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (t_in_X : t ∈ X.simplices)
-    (t_in_star_bd : t ∈ π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices) :
-    ∀ u : Finset α,
-      u ∈
-          (@starComplement _ _ (Lk(X, t) t_in_X) (s \ t) (star_boundary_diff_ne t_in_star_bd)
-              (star_boundary_mem_link t_in_star_bd)).simplices →
-        u ∈
-          (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t)
-              (star_boundary_mem_subdiv t_in_star_bd)).simplices :=
-  by
+theorem stellar_subdiv_anticomm_link_right_e
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E)
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+  : ∀ u : Finset E,
+      u ∈ (starComplement Lk(X, t) (s \ t)).faces →
+        u ∈ Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces :=
+by
   intro u u_in_star_comp
   simp only [link, starComplement, stellarSubdivision, simplicialUnion] at u_in_star_comp ⊢
   simp only [Set.mem_union, Set.mem_sep_iff] at u_in_star_comp ⊢
@@ -7428,30 +7471,33 @@ theorem stellar_subdiv_anticomm_link_right_e (X : SimplicialComplex α) (s t : F
   choose y y_in_st y_nin_u using st_nss_u
   simp only [Finset.mem_sdiff] at y_in_st
   choose y_in_s y_nin_t using y_in_st
-  use y; constructor; assumption
+  use y; constructor
   simp only [Finset.mem_union, not_or]
   constructor <;> assumption
   assumption
+  assumption
 
-theorem stellar_subdiv_anticomm_link_right_f (X : SimplicialComplex α) (s t : Finset α)
-    [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (t_in_X : t ∈ X.simplices)
-    (t_in_star_bd : t ∈ π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices) :
-    ∀ u : Finset α,
-      u ∈
-          π₁
-                (barycenter_join_boundary_disjoint_link (Lk(X, t) t_in_X) (s \ t) x
-                  (star_boundary_mem_link t_in_star_bd)
-                  (not_mem_link_vertices
-                    x_nin_X))[π₁
-                    (barycenter_disjoint_boundary X (s \ t) x
-                      (by apply X.subset_closed s; assumption; apply Finset.sdiff_subset)
-                      x_nin_X)[simplex {x} ⋆ ∂(s \ t)] ⋆
-                Lk(Lk(X, t) t_in_X, s \ t) (star_boundary_mem_link t_in_star_bd)].simplices →
-        u ∈
-          (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t)
-              (star_boundary_mem_subdiv t_in_star_bd)).simplices :=
-  by
+theorem stellar_subdiv_anticomm_link_right_f
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (t_in_X : t ∈ X.faces)
+    (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
+  : ∀ u : Finset E,
+      u ∈ ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ Lk(X, t) (s \ t) x
+                    (@star_boundary_mem_link _ _ _ _ _ _ _ X s t s_ne s_in_X t_in_star_bd)
+                    (not_mem_link_vertices x_nin_X))).coe
+            ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X (s \ t) x
+                          (by
+                            apply @X.down_closed s; assumption; apply Finset.sdiff_subset
+                            sorry)
+                          x_nin_X)).coe
+              ''ˢ (simplex {x} ⋆ ∂(s \ t))) ⋆
+                Lk(Lk(X, t), s \ t))).faces →
+        u ∈ Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces :=
+by
   intro u u_in_join
   simp only [link, starComplement, stellarSubdivision, simplicialUnion] at u_in_join ⊢
   simp only [Set.mem_union, Set.mem_sep_iff]
@@ -7587,8 +7633,7 @@ theorem stellar_subdiv_anticomm_link_right_f (X : SimplicialComplex α) (s t : F
   rw [Ne.def, Finset.eq_empty_iff_forall_not_mem, Classical.not_forall] at st₂u₂_ne
   choose y y_nin_st₂u₂ using st₂u₂_ne
   use y
-  simp only [not_iff, Finset.mem_sdiff, Finset.mem_union, not_and_or, not_or, Classical.not_not] at
-    y_nin_st₂u₂ ⊢
+  simp only [not_iff, Finset.mem_sdiff, Finset.mem_union, not_and_or, not_or, Classical.not_not] at y_nin_st₂u₂ ⊢
   choose y_in_s y_nin_t₂u₂ using y_nin_st₂u₂
   constructor <;> intros <;> assumption
   simp only [Set.mem_sep_iff]
@@ -7681,32 +7726,42 @@ theorem stellar_subdiv_anticomm_link_right_f (X : SimplicialComplex α) (s t : F
   apply @Disjoint.symm _ _ _ (vertices (Lk(X, s) s_in_X)) (vertices (∂s))
   apply boundary_disjoint_link X s s_in_X
 
-theorem stellar_subdiv_anticomm_link_right (X : SimplicialComplex α) (s t : Finset α)
-    [s_ne : Nonempty s] (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X)
-    (t_in_X : t ∈ X.simplices)
-    (t_in_star_bd : t ∈ π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices) :
-    σ(Lk(X, t) t_in_X, s \ t, x; star_boundary_diff_ne t_in_star_bd,
-          star_boundary_mem_link t_in_star_bd, not_mem_link_vertices x_nin_X).simplices ⊆
-      (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t)
-          (star_boundary_mem_subdiv t_in_star_bd)).simplices :=
-  by
-  simp only [stellarSubdivision, simplicialUnion]
+theorem stellar_subdiv_anticomm_link_right
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (t_in_X : t ∈ X.faces)
+    (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
+  : σ(Lk(X, t), s \ t, x; 𝕜,
+        @star_boundary_mem_link _ _ _ _ _ _ _ X s t s_ne s_in_X t_in_star_bd,
+        not_mem_link_vertices x_nin_X).faces ⊆
+      Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces :=
+by
+  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, simplicialUnion]
   simp only [Set.subset_def]
   intro u u_in_subdiv
   simp only [Set.mem_union] at u_in_subdiv
   cases' u_in_subdiv with u_in_star_comp u_in_join
+
   -- Cases E + F, resp.
-    apply stellar_subdiv_anticomm_link_right_e <;>
-    assumption
+  apply stellar_subdiv_anticomm_link_right_e <;> assumption
   apply stellar_subdiv_anticomm_link_right_f <;> assumption
 
-theorem stellar_subdiv_anticomm_link (X : SimplicialComplex α) (s t : Finset α) [s_ne : Nonempty s]
-    (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) (t_in_X : t ∈ X.simplices)
-    (t_in_star_bd : t ∈ π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices) :
-    (Lk(σ(X, s, x; s_ne, s_in_X, x_nin_X), t) (star_boundary_mem_subdiv t_in_star_bd)).simplices =
-      σ(Lk(X, t) t_in_X, s \ t, x; star_boundary_diff_ne t_in_star_bd,
-          star_boundary_mem_link t_in_star_bd, not_mem_link_vertices x_nin_X).simplices :=
-  by
+theorem stellar_subdiv_anticomm_link
+    (X : AbstractSimplicialComplex E)
+    (s t : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (t_in_X : t ∈ X.faces)
+    (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
+  : Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces =
+      σ(Lk(X, t), s \ t, x; 𝕜,
+          @star_boundary_mem_link _ _ _ _ _ _ _ X s t s_ne s_in_X t_in_star_bd,
+          not_mem_link_vertices x_nin_X).faces :=
+by
   apply Set.eq_of_subset_of_subset
-  apply stellar_subdiv_anticomm_link_left
-  apply stellar_subdiv_anticomm_link_right
+  apply stellar_subdiv_anticomm_link_left <;> assumption
+  apply stellar_subdiv_anticomm_link_right <;> assumption
