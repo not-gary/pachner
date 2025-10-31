@@ -6775,7 +6775,7 @@ by
 
 theorem star_boundary_mem_link
     {X : AbstractSimplicialComplex E}
-    {s t : Finset E}
+    {s t : Finset E} [s_ne : Nonempty s]
     {s_in_X : s ∈ X.faces}
     {t_in_X : t ∈ X.faces}
   : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
@@ -6792,7 +6792,26 @@ by
   apply @X.down_closed s
   assumption
   apply Finset.sdiff_subset
-  rw [t_decomp, Finset.sdiff_union_distrib, ne_eq, Finset.inter_eq_em]
+  have st₁_eq_s : s \ t₁ = s :=
+  by
+    rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_iff_inter_eq_empty]
+    assumption
+  rw [t_decomp, Finset.sdiff_union_distrib, ne_eq, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self]
+  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
+  cases' t₂_in_bd with t₂_in_bd t₂_empty
+
+  choose t₂_sss_s t₂_ne using t₂_in_bd
+  rw [Finset.sdiff_eq_empty_iff_subset]
+  rw [Finset.ssubset_iff] at t₂_sss_s
+  choose a a_nin_t₂ at₂_ss_s using t₂_sss_s
+  rw [Finset.subset_iff] at at₂_ss_s ⊢
+  specialize at₂_ss_s (Finset.mem_insert_self a t₂)
+  simp only [not_forall, Classical.not_imp]
+  use a
+
+  rw [t₂_empty, Finset.sdiff_empty]
+  apply face_nonempty X s s_in_X
+
   constructor
   rw [Finset.union_sdiff_self_eq_union, t_decomp, Finset.union_assoc]
   simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
@@ -6805,6 +6824,44 @@ by
   rw [st₂_rw, Finset.union_comm]
   assumption
   rw [t₂_empty, Finset.empty_union, Finset.union_comm]
+  assumption
+  apply Finset.inter_sdiff_self
+
+  constructor
+  apply @X.down_closed s
+  assumption
+  apply Finset.sdiff_subset
+  have st₁_eq_s : s \ t₁ = s :=
+  by
+    rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_iff_inter_eq_empty, t₁_empty, Finset.inter_empty]
+  rw [t_decomp, Finset.sdiff_union_distrib, ne_eq, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self]
+  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
+  cases' t₂_in_bd with t₂_in_bd t₂_empty
+
+  choose t₂_sss_s t₂_ne using t₂_in_bd
+  rw [Finset.sdiff_eq_empty_iff_subset]
+  rw [Finset.ssubset_iff] at t₂_sss_s
+  choose a a_nin_t₂ at₂_ss_s using t₂_sss_s
+  rw [Finset.subset_iff] at at₂_ss_s ⊢
+  specialize at₂_ss_s (Finset.mem_insert_self a t₂)
+  simp only [not_forall, Classical.not_imp]
+  use a
+
+  rw [t₂_empty, Finset.sdiff_empty]
+  apply face_nonempty X s s_in_X
+
+  constructor
+  rw [Finset.union_sdiff_self_eq_union, t_decomp, Finset.union_assoc]
+  simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+    Finset.mem_powerset] at t₂_in_bd
+  cases' t₂_in_bd with t₂_in_bd t₂_empty
+  choose t₂_ss_s t₂_ne_s using t₂_in_bd
+  have st₂_rw : t₂ ∪ s = s := by
+    rw [Finset.union_eq_right]
+    assumption
+  rw [st₂_rw, Finset.union_comm, t₁_empty, Finset.union_empty]
+  assumption
+  rw [t₂_empty, Finset.empty_union, t₁_empty, Finset.empty_union]
   assumption
   apply Finset.inter_sdiff_self
 
