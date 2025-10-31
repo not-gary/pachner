@@ -6530,142 +6530,269 @@ by
   apply stellar_subdiv_link_of_barycenter_left
   apply stellar_subdiv_link_of_barycenter_right
 
-theorem star_boundary_is_join_left (X : SimplicialComplex α) (s : Finset α) [s_ne : Nonempty s]
-    (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) :
-    ((X\St(X, s)) s_in_X ∩
-          π₁
-              (barycenter_join_boundary_disjoint_link X s x s_in_X
-                x_nin_X)[π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[simplex {x} ⋆ ∂s] ⋆
-              Lk(X, s) s_in_X]).simplices ⊆
-      π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices :=
-  by
+theorem star_boundary_is_join_left
+    (X : AbstractSimplicialComplex E)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+  : (X\St(X, s) ∩
+      ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe
+        ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+          ''ˢ (simplex {x} ⋆ ∂s)) ⋆
+              Lk(X, s)))).faces ⊆
+      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces :=
+by
   rw [Set.subset_def]
   intro t t_in_inter
-  simp only [simplicialInter, Set.mem_inter_iff] at t_in_inter
+  simp only [AbstractSimplicialComplex.instHasInter, simplicialInter, Set.mem_inter_iff] at t_in_inter
   choose t_in_star_comp t_in_join using t_in_inter
   simp only [join_proj_mem] at t_in_join
-  choose t' t'_in_join t₁ t₁_in_link t_decomp using t_in_join
-  choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp using t'_in_join
+  choose t' t'_in_join t₁ t₁_in_link t_decomp t_ne using t_in_join
+
+  rw [Set.mem_union, Set.mem_singleton_iff, join_proj_mem] at t'_in_join
+  cases' t'_in_join with t'_in_join t'_empty
+
+  choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp t'_ne using t'_in_join
   subst t'_decomp
   simp only [starComplement, Set.mem_sep_iff] at t_in_star_comp
   choose t_in_X s_nss_t using t_in_star_comp
   have t₃_empty : t₃ = ∅ :=
+  by
+    simp only [simplex, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+    cases' t₃_in_barycenter with t₃_eq_x t₃_empty
+    choose t₃_eq_x t₃_ne using t₃_eq_x
+    cases' t₃_eq_x with t₃_empty t₃_eq_x
+    contradiction
+    have contra : x ∈ X.vertices :=
     by
-    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at
-      t₃_in_barycenter
-    cases' t₃_in_barycenter with t₃_empty t₃_eq_x
-    assumption
-    have contra : x ∈ vertices X := by
-      rw [vertex_iff_singleton]
-      apply X.subset_closed t
+      rw [AbstractSimplicialComplex.mem_vertices]
+      apply @X.down_closed t
       assumption
       rw [← t₃_eq_x, t_decomp, Finset.union_assoc]
       apply Finset.subset_union_left
+      apply Finset.singleton_ne_empty
     contradiction
+    assumption
   subst t₃_empty
   rw [Finset.empty_union] at t_decomp
   rw [join_proj_mem]
   use t₁; constructor; assumption
   use t₂; constructor; assumption
   rw [Finset.union_comm]
+  constructor <;> assumption
+
+  subst t'_empty
+  rw [Finset.empty_union] at t_decomp
+  subst t_decomp
+  rw [join_proj_mem]
+  use t; constructor; assumption
+  use ∅; constructor
+  rw [Set.mem_union]
+  right; apply Set.mem_singleton
+  constructor
+  rw [Finset.union_empty]
   assumption
 
-theorem star_boundary_is_join_right (X : SimplicialComplex α) (s : Finset α) [s_ne : Nonempty s]
-    (x : α) (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) :
-    π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices ⊆
-      ((X\St(X, s)) s_in_X ∩
-          π₁
-              (barycenter_join_boundary_disjoint_link X s x s_in_X
-                x_nin_X)[π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[simplex {x} ⋆ ∂s] ⋆
-              Lk(X, s) s_in_X]).simplices :=
-  by
+theorem star_boundary_is_join_right
+    (X : AbstractSimplicialComplex E)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+  : ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces ⊆
+      (X\St(X, s) ∩
+        ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe
+            ''ˢ ((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+              ''ˢ (simplex {x} ⋆ ∂s) ⋆
+                Lk(X, s)))).faces :=
+by
   rw [Set.subset_def]
   intro t t_in_join
   rw [join_proj_mem] at t_in_join
-  choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp using t_in_join
-  simp only [simplicialInter, Set.mem_inter_iff]
+  choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_join
+  simp only [AbstractSimplicialComplex.instHasInter, simplicialInter, Set.mem_inter_iff]
   constructor
   simp only [starComplement, Set.mem_sep_iff]
-  simp only [link, Set.mem_sep_iff] at t₁_in_link
+  simp only [link, Set.mem_union, Set.mem_singleton_iff, Set.mem_sep_iff] at t₁_in_link
+  cases' t₁_in_link with t₁_in_link t₁_empty
+
   choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
-  rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
   constructor
   rw [Finset.ssubset_iff_subset_ne] at t₂_in_bd
-  choose t₂_ss_s t₂_ne_s using t₂_in_bd
-  apply X.subset_closed (s ∪ t₁)
+  cases' t₂_in_bd with t₂_in_bd t₂_empty
+
+  choose t₂_ss_s t₂_ne using t₂_in_bd
+  choose t₂_ss_s t₂_ne_s using t₂_ss_s
+  apply @X.down_closed (s ∪ t₁)
   assumption
   rw [t_decomp, Finset.union_comm]
   apply Finset.union_subset_union_left
   assumption
-  simp only [Finset.subset_iff, Classical.not_forall, not_imp]
+  assumption
+
+  rw [t₂_empty, Finset.union_empty] at t_decomp
+  subst t_decomp
+  assumption
+
+  simp only [Finset.subset_iff, Classical.not_forall]
   rw [Finset.ssubset_iff] at t₂_in_bd
+  cases' t₂_in_bd with t₂_in_bd t₂_empty
+
+  choose t₂_in_bd t₂_ne using t₂_in_bd
   choose a a_nin_t₂ at₂_ss_s using t₂_in_bd
   rw [Finset.subset_iff] at at₂_ss_s
   specialize at₂_ss_s (Finset.mem_insert_self a t₂)
-  use a; constructor; assumption
-  simp only [Finset.eq_empty_iff_forall_not_mem, Finset.mem_inter, not_and] at st₁_disj
+  use a; constructor
+  simp only [Finset.eq_empty_iff_forall_notMem, Finset.mem_inter, not_and] at st₁_disj
   specialize st₁_disj a at₂_ss_s
   simp only [t_decomp, Finset.mem_union, not_or]
   constructor <;> assumption
-  simp only [join_proj_mem]
-  use∅ ∪ t₂; constructor
-  use∅; constructor; apply simplicialComplex_empty_simplex
-  use t₂; constructor; assumption
-  rfl
+  assumption
+
+  rw [t₂_empty, Finset.union_empty] at t_decomp
+  subst t_decomp
+  simp only [Finset.eq_empty_iff_forall_notMem, Finset.mem_inter, not_and] at st₁_disj
+  simp only [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty, ne_eq, Finset.eq_empty_iff_forall_notMem,
+    not_forall, not_not] at s_ne
+  choose a a_in_s using s_ne
+  use a; use a_in_s
+  specialize st₁_disj a a_in_s
+  assumption
+
+  subst t₁_empty
+  rw [Finset.empty_union] at t_decomp
+  subst t_decomp
+  rw [Set.mem_union, Set.mem_singleton_iff] at t₂_in_bd
+  cases' t₂_in_bd with t₂_in_bd t₂_empty
+
+  simp only [simplexBoundary_mem_iff_subset] at t₂_in_bd
+  choose t_sss_s t_ne using t₂_in_bd
+  rw [Finset.ssubset_def] at t_sss_s
+  choose t_ss_s s_nss_t using t_sss_s
+  constructor
+  apply @X.down_closed s
+  assumption
+  assumption
+  assumption
+  assumption
+  contradiction
+
+  simp only [join_proj_mem, Set.mem_union, Set.mem_singleton_iff]
+  use ∅ ∪ t₂; constructor
+  rw [Set.mem_union, Set.mem_singleton_iff] at t₂_in_bd
+  cases' t₂_in_bd with t₂_in_bd t₂_empty
+
+  left; use ∅; constructor; right; rfl
+  use t₂; constructor; left; assumption
+  constructor; rfl
+  rw [Finset.empty_union]
+  apply face_nonempty _ _ t₂_in_bd
+
+  right; rw [t₂_empty, Finset.empty_union]
+
   use t₁; constructor; assumption
   rw [Finset.empty_union, Finset.union_comm, t_decomp]
+  constructor; rfl
+  rw [← t_decomp]
+  assumption
 
-theorem star_boundary_is_join (X : SimplicialComplex α) (s : Finset α) [s_ne : Nonempty s] (x : α)
-    (s_in_X : s ∈ X.simplices) (x_nin_X : x ∉ vertices X) :
-    ((X\St(X, s)) s_in_X ∩
-          π₁
-              (barycenter_join_boundary_disjoint_link X s x s_in_X
-                x_nin_X)[π₁ (barycenter_disjoint_boundary X s x s_in_X x_nin_X)[simplex {x} ⋆ ∂s] ⋆
-              Lk(X, s) s_in_X]).simplices =
-      π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices :=
-  by
+theorem star_boundary_is_join
+    (X : AbstractSimplicialComplex E)
+    (s : Finset E) [s_ne : Nonempty s]
+    (x : E)
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+  : (X\St(X, s) ∩
+      ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X)).coe
+        ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+          ''ˢ (simplex {x} ⋆ ∂s)) ⋆
+              Lk(X, s)))).faces =
+      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces :=
+by
   rw [Set.Subset.antisymm_iff]
   constructor
-  apply star_boundary_is_join_left
-  apply star_boundary_is_join_right
+  apply star_boundary_is_join_left <;> assumption
+  apply star_boundary_is_join_right <;> assumption
 
-theorem star_boundary_diff_ne {X : SimplicialComplex α} {s t : Finset α} [s_ne : Nonempty s]
-    {s_in_X : s ∈ X.simplices} :
-    t ∈ π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices →
+theorem star_boundary_diff_ne
+    {X : AbstractSimplicialComplex E}
+    {s t : Finset E} [s_ne : Nonempty s]
+    {s_in_X : s ∈ X.faces}
+  : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
       Nonempty ↥(s \ t) :=
-  by
+by
   intro t_in_star_bd
   rw [join_proj_mem] at t_in_star_bd
-  choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp using t_in_star_bd
-  simp only [link, Set.mem_sep_iff] at t₁_in_link
+  choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_star_bd
+  simp only [link, Set.mem_sep_iff, Set.mem_union, Set.mem_singleton_iff] at t₁_in_link
+  cases' t₁_in_link with t₁_in_link t₁_empty
+
   choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
-  rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
   rw [Finset.nonempty_coe_sort, Finset.sdiff_nonempty]
-  simp only [Finset.subset_iff, Classical.not_forall, not_imp]
+  simp only [Finset.subset_iff, Classical.not_forall]
   rw [Finset.ssubset_iff] at t₂_in_bd
+  cases' t₂_in_bd with t₂_in_bd t₂_empty
+
+  choose t₂_in_bd t₂_ne using t₂_in_bd
   choose a a_nin_t₂ at₂_ss_s using t₂_in_bd
   rw [Finset.subset_iff] at at₂_ss_s
   specialize at₂_ss_s (Finset.mem_insert_self a t₂)
-  use a; constructor; assumption
-  simp only [Finset.eq_empty_iff_forall_not_mem, Finset.mem_inter, not_and] at st₁_disj
+  use a; constructor
+  simp only [Finset.eq_empty_iff_forall_notMem, Finset.mem_inter, not_and] at st₁_disj
   specialize st₁_disj a at₂_ss_s
   simp only [t_decomp, Finset.mem_union, not_or]
   constructor <;> assumption
+  assumption
 
-theorem star_boundary_mem_link {X : SimplicialComplex α} {s t : Finset α} {s_in_X : s ∈ X.simplices}
-    {t_in_X : t ∈ X.simplices} :
-    t ∈ π₁ (boundary_disjoint_link X s s_in_X)[Lk(X, s) s_in_X ⋆ ∂s].simplices →
-      s \ t ∈ (Lk(X, t) t_in_X).simplices :=
-  by
+  rw [t₂_empty, Finset.union_empty] at t_decomp
+  subst t_decomp
+  simp only [Finset.eq_empty_iff_forall_notMem, Finset.mem_inter, not_and] at st₁_disj
+  simp only [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty, ne_eq, Finset.eq_empty_iff_forall_notMem,
+    not_forall, not_not] at s_ne
+  choose a a_in_s using s_ne
+  use a; use a_in_s
+  specialize st₁_disj a a_in_s
+  assumption
+
+  rw [t₁_empty, Finset.empty_union] at t_decomp
+  subst t_decomp
+  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
+  cases' t₂_in_bd with t_in_bd t_empty
+
+  rw [Finset.nonempty_coe_sort, Finset.sdiff_nonempty]
+  simp only [Finset.subset_iff, Classical.not_forall]
+  rw [Finset.ssubset_iff] at t_in_bd
+  choose t_in_bd t_ne using t_in_bd
+  choose a a_nin_t at_ss_s using t_in_bd
+  rw [Finset.subset_iff] at at_ss_s
+  specialize at_ss_s (Finset.mem_insert_self a t)
+  use a
+
+  contradiction
+
+theorem star_boundary_mem_link
+    {X : AbstractSimplicialComplex E}
+    {s t : Finset E}
+    {s_in_X : s ∈ X.faces}
+    {t_in_X : t ∈ X.faces}
+  : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
+      s \ t ∈ Lk(X, t).faces :=
+by
   intro t_in_star_bd
   rw [join_proj_mem] at t_in_star_bd
-  choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp using t_in_star_bd
-  simp only [link, Set.mem_sep_iff] at t₁_in_link ⊢
+  choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_star_bd
+  simp only [link, Set.mem_sep_iff, Set.mem_union, Set.mem_singleton_iff] at t₁_in_link ⊢
+  cases' t₁_in_link with t₁_in_link t₁_empty
+
   choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
   constructor
-  apply X.subset_closed s
+  apply @X.down_closed s
   assumption
   apply Finset.sdiff_subset
+  rw [t_decomp, Finset.sdiff_union_distrib, ne_eq, Finset.inter_eq_em]
   constructor
   rw [Finset.union_sdiff_self_eq_union, t_decomp, Finset.union_assoc]
   simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
@@ -6681,9 +6808,12 @@ theorem star_boundary_mem_link {X : SimplicialComplex α} {s t : Finset α} {s_i
   assumption
   apply Finset.inter_sdiff_self
 
-theorem not_mem_link_vertices {X : SimplicialComplex α} {s : Finset α} {x : α}
-    {s_in_X : s ∈ X.simplices} : x ∉ vertices X → x ∉ vertices (Lk(X, s) s_in_X) :=
-  by
+theorem not_mem_link_vertices
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E}
+    {x : E}
+  : x ∉ X.vertices → x ∉ Lk(X, s).vertices :=
+by
   contrapose
   simp only [Classical.not_not]
   apply is_subcomplex_vertices
