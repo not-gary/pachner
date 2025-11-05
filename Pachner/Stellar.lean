@@ -7441,13 +7441,54 @@ by
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_star_bd
   simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, simplicialUnion, Set.mem_union, join_proj_mem]
   right
-  use ∅ ∪ t₂; constructor; left
-  use ∅; constructor; right; apply Set.mem_singleton
-  use t₂; constructor; assumption
-  constructor; rfl
-  use t₁; constructor; assumption
-  rw [Finset.empty_union, Finset.union_comm]
-  assumption
+  use t₂
+  cases' t₁_in_link with t₁_in_link t₁_empty
+  · cases' t₂_in_bd with t₂_in_bd t₂_empty
+    -- t₁ nonempty, t₂ nonempty
+    · constructor
+      · left
+        use ∅
+        constructor; right; rfl
+        use t₂
+        constructor; left; assumption
+        rw [Finset.empty_union]
+        constructor; rfl
+        revert t₂_in_bd
+        contrapose
+        rw [ne_eq, not_not]
+        intro t₂_empty
+        subst t₂_empty
+        apply (∂s).empty_notMem
+      · use t₁
+        rw [Finset.union_comm]
+        exact ⟨by left; assumption, by assumption, by assumption⟩
+    -- t₁ nonempty, t₂ empty
+    · subst t₂_empty
+      rw [Finset.union_empty] at t_decomp
+      subst t_decomp
+      constructor; right; rfl
+      use t
+      rw [Finset.empty_union]
+      exact ⟨by left; assumption, by rfl, by assumption⟩
+  · cases' t₂_in_bd with t₂_in_bd t₂_empty
+    -- t₁ empty, t₂ nonempty
+    · subst t₁_empty
+      rw [Finset.empty_union] at t_decomp
+      subst t_decomp
+      constructor
+      · left
+        use ∅
+        constructor; right; rfl
+        use t
+        rw [Finset.empty_union]
+        exact ⟨by left; assumption, by rfl, by assumption⟩
+      · use ∅
+        rw [Finset.union_empty]
+        exact ⟨by right; rfl, by rfl, by assumption⟩
+    -- t₁ empty, t₂ empty
+    · subst t₁_empty t₂_empty
+      rw [Finset.empty_union] at t_decomp
+      contradiction
 
 theorem stellar_subdiv_anticomm_link_left
     (X : AbstractSimplicialComplex E)
