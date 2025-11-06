@@ -7589,56 +7589,282 @@ by
   simp only [link, Set.mem_union, Set.mem_singleton_iff, Set.mem_sep_iff] at t₁_in_link
   simp only [Set.mem_union, Set.mem_singleton_iff] at t₂_in_bd
 
+  have st₁_eq_s : s \ t₁ = s :=
+  by
+    cases' t₁_in_link with t₁_in_link t₁_empty
+    · choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
+      rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_iff_inter_eq_empty]
+      assumption
+    · rw [t₁_empty, Finset.sdiff_empty]
+
+  have st₂_ne : s \ t₂ ≠ ∅ :=
+  by
+    cases' t₂_in_bd with t₂_in_bd t₂_empty
+    · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+      choose t₂_sss_s t₂_ne using t₂_in_bd
+      rw [ne_eq, Finset.sdiff_eq_empty_iff_subset, Finset.not_subset]
+      apply Finset.exists_of_ssubset t₂_sss_s
+    · rw [t₂_empty, Finset.sdiff_empty, ← Finset.nonempty_iff_ne_empty, ← Finset.nonempty_coe_sort]
+      assumption
+
+  have s_nss_u : u₁ = ∅ ∨ u'₂ = ∅ → ¬s ⊆ u :=
+  by
+    intro u_empty
+    cases' u_empty with u₁_empty u'₂_empty
+    · subst u₁_empty; rw [Finset.union_empty] at u_decomp; subst u_decomp t_decomp
+      cases' u'₂_in_join with u'₂_in_join u'₂_empty
+      rotate_left; contradiction
+
+      choose u₃ u₃_in_barycenter u₂ u₂_in_bd u_decomp u_ne using u'₂_in_join
+      simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+      simp only [Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self,
+        @simplexBoundary_mem_iff_subset _ _ (s \ t₂) u₂ (by rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty]; assumption)] at u₂_in_bd
+
+      cases' u₂_in_bd with u₂_in_bd u₂_empty
+      · choose u₂_sss_st₂ u₂_ne using u₂_in_bd
+        simp only [Finset.ssubset_def] at u₂_sss_st₂
+        simp only [u_decomp, Finset.subset_iff, not_forall, Classical.not_imp] at u₂_sss_st₂ ⊢
+        simp only [Finset.mem_sdiff] at u₂_sss_st₂
+        simp only [Finset.mem_union, not_or]
+
+        choose u₂_ss_st₂ st₂_nss_u₂ using u₂_sss_st₂
+        choose a a_in_st₂ x_nin_u₂ using st₂_nss_u₂
+        choose a_in_s a_nin_t₂ using a_in_st₂
+        use a; use a_in_s; constructor
+
+        cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
+        · choose u₃_in_barycenter u₃_ne using u₃_in_barycenter
+          cases' u₃_in_barycenter with contra u₃_eq_x; contradiction
+          rw [u₃_eq_x, Finset.mem_singleton]
+          by_cases a_eq_x : a = x
+          rotate_left; assumption
+          rw [← a_eq_x] at x_nin_X
+          have contra : a ∈ X.vertices :=
+          by
+            rw [vertices_setOf, Set.mem_setOf]
+            use s
+          contradiction
+        · rw [u₃_empty]; apply Finset.notMem_empty
+        assumption
+      · rw [u₂_empty, Finset.union_empty] at u_decomp; subst u_decomp
+        cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
+        rotate_left; contradiction
+        choose u₃_in_barycenter u₃_ne using u₃_in_barycenter
+        cases' u₃_in_barycenter with contra u₃_eq_x; contradiction
+
+        rw [u₃_eq_x, Finset.subset_singleton_iff, not_or]
+        constructor; apply face_nonempty X s s_in_X
+        by_cases s_eq_x : s = {x}
+        rotate_left; assumption
+        have contra : x ∈ X.vertices :=
+        by
+          rw [vertices_setOf, Set.mem_setOf]
+          use s; constructor; assumption
+          rw [s_eq_x]; apply Finset.mem_singleton_self
+        contradiction
+    · subst u'₂_empty; rw [Finset.empty_union] at u_decomp; subst u_decomp t_decomp
+      cases' u₁_in_link with u₁_in_link u₁_empty
+      rotate_left; contradiction
+
+      choose u_in_link stu_in_link stu_disj using u₁_in_link
+      choose u_in_X tu_in_X tu_disj using u_in_link
+      choose stu_in_X tstu_in_X tstu_disj using stu_in_link
+
+      simp only [ne_eq, Finset.sdiff_eq_empty_iff_subset, Finset.subset_iff, not_forall, Classical.not_imp] at st₂_ne
+      simp only [Finset.eq_empty_iff_forall_notMem, Finset.mem_inter, not_and] at stu_disj
+      choose a a_in_s a_nin_t₂ using st₂_ne
+      have a_in_st₂ : a ∈ s \ t₂ :=
+      by
+        rw [Finset.mem_sdiff]
+        constructor <;> assumption
+      rw [Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self] at stu_disj stu_in_X
+      specialize stu_disj a a_in_st₂
+
+      simp only [ne_eq, Finset.sdiff_eq_empty_iff_subset, Finset.subset_iff, not_forall, Classical.not_imp]
+      use a
+
+  have st₁t₂_ne : Nonempty {x // x ∈ s \ (t₁ ∪ t₂)} :=
+  by
+    rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty, Finset.sdiff_union_distrib, st₁_eq_s,
+      ← Finset.inter_sdiff_assoc, Finset.inter_self]
+    assumption
+
   cases' u'₂_in_join with u'₂_in_join u'₂_empty <;>
   cases' u₁_in_link with u₁_in_link u₁_empty
   -- u'₂, u₁ ≠ ∅
   · simp only [Set.mem_sep_iff] at u₁_in_link
-  -- u'₂ ≠ ∅, u₁ ≠ ∅
-  · sorry
+  -- u'₂ ≠ ∅, u₁ = ∅
+  · have spec : u₁ = ∅ ∨ u'₂ = ∅ := by subst u₁_empty; left; rfl
+    specialize s_nss_u spec
+
+    subst u₁_empty; rw [Finset.union_empty] at u_decomp; subst u_decomp t_decomp
+    choose u₃ u₃_in_barycenter u₂ u₂_in_bd u_decomp u_ne using u'₂_in_join
+    subst u_decomp
+    constructor; right
+
+    rw [join_proj_mem]
+    use (u₃ ∪ u₂); constructor
+    rw [Set.mem_union, join_proj_mem]
+    left; use u₃; constructor
+    rw [Set.mem_union, Set.mem_singleton_iff]
+    assumption
+    use u₂; constructor
+    rw [Set.mem_union, Set.mem_singleton_iff]
+    cases' u₂_in_bd with u₂_in_bd u₂_empty
+    · left; apply simplex_if_in_subcomplex (∂(s \ (t₁ ∪ t₂)))
+      assumption
+      simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
+      apply subsimplex_boundary_subcomplex
+      apply Finset.sdiff_subset
+    · right; assumption
+
+    constructor; rfl; assumption
+
+    use ∅; constructor
+    rw [Set.mem_union]
+    right; apply Set.mem_singleton
+
+    constructor
+    rw [Finset.union_empty]
+    assumption
+
+    constructor; right
+    rw [join_proj_mem]
+    use (u₃ ∪ (u₂ ∪ t₂)); constructor
+    rw [Set.mem_union, join_proj_mem]
+    left; use u₃; constructor
+    rw [Set.mem_union, Set.mem_singleton_iff]
+    assumption
+    use (u₂ ∪ t₂); constructor
+    rw [Set.mem_union, Set.mem_singleton_iff]
+    by_cases u₂t₂_empty : u₂ ∪ t₂ = ∅
+    right; assumption
+
+    left
+    rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne]
+    constructor; constructor
+    apply Finset.union_subset
+    cases' u₂_in_bd with u₂_in_bd u₂_empty
+    · rw [simplexBoundary_mem_iff_subset] at u₂_in_bd
+      choose u₂_sss_st₁t₂ u₂_ne using u₂_in_bd
+      apply @subset_trans _ _ _ _ (s \ (t₁ ∪ t₂))
+      rw [Finset.ssubset_def] at u₂_sss_st₁t₂
+      choose u₂_ss_st₁t₂ st₁t₂_nss_u₂ using u₂_sss_st₁t₂
+      assumption
+      apply Finset.sdiff_subset
+    · rw [u₂_empty]; apply Finset.empty_subset
+    cases' t₂_in_bd with t₂_in_bd t₂_empty
+    · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+      choose t₂_sss_s t₂_ne using t₂_in_bd
+      rw [Finset.ssubset_def] at t₂_sss_s
+      choose t₂_ss_s s_nss_t₂ using t₂_sss_s
+      assumption
+    · rw [t₂_empty]; apply Finset.empty_subset
+
+    cases' u₂_in_bd with u₂_in_bd u₂_empty
+    · rw [simplexBoundary_mem_iff_subset] at u₂_in_bd
+      choose u₂_sss_st₁t₂ u₂_ne using u₂_in_bd
+      cases' t₂_in_bd with t₂_in_bd t₂_empty
+      · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_of_subset] at t₂_in_bd
+        choose t₂_sss_s t₂_ne using t₂_in_bd
+        choose a a_in_s a_nin_t₂ using t₂_sss_s
+
+        rw [Finset.ssubset_iff_of_subset] at u₂_sss_st₁t₂
+        choose b b_in_st₁t₂ b_nin_u₂ using u₂_sss_st₁t₂
+        rw [Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self, Finset.mem_sdiff] at b_in_st₁t₂
+        choose b_in_s b_nin_t₂ using b_in_st₁t₂
+
+        simp only [ne_eq, Finset.ext_iff, not_forall, not_iff, Finset.mem_union, not_or]
+        use b; constructor
+        intro b_in_u₂t₂; assumption
+        intro b_in_s; constructor <;> assumption
+
+        rw [Finset.ssubset_iff_subset_ne] at u₂_sss_st₁t₂
+        choose u₂_ss_st₁t₂ u₂_ne_st₁t₂ using u₂_sss_st₁t₂
+        assumption
+
+        rw [Finset.ssubset_iff_subset_ne] at t₂_in_bd
+        choose t₂_sss_s t₂_ne using t₂_in_bd
+        choose t₂_ss_s t₂_ne_s using t₂_sss_s
+        assumption
+      · rw [t₂_empty, Finset.union_empty]
+        rw [Finset.ssubset_iff_subset_ne] at u₂_sss_st₁t₂
+        choose u₂_ss_st₁t₂ u₂_ne_s using u₂_sss_st₁t₂
+        rw [Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self, t₂_empty, Finset.sdiff_empty] at u₂_ne_s
+        assumption
+    · rw [u₂_empty, Finset.empty_union]
+      cases' t₂_in_bd with t₂_in_bd t₂_empty
+      · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
+        choose t₂_sss_s t₂_ne using t₂_in_bd
+        choose t₂_ss_s t₂_ne_s using t₂_sss_s
+        assumption
+      · rw [t₂_empty]; symm
+        apply face_nonempty X s s_in_X
+
+    assumption
+
+    constructor; rfl
+    rw [← Finset.union_assoc, ne_eq, Finset.union_eq_empty, not_and_or]
+    left; assumption
+
+    use t₁; constructor
+    rw [Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf]
+    assumption
+
+    constructor
+    rw [Finset.union_comm, Finset.union_comm t₁, ← Finset.union_assoc, Finset.union_assoc u₃]
+    rw [ne_eq, Finset.union_eq_empty, not_and_or]
+    right; assumption
+
+    rw [Finset.inter_union_distrib_left]
+    have tu₃_disj : (t₁ ∪ t₂) ∩ u₃ = ∅ :=
+    by
+      cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
+      · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+        choose u₃_eq_x u₃_ne using u₃_in_barycenter
+        cases' u₃_eq_x with u₃_empty u₃_eq_x; contradiction
+
+        rw [u₃_eq_x, Finset.inter_singleton_of_notMem]
+        revert x_nin_X; contrapose; simp only [not_not]
+        intros x_in_t
+        rw [vertices_setOf, Set.mem_setOf]
+        use t₁ ∪ t₂
+      · rw [u₃_empty, Finset.inter_empty]
+    have tu₂_disj : (t₁ ∪ t₂) ∩ u₂ = ∅ :=
+    by
+      cases' u₂_in_bd with u₂_in_bd u₂_empty
+      · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd
+        choose u₂_sss_st₁t₂ u₂_ne using u₂_in_bd
+        choose u₂_ss_st₁t₂ u₂_ne_st₁t₂ using u₂_sss_st₁t₂
+        rw [Finset.subset_sdiff, Finset.disjoint_iff_inter_eq_empty, Finset.inter_comm] at u₂_ss_st₁t₂
+        choose u₂_ss_s tu₂_disj using u₂_ss_st₁t₂
+        assumption
+      · rw [u₂_empty, Finset.inter_empty]
+    rw [tu₃_disj, tu₂_disj, Finset.union_empty]
   -- u'₂ = ∅, u₁ ≠ ∅
-  · subst u'₂_empty; rw [Finset.empty_union] at u_decomp; subst u_decomp t_decomp
-    choose u_in_link stu_in_link stu_disj using u₁_in_link
+  · choose u_in_link stu_in_link stu_disj using u₁_in_link
     choose u_in_X tu_in_X tu_disj using u_in_link
     choose stu_in_X tstu_in_X tstu_disj using stu_in_link
 
-    have st₁_eq_s : s \ t₁ = s :=
+    have spec : u₁ = ∅ ∨ u'₂ = ∅ := by rw [u'₂_empty]; right; rfl
+    specialize s_nss_u spec
+
+    subst u'₂_empty; rw [Finset.empty_union] at u_decomp; subst u_decomp t_decomp
+    constructor; constructor; constructor <;> assumption
+
+    constructor
+    left; constructor; assumption
+    simp only [Finset.subset_iff, not_forall, Finset.mem_union, not_or]
+    simp only [← Finset.disjoint_iff_inter_eq_empty, Finset.disjoint_left] at stu_disj
+    have a_in_st₁t₂ : ∃ a : E, a ∈ s \ (t₁ ∪ t₂) :=
     by
-      cases' t₁_in_link with t₁_in_link t₁_empty
-      · choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
-        rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_iff_inter_eq_empty]
-        assumption
-      · rw [t₁_empty, Finset.sdiff_empty]
-
-    have st₂_ne : s \ t₂ ≠ ∅ :=
-    by
-      cases' t₂_in_bd with t₂_in_bd t₂_empty
-      · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
-        choose t₂_sss_s t₂_ne using t₂_in_bd
-        rw [ne_eq, Finset.sdiff_eq_empty_iff_subset, Finset.not_subset]
-        apply Finset.exists_of_ssubset t₂_sss_s
-      · rw [t₂_empty, Finset.sdiff_empty, ← Finset.nonempty_iff_ne_empty, ← Finset.nonempty_coe_sort]
-        assumption
-
-    simp only [ne_eq, Finset.sdiff_eq_empty_iff_subset, Finset.subset_iff, not_forall, Classical.not_imp] at st₂_ne
-    simp only [Finset.eq_empty_iff_forall_notMem, Finset.mem_inter, not_and] at stu_disj
-    choose a a_in_s a_nin_t₂ using st₂_ne
-    have a_in_st₂ : a ∈ s \ t₂ :=
-    by
-      rw [Finset.mem_sdiff]
-      constructor <;> assumption
-    rw [Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self] at stu_disj stu_in_X
-    specialize stu_disj a a_in_st₂
-
-    constructor; constructor; constructor
-    assumption
-
-    simp only [ne_eq, Finset.sdiff_eq_empty_iff_subset, Finset.subset_iff, not_forall, Classical.not_imp]
-    use a
-
-    constructor; left
-    constructor; assumption
-    simp only [← Finset.sdiff_eq_empty_iff_subset, Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc s, Finset.inter_self,
-      ← Finset.disjoint_iff_inter_eq_empty, Finset.disjoint_left, not_forall, not_not, Finset.mem_sdiff]
+      simp only [ne_eq, Finset.eq_empty_iff_forall_notMem, not_forall, not_not] at st₂_ne
+      simp only [Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self]
+      assumption
+    choose a a_in_st₁t₂ using a_in_st₁t₂
+    specialize stu_disj a_in_st₁t₂
+    rw [Finset.mem_sdiff, Finset.mem_union, not_or] at a_in_st₁t₂
+    choose a_in_s a_nin_t₁t₂ using a_in_st₁t₂
     use a
 
     assumption
