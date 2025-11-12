@@ -7602,7 +7602,8 @@ by
   have st₂_ne : s \ t₂ ≠ ∅ :=
   by
     cases' t₂_in_bd with t₂_in_bd t₂_empty
-    · choose t₂_sss_s t₂_ne using t₂_in_bd
+    · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+      choose t₂_sss_s t₂_ne using t₂_in_bd
       rw [ne_eq, Finset.sdiff_eq_empty_iff_subset, Finset.not_subset]
       apply Finset.exists_of_ssubset t₂_sss_s
     · rw [t₂_empty, Finset.sdiff_empty, ← Finset.nonempty_iff_ne_empty, ← Finset.nonempty_coe_sort]
