@@ -7483,12 +7483,12 @@ theorem stellar_subdiv_anticomm_link_left_bd_u_mem_link
 by
   constructor
   rw [t_decomp]
-  apply X.subset_closed (s ∪ t₁ ∪ u₁)
-  rw [Finset.union_assoc]
-  apply stu₁_in_X
+  apply X.down_closed stu₁_in_X
   simp only [Finset.union_assoc]
   apply Finset.union_subset_union_left
   apply t₂_ss_s
+  rw [ne_eq, Finset.union_eq_empty, not_and_or, ← t_decomp]
+  left; apply face_nonempty X t t_in_X
   rw [← Finset.subset_empty]
   apply @Finset.Subset.trans _ _ (t ∩ u)
   apply Finset.inter_subset_inter_left
@@ -7511,30 +7511,44 @@ theorem stellar_subdiv_anticomm_link_left_bd_stu_mem_link
     (t_decomp : t = t₂ ∪ t₁)
     (u_decomp : u = u₃ ∪ u₂ ∪ u₁)
     (st₁_sdiff_ident : s \ t₁ = s)
-    (t₂_ss_s : t₂ ⊆ s)
+    (t₂_ss_s : t₂ ⊂ s)
   : s \ t ∪ u₁ ∈ Lk(X, t).faces ∧ s \ t ∩ u₁ = ∅ :=
 by
   constructor; constructor
-  apply X.subset_closed (s ∪ t₁ ∪ u₁)
-  rw [Finset.union_assoc]
-  apply stu₁_in_X
+  apply X.down_closed stu₁_in_X
   apply @Finset.Subset.trans _ _ (s ∪ u₁)
   apply Finset.union_subset_union_left
   apply Finset.sdiff_subset
-  rw [Finset.union_assoc, Finset.union_comm t₁ u₁, ← Finset.union_assoc]
+  rw [Finset.union_comm t₁ u₁, ← Finset.union_assoc]
   apply Finset.subset_union_left
+
+  rw [t_decomp, Finset.sdiff_union_distrib, st₁_sdiff_ident, Finset.sdiff_inter_right_comm, Finset.inter_self,
+    ne_eq, Finset.union_eq_empty, not_and_or]
+  left
+  simp only [Finset.sdiff_eq_empty_iff_subset, Finset.subset_iff, not_forall]
+  rw [Finset.ssubset_iff_of_subset] at t₂_ss_s
+  choose x x_in_s x_nin_t₂ using t₂_ss_s
+  use x
+
+  rw [Finset.ssubset_iff_subset_ne] at t₂_ss_s
+  choose t₂_ss_s t₂_ne_s using t₂_ss_s
+  assumption
+
   constructor
-  apply X.subset_closed (s ∪ t₁ ∪ u₁)
-  rw [Finset.union_assoc]
-  apply stu₁_in_X
+  apply X.down_closed stu₁_in_X
   rw [t_decomp, Finset.sdiff_union_distrib, st₁_sdiff_ident, Finset.inter_comm]
-  rw [Finset.inter_sdiff, Finset.inter_self, ← Finset.union_assoc, Finset.union_assoc t₂ t₁]
-  rw [Finset.union_comm t₁ (s \ t₂), ← Finset.union_assoc]
-  rw [Finset.union_assoc, Finset.union_assoc s t₁]
+  rw [← Finset.inter_sdiff_assoc, Finset.inter_self, ← Finset.union_assoc, Finset.union_assoc t₂ t₁]
+  rw [Finset.union_comm t₁ (s \ t₂), ← Finset.union_assoc, Finset.union_assoc]
   apply Finset.union_subset_union_left
   apply Finset.subset_of_eq
   apply Finset.union_sdiff_of_subset
-  apply t₂_ss_s
+  rw [Finset.ssubset_iff_subset_ne] at t₂_ss_s
+  choose t₂_ss_s t₂_ne_s using t₂_ss_s
+  assumption
+
+  rw [ne_eq, Finset.union_eq_empty, not_and_or]
+  left; apply face_nonempty X t t_in_X
+
   rw [Finset.inter_union_distrib_left, Finset.inter_comm, Finset.sdiff_inter_self,
     Finset.empty_union]
   rw [← Finset.subset_empty]
