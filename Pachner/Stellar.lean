@@ -7086,6 +7086,7 @@ by
     use x; use x_in_s
     specialize su₁_disj x_in_s
     assumption
+
 theorem stellar_subdiv_anticomm_link_left_ad
     (X : AbstractSimplicialComplex E)
     (s t : Finset E) [s_ne : Nonempty s]
@@ -7423,13 +7424,7 @@ by
     assumption
 
 theorem stellar_subdiv_anticomm_link_left_bd_u_ss_st
-    (X : AbstractSimplicialComplex E)
-    (s t u t₁ u₁ t₂ u₂ u₃ : Finset E) [s_ne : Nonempty ↥s]
-    (x : E)
-    (s_in_X : s ∈ X.faces)
-    (x_nin_X : x ∉ X.vertices)
-    (t_in_X : t ∈ X.faces)
-    (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
+    (s t u t₁ u₁ t₂ u₂ u₃ : Finset E)
     (tu_disj : t ∩ u = ∅)
     (t₂_in_bd : t₂ ⊂ s)
     (tu₂_in_bd : t₂ ∪ u₂ ⊂ s)
@@ -7453,7 +7448,8 @@ by
   rw [Finset.union_assoc, Finset.union_comm, Finset.union_assoc]
   apply @Finset.subset_union_left _ _ u₂ (u₁ ∪ u₃)
   rw [Finset.union_comm] at tu₂_ne_s
-  have H1 : s = s ∪ t₂ := by
+  have H1 : s = s ∪ t₂ :=
+  by
     symm
     rw [Finset.union_eq_left]
     rw [Finset.ssubset_def] at t₂_in_bd
@@ -7468,12 +7464,8 @@ by
 
 theorem stellar_subdiv_anticomm_link_left_bd_u_mem_link
     (X : AbstractSimplicialComplex E)
-    (s t u t₁ u₁ t₂ u₂ u₃ : Finset E) [s_ne : Nonempty ↥s]
-    (x : E)
-    (s_in_X : s ∈ X.faces)
-    (x_nin_X : x ∉ X.vertices)
+    (s t u t₁ u₁ t₂ u₂ u₃ : Finset E)
     (t_in_X : t ∈ X.faces)
-    (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
     (tu_disj : t ∩ u = ∅)
     (stu₁_in_X : s ∪ (t₁ ∪ u₁) ∈ X.faces)
     (t_decomp : t = t₂ ∪ t₁)
@@ -7499,12 +7491,8 @@ by
 
 theorem stellar_subdiv_anticomm_link_left_bd_stu_mem_link
     (X : AbstractSimplicialComplex E)
-    (s t u t₁ u₁ t₂ u₂ u₃ : Finset E) [s_ne : Nonempty ↥s]
-    (x : E)
-    (s_in_X : s ∈ X.faces)
-    (x_nin_X : x ∉ X.vertices)
+    (s t u t₁ u₁ t₂ u₂ u₃ : Finset E)
     (t_in_X : t ∈ X.faces)
-    (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
     (tu_disj : t ∩ u = ∅)
     (su₁_disj : s ∩ u₁ = ∅)
     (stu₁_in_X : s ∪ (t₁ ∪ u₁) ∈ X.faces)
@@ -7588,89 +7576,286 @@ theorem stellar_subdiv_anticomm_link_left_bd
                   not_mem_link_vertices x_nin_X).faces :=
 by
   intro u u_in_join tu_in_join tu_disj
-  simp only [link, stellarSubdivision, starComplement, simplicialUnion] at u_in_join tu_in_join ⊢
   rw [join_proj_disj_union_mem] at tu_in_join
   choose t'₂ t'₂_in_join u'₂ u'₂_in_join t₁ t₁_in_link u₁ u₁_in_link tu_decomp using tu_in_join
-  choose t_decomp u_decomp tu_in_join tu_in_link using tu_decomp
-  simp only [Set.mem_sep_iff] at t₁_in_link u₁_in_link tu_in_link
-  choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
-  choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
-  choose tu₁_in_X stu₁_in_X stu₁_disj using tu_in_link
-  rw [join_proj_disj_union_mem] at tu_in_join
-  choose t₃ t₃_in_barycenter u₃ u₃_in_barycenter t₂ t₂_in_bd u₂ u₂_in_bd tu₂_decomp using tu_in_join
-  choose t₂_decomp u₂_decomp tu₃_in_barycenter tu₂_in_bd using tu₂_decomp
-  have t₃_empty : t₃ = ∅ :=
+  choose t_decomp u_decomp tu_in_join tu_in_link tu_ne using tu_decomp
+  simp only [Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf] at t₁_in_link u₁_in_link tu_in_link
+
+  simp only [stellarSubdivision, starComplement, AbstractSimplicialComplex.instHasUnion, simplicialUnion,
+    Set.mem_union, Set.mem_setOf, Set.mem_singleton_iff, join_proj_mem]
+  simp only [link, Set.mem_setOf] at t₁_in_link u₁_in_link tu_in_link ⊢
+
+  rw [Set.mem_union, Set.mem_singleton_iff] at t'₂_in_join u'₂_in_join tu_in_join
+
+  have t_in_star_bd' := t_in_star_bd
+  simp only [join_proj_mem, Set.mem_union, Set.mem_singleton_iff] at t_in_star_bd
+  choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_star_bd
+
+  have st₁_eq_s : s \ t₁ = s :=
   by
-    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
-    cases' t₃_in_barycenter with t₃_empty t₃_eq_x
-    apply t₃_empty
-    have contra : x ∈ vertices X := by
-      rw [vertex_iff_singleton]
-      apply X.subset_closed t
-      apply t_in_X
-      rw [t_decomp, t₂_decomp, t₃_eq_x, Finset.union_assoc]
-      apply Finset.subset_union_left
-    contradiction
-  subst t₃_empty
-  simp only [Finset.empty_union] at t₂_decomp u₂_decomp tu₃_in_barycenter
-  rw [simplexBoundary_mem_iff_subset] at tu₂_in_bd u₂_in_bd t₂_in_bd
-  rw [t₂_decomp] at *
-  rw [u₂_decomp] at *
-  clear t₂_decomp u₂_decomp u_in_join u'₂_in_join t'₂_in_join tu₃_in_barycenter t₃_in_barycenter t'₂ u'₂
-  right
-  rw [join_proj_mem]
-  have tu₂_disj : t₂ ∩ u₂ = ∅ :=
+    cases' t₁_in_link with t₁_in_link t₁_empty
+    · choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
+      rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_iff_inter_eq_empty]
+      assumption
+    · rw [t₁_empty, Finset.sdiff_empty]
+
+  have st₂_ne : s \ t₂ ≠ ∅ :=
   by
-    rw [← Finset.subset_empty]
-    apply @Finset.Subset.trans _ _ (t ∩ u)
-    apply Finset.inter_subset_inter
-    rw [t_decomp]
-    apply @Finset.subset_union_left _ _ t₂ t₁
-    rw [u_decomp, Finset.union_assoc, Finset.union_comm, Finset.union_assoc]
-    apply @Finset.subset_union_left _ _ u₂ (u₁ ∪ u₃)
-    rw [Finset.subset_empty]
-    apply tu_disj
-  have st₁_sdiff_ident : s \ t₁ = s :=
-  by
-    apply Finset.sdiff_eq_self_of_disjoint
-    rw [Finset.disjoint_iff_inter_eq_empty]
-    apply st₁_disj
-  have u₂_ss_st₂_sdiff : u₂ ⊂ s \ t₂ :=
-  by
-    apply
-      stellar_subdiv_anticomm_link_left_bd_u_ss_st X s t u t₁ u₁ t₂ u₂ u₃ x s_in_X x_nin_X t_in_X
-        t_in_star_bd tu_disj t₂_in_bd tu₂_in_bd t_decomp u_decomp
-  have u₂_ss_st : u₂ ⊂ s \ t :=
-  by
-    rw [t_decomp, Finset.sdiff_union_distrib, st₁_sdiff_ident, Finset.inter_comm,
-      Finset.inter_sdiff, Finset.inter_self]
-    apply u₂_ss_st₂_sdiff
-  rw [Finset.ssubset_def] at t₂_in_bd
-  choose t₂_ss_s s_nss_t₂ using t₂_in_bd
-  use u₃ ∪ u₂; constructor
-  rw [join_proj_disj_union_mem]
-  use u₃; constructor; apply u₃_in_barycenter
-  use∅; constructor; apply simplicialComplex_empty_simplex
-  use∅; constructor; apply simplicialComplex_empty_simplex
-  use u₂; constructor
-  rw [@simplexBoundary_mem_iff_subset _ _ _ _ (star_boundary_diff_ne t_in_star_bd)]
-  apply u₂_ss_st
-  constructor; symm; apply Finset.union_empty
-  constructor; symm; apply Finset.empty_union
-  constructor; rw [Finset.union_empty]
-  apply u₃_in_barycenter
-  rw [Finset.empty_union,
-    @simplexBoundary_mem_iff_subset _ _ _ _ (star_boundary_diff_ne t_in_star_bd)]
-  apply u₂_ss_st
-  use u₁; constructor; constructor; constructor
-  apply u₁_in_X
-  apply
-    stellar_subdiv_anticomm_link_left_bd_u_mem_link X s t u t₁ u₁ t₂ u₂ u₃ x s_in_X x_nin_X t_in_X
-      t_in_star_bd tu_disj stu₁_in_X t_decomp u_decomp t₂_ss_s
-  apply
-    stellar_subdiv_anticomm_link_left_bd_stu_mem_link X s t u t₁ u₁ t₂ u₂ u₃ x s_in_X x_nin_X t_in_X
-      t_in_star_bd tu_disj su₁_disj stu₁_in_X t_decomp u_decomp st₁_sdiff_ident t₂_ss_s
-  apply u_decomp
+    cases' t₂_in_bd with t₂_in_bd t₂_empty
+    · choose t₂_sss_s t₂_ne using t₂_in_bd
+      rw [ne_eq, Finset.sdiff_eq_empty_iff_subset, Finset.not_subset]
+      apply Finset.exists_of_ssubset t₂_sss_s
+    · rw [t₂_empty, Finset.sdiff_empty, ← Finset.nonempty_iff_ne_empty, ← Finset.nonempty_coe_sort]
+      assumption
+
+  cases' t'₂_in_join with t'₂_in_join t'₂_empty
+  · sorry
+  · subst t'₂_empty; rw [Finset.empty_union] at *; subst t_decomp
+    cases' u'₂_in_join with u'₂_in_join u'₂_empty
+    · simp only [join_proj_mem, Set.mem_union, Set.mem_singleton_iff] at u'₂_in_join
+      choose u₃ u₃_in_barycenter u₂ u₂_in_bd u'_decomp u'_ne using u'₂_in_join
+
+      right; use (u₃ ∪ u₂); constructor; left
+      use u₃; constructor; assumption
+      use u₂; constructor
+      cases' u₂_in_bd with u₂_in_bd u₂_empty
+      · have st_ne : Nonempty {x // x ∈ s \ t} :=
+        by
+          rw [t_decomp, Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty, Finset.sdiff_union_distrib, st₁_eq_s,
+            ← Finset.inter_sdiff_assoc, Finset.inter_self]
+          assumption
+        rw [simplexBoundary_mem_iff_subset, t_decomp, Finset.sdiff_union_distrib, st₁_eq_s,
+          ← Finset.inter_sdiff_assoc, Finset.inter_self]
+        left; constructor
+        apply @stellar_subdiv_anticomm_link_left_bd_u_ss_st _ _ _
+          s t u t₁ u₁ t₂ u₂ u₃ tu_disj
+
+        cases' t₂_in_bd with t₂_in_bd t₂_empty
+        · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+          choose t₂_sss_s t₂_ne_s using t₂_in_bd
+          assumption
+        · rw [t₂_empty, Finset.empty_ssubset, ← Finset.nonempty_coe_sort]
+          assumption
+
+        cases' t₁_in_link with t₁_in_link t₁_empty
+        · choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
+          rw [t_decomp, Finset.inter_union_distrib_left, Finset.union_eq_empty] at st₁_disj
+          choose st₁_disj st₂_disj using st₁_disj
+
+          rw [simplexBoundary_mem_iff_subset] at u₂_in_bd
+          choose u₂_sss_s u₂_ne using u₂_in_bd
+          rw [Finset.ssubset_iff_subset_ne] at u₂_sss_s ⊢
+          choose u₂_ss_s u₂_ne_s using u₂_sss_s
+          constructor
+
+          apply Finset.union_subset
+          cases' t₂_in_bd with t₂_in_bd t₂_empty
+          · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
+            choose t₂_sss_s t₂_ne using t₂_in_bd
+            choose t₂_ss_s t₂_ne_eq using t₂_sss_s
+            assumption
+          · rw [t₂_empty]; apply Finset.empty_subset
+
+          assumption
+
+          cases' t₂_in_bd with t₂_in_bd t₂_empty
+          · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
+            choose t₂_sss_s t₂_ne using t₂_in_bd
+            choose t₂_ss_s t₂_ne_s using t₂_sss_s
+            simp only [ne_eq, Finset.ext_iff, not_forall, not_iff, Finset.mem_union, not_or] at t₂_ne_s u₂_ne_s ⊢
+            rw [← Finset.disjoint_iff_inter_eq_empty, Finset.disjoint_left] at st₂_disj
+
+            choose a t₂_ne_s using t₂_ne_s
+            choose b u₂_ne_s using u₂_ne_s
+            use b; constructor
+
+            intro b_nin_tu₂
+            choose b_nin_t₂ b_nin_u₂ using b_nin_tu₂
+            rw [← u₂_ne_s]; assumption
+
+            intro b_in_s
+            specialize st₂_disj b_in_s
+            rw [← u₂_ne_s] at b_in_s
+            constructor <;> assumption
+          · rw [t₂_empty, Finset.empty_union]; assumption
+        · have contra : t ≠ ∅ := by apply face_nonempty X t t_in_X
+          contradiction
+
+        rw [Finset.union_comm]; assumption
+        rw [← u'_decomp]; assumption
+        apply face_nonempty _ _ u₂_in_bd
+      · right; assumption
+
+      constructor; rfl
+      rw [← u'_decomp]; assumption
+
+      use u₁; constructor
+      cases' u₁_in_link with u₁_in_link u₁_empty
+      · choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
+        cases' t₁_in_link with t₁_in_link t₁_empty
+        rotate_left
+        have contra : t ≠ ∅ := by apply face_nonempty X t t_in_X
+        contradiction
+
+        cases' tu_in_link with tu_in_link tu_empty
+        rotate_left
+        rw [Finset.union_eq_empty] at tu_empty
+        choose t_empty u_empty using tu_empty
+        contradiction
+
+        choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
+        choose tu₁_in_X stu₁_in_X stu₁_disj using tu_in_link
+
+        left; constructor; constructor; assumption
+        apply stellar_subdiv_anticomm_link_left_bd_u_mem_link
+          X s t u t u₁ ∅ u'₂ ∅ t_in_X tu_disj stu₁_in_X
+        rw [Finset.empty_union]
+        rw [Finset.empty_union]; assumption
+        apply Finset.empty_subset
+
+        have stu₁_diff_in_link : s \ t ∪ u₁ ∈ Lk(X, t).faces ∧ s \ t ∩ u₁ = ∅ :=
+        by
+          apply stellar_subdiv_anticomm_link_left_bd_stu_mem_link
+            X s t u t u₁ ∅ u'₂ ∅ t_in_X tu_disj su₁_disj stu₁_in_X
+          rw [Finset.empty_union]
+          rw [Finset.empty_union]; assumption
+          rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_iff_inter_eq_empty]
+          assumption
+          rw [Finset.empty_ssubset, ← Finset.nonempty_coe_sort]
+          assumption
+        choose stu₁_diff_in_link stu₁_diff_disj using stu₁_diff_in_link
+        simp only [link, Set.mem_setOf] at stu₁_diff_in_link
+        choose stu₁_diff_in_X tstu₁_diff_in_X tstu₁_diff_disj using stu₁_diff_in_link
+
+        constructor; constructor; assumption
+        constructor <;> assumption
+        assumption
+      · right; assumption
+
+      constructor; rw [← u'_decomp]; assumption
+      apply face_nonempty _ _ u_in_join
+    · subst u'₂_empty; rw [Finset.empty_union] at *; subst u_decomp
+      cases' u₁_in_link with u₁_in_link u₁_empty
+      rotate_left
+      have contra : u ≠ ∅ := by apply face_nonempty _ _ u_in_join
+      contradiction
+
+      cases' tu_in_link with tu_in_link tu_empty
+      rotate_left; contradiction
+      cases' t₁_in_link with t₁_in_link t₁_empty
+      rotate_left
+      have contra : t ≠ ∅ := by apply face_nonempty _ _ t_in_X
+      contradiction
+
+      choose u_in_X su_in_X su_disj using u₁_in_link
+      choose t_in_X st_in_X st_disj using t₁_in_link
+      choose tu_in_X stu_in_X stu_disj using tu_in_link
+      left; constructor; constructor; assumption
+      constructor; assumption; assumption
+
+      rw [t_decomp, Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self]
+      apply @stellar_subdiv_anticomm_link_left_ad_st_nss_u _ 𝕜 _ _ _ _ _
+        X s t u t₁ u t₂ ∅ _ x s_in_X x_nin_X t_in_X u_in_X tu_disj su_disj
+
+      cases' t₂_in_bd with t₂_in_bd t₂_empty
+      · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+        choose t₂_sss_s t₂_ne_s using t₂_in_bd
+        assumption
+      · rw [t₂_empty, Finset.empty_ssubset, ← Finset.nonempty_coe_sort]
+        assumption
+
+      simp only [Set.mem_union, Set.mem_singleton_iff, Finset.union_empty, join_proj_mem]
+      cases' t₂_in_bd with t₂_in_bd t₂_empty
+      · left; use ∅; constructor
+        right; rfl
+        use t₂; constructor
+        left; assumption
+        constructor
+        rw [Finset.empty_union]
+        apply face_nonempty _ _ t₂_in_bd
+      · right; assumption
+
+      assumption
+      rw [Finset.union_empty]
+
+  -- choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
+  -- choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
+  -- choose tu₁_in_X stu₁_in_X stu₁_disj using tu_in_link
+  -- rw [join_proj_disj_union_mem] at tu_in_join
+  -- choose t₃ t₃_in_barycenter u₃ u₃_in_barycenter t₂ t₂_in_bd u₂ u₂_in_bd tu₂_decomp using tu_in_join
+  -- choose t₂_decomp u₂_decomp tu₃_in_barycenter tu₂_in_bd using tu₂_decomp
+  -- have t₃_empty : t₃ = ∅ :=
+  -- by
+  --   simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+  --   cases' t₃_in_barycenter with t₃_empty t₃_eq_x
+  --   apply t₃_empty
+  --   have contra : x ∈ vertices X := by
+  --     rw [vertex_iff_singleton]
+  --     apply X.subset_closed t
+  --     apply t_in_X
+  --     rw [t_decomp, t₂_decomp, t₃_eq_x, Finset.union_assoc]
+  --     apply Finset.subset_union_left
+  --   contradiction
+  -- subst t₃_empty
+  -- simp only [Finset.empty_union] at t₂_decomp u₂_decomp tu₃_in_barycenter
+  -- rw [simplexBoundary_mem_iff_subset] at tu₂_in_bd u₂_in_bd t₂_in_bd
+  -- rw [t₂_decomp] at *
+  -- rw [u₂_decomp] at *
+  -- clear t₂_decomp u₂_decomp u_in_join u'₂_in_join t'₂_in_join tu₃_in_barycenter t₃_in_barycenter t'₂ u'₂
+  -- right
+  -- rw [join_proj_mem]
+  -- have tu₂_disj : t₂ ∩ u₂ = ∅ :=
+  -- by
+  --   rw [← Finset.subset_empty]
+  --   apply @Finset.Subset.trans _ _ (t ∩ u)
+  --   apply Finset.inter_subset_inter
+  --   rw [t_decomp]
+  --   apply @Finset.subset_union_left _ _ t₂ t₁
+  --   rw [u_decomp, Finset.union_assoc, Finset.union_comm, Finset.union_assoc]
+  --   apply @Finset.subset_union_left _ _ u₂ (u₁ ∪ u₃)
+  --   rw [Finset.subset_empty]
+  --   apply tu_disj
+  -- have st₁_sdiff_ident : s \ t₁ = s :=
+  -- by
+  --   apply Finset.sdiff_eq_self_of_disjoint
+  --   rw [Finset.disjoint_iff_inter_eq_empty]
+  --   apply st₁_disj
+  -- have u₂_ss_st₂_sdiff : u₂ ⊂ s \ t₂ :=
+  -- by
+  --   apply
+  --     stellar_subdiv_anticomm_link_left_bd_u_ss_st X s t u t₁ u₁ t₂ u₂ u₃ x s_in_X x_nin_X t_in_X
+  --       t_in_star_bd tu_disj t₂_in_bd tu₂_in_bd t_decomp u_decomp
+  -- have u₂_ss_st : u₂ ⊂ s \ t :=
+  -- by
+  --   rw [t_decomp, Finset.sdiff_union_distrib, st₁_sdiff_ident, Finset.inter_comm,
+  --     Finset.inter_sdiff, Finset.inter_self]
+  --   apply u₂_ss_st₂_sdiff
+  -- rw [Finset.ssubset_def] at t₂_in_bd
+  -- choose t₂_ss_s s_nss_t₂ using t₂_in_bd
+  -- use u₃ ∪ u₂; constructor
+  -- rw [join_proj_disj_union_mem]
+  -- use u₃; constructor; apply u₃_in_barycenter
+  -- use∅; constructor; apply simplicialComplex_empty_simplex
+  -- use∅; constructor; apply simplicialComplex_empty_simplex
+  -- use u₂; constructor
+  -- rw [@simplexBoundary_mem_iff_subset _ _ _ _ (star_boundary_diff_ne t_in_star_bd)]
+  -- apply u₂_ss_st
+  -- constructor; symm; apply Finset.union_empty
+  -- constructor; symm; apply Finset.empty_union
+  -- constructor; rw [Finset.union_empty]
+  -- apply u₃_in_barycenter
+  -- rw [Finset.empty_union,
+  --   @simplexBoundary_mem_iff_subset _ _ _ _ (star_boundary_diff_ne t_in_star_bd)]
+  -- apply u₂_ss_st
+  -- use u₁; constructor; constructor; constructor
+  -- apply u₁_in_X
+  -- apply
+  --   stellar_subdiv_anticomm_link_left_bd_u_mem_link X s t u t₁ u₁ t₂ u₂ u₃ x s_in_X x_nin_X t_in_X
+  --     t_in_star_bd tu_disj stu₁_in_X t_decomp u_decomp t₂_ss_s
+  -- apply
+  --   stellar_subdiv_anticomm_link_left_bd_stu_mem_link X s t u t₁ u₁ t₂ u₂ u₃ x s_in_X x_nin_X t_in_X
+  --     t_in_star_bd tu_disj su₁_disj stu₁_in_X t_decomp u_decomp st₁_sdiff_ident t₂_ss_s
+  -- apply u_decomp
 
 theorem star_boundary_mem_subdiv
     {X : AbstractSimplicialComplex E}
