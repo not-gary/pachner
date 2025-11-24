@@ -4,6 +4,8 @@ import Pachner.SimplicialComplex
 import Pachner.SimplicialMap
 import Pachner.SimplicialSubcomplex
 
+set_option synthInstance.checkSynthOrder false
+
 variable {E F 𝕜 : Type _}
 variable [DecidableEq E] [DecidableEq F] [DecidableEq 𝕜]
 variable [AddCommGroup E] [AddCommGroup F]
