@@ -404,6 +404,10 @@ by
   use f.comp g
   apply iso_comp_is_iso <;> assumption
 
+instance IsSimpliciallyIso.Trans
+  : Trans (@IsSimpliciallyIso E F _ _) (@IsSimpliciallyIso F G _ _) (@IsSimpliciallyIso E G _ _) where
+    trans := simplicial_iso_trans _ _ _
+
 theorem simplicial_iso_preserves_equiv
     (X Y : AbstractSimplicialComplex E)
   : X.faces = Y.faces → X ≅ Y :=

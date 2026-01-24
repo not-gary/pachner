@@ -14,6 +14,8 @@ def StellarMove : AbstractSimplicialComplex E → AbstractSimplicialComplex E �
         Y ≅ @stellarSubdivision _ 𝕜 _ _ _ _ _ X s x Hs Hx) ∨
       X ≅ Y
 
+notation X " ≅ₛₜₘ[" 𝕜 "] " Y : 50 => @StellarMove _ 𝕜 _ _ _ _ _ X Y
+
 section SynthOrder
 set_option synthInstance.checkSynthOrder false
 
@@ -174,10 +176,7 @@ by
 @[refl]
 theorem stellarEquiv_refl
     (X : AbstractSimplicialComplex E)
-  : X ≅ₛₜ[𝕜] X :=
-by
-  unfold StellarEquiv
-  apply Relation.ReflTransGen.refl
+  : X ≅ₛₜ[𝕜] X := Relation.ReflTransGen.refl
 
 @[symm]
 theorem stellarEquiv_symm
@@ -221,10 +220,7 @@ by
 @[trans]
 theorem stellarEquiv_trans
     (X Y Z : AbstractSimplicialComplex E)
-  : X ≅ₛₜ[𝕜] Y → Y ≅ₛₜ[𝕜] Z → X ≅ₛₜ[𝕜] Z :=
-by
-  unfold StellarEquiv
-  apply Relation.transitive_reflTransGen
+  : X ≅ₛₜ[𝕜] Y → Y ≅ₛₜ[𝕜] Z → X ≅ₛₜ[𝕜] Z := Relation.ReflTransGen.trans
 
 theorem stellarEquiv_neg_trans
     (X Y Z : AbstractSimplicialComplex E)
@@ -239,17 +235,59 @@ by
   revert X_eq_Y X_eq_Z
   apply stellarEquiv_trans
 
--- TODO: maybe fix precedence for ≅ so we don't need parenthesis here
+instance StellarEquiv.Trans
+  : Trans
+      (@StellarEquiv E 𝕜 _ _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _ _) where
+    trans := Relation.ReflTransGen.trans
+
+instance StellarEquiv_StellarMove_left.Trans
+  : Trans
+      (@StellarMove E 𝕜 _ _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _ _) where
+    trans := Relation.ReflTransGen.head
+
+instance StellarEquiv_StellarMove_right.Trans
+  : Trans
+      (@StellarEquiv E 𝕜 _ _ _ _ _)
+      (@StellarMove E 𝕜 _ _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _ _) where
+    trans := Relation.ReflTransGen.tail
+
+instance StellarEquiv_SimplicialIso_left.Trans
+  : Trans
+      (@IsSimpliciallyIso E E _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _ _) where
+    trans := (
+by
+  intro X Y Z X_iso_Y Y_eq_Z
+  apply Relation.ReflTransGen.head _ Y_eq_Z
+  simp only [StellarMove, X_iso_Y, or_true]
+)
+
+instance StellarEquiv_SimplicialIso_right.Trans
+  : Trans
+      (@StellarEquiv E 𝕜 _ _ _ _ _)
+      (@IsSimpliciallyIso E E _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _ _) where
+    trans := (
+by
+  intro X Y Z X_eq_Y Y_iso_Z
+  apply Relation.ReflTransGen.tail X_eq_Y
+  simp only [StellarMove, Y_iso_Z, or_true]
+)
+
 theorem stellarEquiv_preserves_iso
     (X Y : AbstractSimplicialComplex E)
   : (X ≅ Y) → X ≅ₛₜ[𝕜] Y :=
 by
   intro X_iso_Y
-  simp only [StellarEquiv]
-  apply Relation.ReflTransGen.single
-  simp only [StellarMove]
-  right; right
-  assumption
+  calc X
+    _ ≅ Y := X_iso_Y
+    _ ≅ₛₜ[𝕜] Y := Relation.ReflTransGen.refl
 
 theorem barycenter_injective_image
     {X : AbstractSimplicialComplex E}
@@ -1432,10 +1470,9 @@ by
   intro X_iso_Z Y_subdiv_X
   have Z_iso_subdiv : Z ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) :=
   by
-    apply simplicial_iso_trans Z X
-    rw [simplicial_iso_symm]
-    assumption
-    assumption
+    calc Z
+      _ ≅ X := by rw [simplicial_iso_symm]; exact X_iso_Z
+      _ ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) := Y_subdiv_X
   let Z_iso_subdiv' := Z_iso_subdiv
   unfold IsSimpliciallyIso at Z_iso_subdiv'
   choose f f_iso using Z_iso_subdiv'

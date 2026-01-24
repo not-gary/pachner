@@ -39,7 +39,6 @@ prefix:75 "∂" => simplexBoundary
 instance simplexBoundary.fintype (s : Finset E) : Fintype (∂s).faces :=
 by
   unfold simplexBoundary
-  dsimp only [AbstractSimplicialComplex.faces]
   apply Set.fintypeDiff
 
 theorem simplexBoundary_subcomplex_simplex
@@ -276,18 +275,19 @@ by
 
 theorem simplexBoundary_coe_image_left
     [Nonempty E]
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E}
+    {φ : SimplicialCoe X F}
     (s_in_X : s ∈ X.faces)
-    (φ : SimplicialCoe X F)
-  : (∂Finset.image φ.coe s).faces ⊆ (simplicialImage φ.coe (∂s)).faces :=
+  : (∂Finset.image φ.coe s) ⊆ (simplicialImage φ.coe (∂s)) :=
 by
+  simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
   simp only [simplexBoundary, simplicialImage, Set.subset_def]
   simp only [Set.mem_setOf, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset]
   intro t t_in_bd
   choose t_ss_φs t_ne_φs_ne_empty using t_in_bd
-  simp at t_ne_φs_ne_empty
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff, not_or] at t_ne_φs_ne_empty
   choose t_ne_φs t_ne_empty using t_ne_φs_ne_empty
   have inv_t : Finset.image φ.coe (Finset.image (φ⁻ᶜ).map t) = t :=
     by
@@ -346,29 +346,30 @@ by
   contrapose
   simp only [Classical.not_not]
   intro φt_eq_s_or_empty
-  simp at φt_eq_s_or_empty
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff, Finset.image_eq_empty] at φt_eq_s_or_empty
   cases' φt_eq_s_or_empty with φt_eq_s t_empty
   · apply_fun fun x => Finset.image φ.coe x at φt_eq_s
     rw [inv_t] at φt_eq_s
     assumption
   · rw [t_empty] at t_ne_empty
-    simp at t_ne_empty
+    simp only [not_true_eq_false] at t_ne_empty
   assumption
 
 theorem simplexBoundary_coe_image_right
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E}
+    {φ : SimplicialCoe X F}
     (s_in_X : s ∈ X.faces)
-    (φ : SimplicialCoe X F)
-  : (simplicialImage φ.coe (∂s)).faces ⊆ (∂Finset.image φ.coe s).faces :=
+  : (simplicialImage φ.coe (∂s)) ⊆ (∂Finset.image φ.coe s) :=
 by
+  simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
   simp only [simplexBoundary, simplicialImage, Set.subset_def]
   simp only [Set.mem_setOf, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset]
   intro t t_in_img
   choose u u_in_bd φu_t using t_in_img
   choose u_ss_s u_ne_s_ne_empty using u_in_bd
-  simp at u_ne_s_ne_empty
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff, not_or] at u_ne_s_ne_empty
   choose u_ne_s u_not_empty using u_ne_s_ne_empty
   constructor
   rw [← φu_t]
@@ -380,7 +381,7 @@ by
   simp only [Classical.not_not]
   intro φu_eq_φs
 
-  simp at φu_eq_φs
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff, Finset.image_eq_empty] at φu_eq_φs
   cases' φu_eq_φs with φu_eq_φs u_empty
   · simp only [← Finset.coe_inj, Finset.coe_image, Set.ext_iff] at φu_eq_φs ⊢
     intro a
@@ -406,7 +407,7 @@ by
     use s
     constructor <;> assumption
   · rw [u_empty] at u_not_empty
-    simp at u_not_empty
+    simp only [not_true_eq_false] at u_not_empty
 
 theorem simplexBoundary_coe_image
     [Nonempty E]
@@ -414,18 +415,14 @@ theorem simplexBoundary_coe_image
     (s : Finset E)
     (s_in_X : s ∈ X.faces)
     (φ : SimplicialCoe X F)
-  : (∂(Finset.image φ.coe s)).faces = (simplicialImage φ.coe (∂s)).faces :=
+  : (∂(Finset.image φ.coe s)) = (simplicialImage φ.coe (∂s)) :=
 by
-  rw [Set.Subset.antisymm_iff]
-  constructor
-  apply simplexBoundary_coe_image_left
-  assumption
-  apply simplexBoundary_coe_image_right
-  assumption
+  rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
+  exact ⟨simplexBoundary_coe_image_left s_in_X, simplexBoundary_coe_image_right s_in_X ⟩
 
 theorem simplexBoundary_subcomplex_simplices
-    (X : AbstractSimplicialComplex E)
-    (s t : Finset E)
+    {X : AbstractSimplicialComplex E}
+    {s t : Finset E}
     (s_in_X : s ∈ X.faces)
   : t ∈ (∂s).faces → t ∈ X.faces :=
 by
@@ -433,7 +430,7 @@ by
   simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset]
       at t_in_bd
   choose t_ss_s t_ne_s_empty using t_in_bd
-  simp at t_ne_s_empty
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff, not_or] at t_ne_s_empty
   choose t_ne_s t_ne_empty using t_ne_s_empty
   apply X.down_closed <;> assumption
 
@@ -441,12 +438,11 @@ theorem simplexBoundary_subcomplex
     (X : AbstractSimplicialComplex E)
     (s : Finset E)
     (s_in_X : s ∈ X.faces)
-  : IsSubcomplex (∂s) X := -- Note: could not get Lean to unfold `∂s ⊆ X`
+  : ∂s ⊆ X :=
 by
-  simp only [IsSubcomplex, Set.subset_def]
+  simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def]
   intro u
-  apply simplexBoundary_subcomplex_simplices
-  assumption
+  exact simplexBoundary_subcomplex_simplices s_in_X
 
 theorem simplexBoundary_subcomplex_vert
     (X : AbstractSimplicialComplex E)
@@ -455,35 +451,16 @@ theorem simplexBoundary_subcomplex_vert
     (s_in_X : s ∈ X.faces)
   : x ∈ (∂s).vertices → x ∈ X.vertices :=
 by
-  intro x_in_bd
-  simp only [vertices_setOf, Set.mem_setOf] at x_in_bd ⊢
-  choose t t_in_bd x_in_t using x_in_bd
-  use t; constructor
-  apply simplexBoundary_subcomplex_simplices X s t s_in_X t_in_bd
-  assumption
+  rw [AbstractSimplicialComplex.mem_vertices, AbstractSimplicialComplex.mem_vertices]
+  exact simplexBoundary_subcomplex_simplices s_in_X
 
 theorem simplexBoundary_mem_iff_subset
     (s t : Finset E)
     [Nonempty s]
   : t ∈ (∂s).faces ↔ t ⊂ s ∧ t ≠ ∅ :=
 by
-  simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
-    Set.mem_singleton_iff, Finset.ssubset_iff_subset_ne]
-  constructor
-  intro t_in_bd
-  choose t_ss_s t_ne_s_ne_empty using t_in_bd
-  simp at t_ne_s_ne_empty
-  choose t_ne_s t_ne_empty using t_ne_s_ne_empty
-  constructor
-  constructor <;> assumption
-  assumption
-  intro t_ss_s
-  choose t_ss_s t_ne_empty using t_ss_s
-  choose t_ss_s t_ne_s using t_ss_s
-  constructor
-  assumption
-  simp
-  constructor <;> assumption
+  simp only [simplexBoundary, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, not_or,
+    Set.mem_insert_iff, Finset.ssubset_iff_subset_ne, and_assoc, Set.notMem_singleton_iff]
 
 theorem subsimplex_boundary_subcomplex
     (s t : Finset E)
@@ -494,7 +471,7 @@ by
   simp only [Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
     Set.mem_singleton_iff] at u_in_bd_s ⊢
   choose u_ss_s u_ne_s_empty using u_in_bd_s
-  simp at u_ne_s_empty
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff, not_or] at u_ne_s_empty
   choose u_ne_s u_ne_empty using u_ne_s_empty
   constructor
   simp only [Finset.subset_iff] at u_ss_s ⊢

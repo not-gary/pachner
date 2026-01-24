@@ -143,8 +143,7 @@ by
   simp only [Set.MapsTo]
   intro x x_vert
   rw [AbstractSimplicialComplex.vertices_eq]
-  dsimp only [simplicialImage, AbstractSimplicialComplex.faces]
-  simp only [Set.mem_iUnion]
+  simp only [simplicialImage, Set.mem_iUnion]
   use {φ.coe x}
   constructor
   rw [Finset.mem_coe]
@@ -161,8 +160,7 @@ theorem coe_comp_image
     (ψ : SimplicialCoe (φ.coe ''ˢ X) G)
   : ((ψ.coe ∘ φ.coe) ''ˢ X).faces = (ψ.coe ''ˢ (φ.coe ''ˢ X)).faces :=
   by
-  dsimp only [simplicialImage, AbstractSimplicialComplex.faces]
-  rw [Set.ext_iff]
+  simp only [simplicialImage, Set.ext_iff]
   intro s
   constructor
   · intro s_in_comp

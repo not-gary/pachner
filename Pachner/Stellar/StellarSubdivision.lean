@@ -814,7 +814,6 @@ by
   simp only [barycenterStar]
   apply Set.fintypeSep
 
-/- ././././Mathport/Syntax/Translate/Expr.lean:373:4: unsupported set replacement {(«expr ∪ »(s, «expr \ »(t, {x}))) | t «expr ∈ » barycenter_star[barycenter_star] X s x s_in_X x_nin_X} -/
 def barycenterWeld
     (X : AbstractSimplicialComplex E)
     (s : Finset E) [s_ne : Nonempty s]

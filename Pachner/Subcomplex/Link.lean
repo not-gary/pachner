@@ -12,9 +12,7 @@ def link
   : AbstractSimplicialComplex E :=
     AbstractSimplicialComplex.mk
     ({t ∈ X.faces | s ∪ t ∈ X.faces ∧ s ∩ t = ∅})
-    (by
-      simp only [Set.mem_setOf, not_and_or]
-      left; apply X.empty_notMem)
+    (by simp only [Set.mem_setOf, not_and_or, X.empty_notMem, not_false_eq_true, true_or])
     (by
       intro t u t_in_link u_sset_t u_ne
       simp only [Set.mem_setOf] at ⊢ t_in_link
@@ -41,8 +39,7 @@ instance link.fintype
     (s : Finset E)
   : Fintype (link X s).faces :=
 by
-  simp only [link, AbstractSimplicialComplex.faces]
-  rw [Set.sep_and]
+  simp only [link, Set.sep_and]
   have dec_left : DecidablePred fun x : Finset E => s ∪ x ∈ X.faces :=
     by
     unfold DecidablePred
@@ -62,12 +59,11 @@ by
   apply @Set.fintypeInter _ _ _ _ fin_left fin_right
 
 theorem link_coe_image_left
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E}
+    {φ : SimplicialCoe X F}
     (s_in_X : s ∈ X.faces)
-    (φ : SimplicialCoe X F)
-  : Lk(φ.coe ''ˢ X, Finset.image φ.coe s).faces ⊆
-      (φ.coe ''ˢ Lk(X, s)).faces :=
+  : Lk(φ.coe ''ˢ X, Finset.image φ.coe s) ⊆ (φ.coe ''ˢ Lk(X, s)) :=
 by
   simp only [link, simplicialImage, Set.subset_def]
   simp only [Set.mem_sep_iff, Set.mem_setOf]
@@ -135,13 +131,12 @@ by
   assumption
 
 theorem link_coe_image_right
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E}
+    {φ : SimplicialCoe X F}
     (s_in_X : s ∈ X.faces)
-    (φ : SimplicialCoe X F)
   :
-    (φ.coe ''ˢ Lk(X, s)).faces ⊆
-      Lk(φ.coe ''ˢ X, Finset.image φ.coe s).faces :=
+    (φ.coe ''ˢ Lk(X, s)) ⊆ Lk(φ.coe ''ˢ X, Finset.image φ.coe s) :=
 by
   simp only [link, simplicialImage, Set.subset_def]
   simp only [Set.mem_sep_iff, Set.mem_setOf]
@@ -167,18 +162,15 @@ theorem link_coe_image
     (s : Finset E)
     (s_in_X : s ∈ X.faces)
     (φ : SimplicialCoe X F)
-  : Lk(φ.coe ''ˢ X, Finset.image φ.coe s).faces =
-      (φ.coe ''ˢ Lk(X, s)).faces :=
+  : Lk(φ.coe ''ˢ X, Finset.image φ.coe s) = (φ.coe ''ˢ Lk(X, s)) :=
 by
-  rw [Set.Subset.antisymm_iff]
-  constructor
-  apply link_coe_image_left; assumption
-  apply link_coe_image_right; assumption
+  rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
+  exact ⟨link_coe_image_left s_in_X, link_coe_image_right s_in_X⟩
 
 theorem link_subcomplex_simplices
     (X : AbstractSimplicialComplex E)
     (s t : Finset E)
-  : t ∈ Lk(X, s).faces → t ∈ X.faces :=
+  : t ∈ Lk(X, s) → t ∈ X :=
 by
   intro t_in_link
   simp only [link, Set.mem_sep_iff] at t_in_link
@@ -190,9 +182,7 @@ theorem link_subcomplex
     (s : Finset E)
   : Lk(X, s) ⊆ X :=
 by
-  simp only [IsSubcomplex, AbstractSimplicialComplex.instHasSubset, Set.subset_def]
-  intro t
-  apply link_subcomplex_simplices
+  exact link_subcomplex_simplices _ _
 
 theorem link_iso
     (X : AbstractSimplicialComplex E)
@@ -301,36 +291,28 @@ by
 theorem link_fact_inter
     (X Y : AbstractSimplicialComplex E)
     (s : Finset E)
-  : Lk(X ∩ Y, s).faces = Lk(X, s).faces ∩ Lk(Y, s).faces :=
+  : Lk(X ∩ Y, s) = Lk(X, s) ∩ Lk(Y, s) :=
 by
-  simp only [link, simplicialInter, Set.ext_iff, Set.mem_inter_iff, Set.mem_sep_iff]
+  simp only [AbstractSimplicialComplex.ext_iff, link, AbstractSimplicialComplex.instHasInter,
+    simplicialInter, Set.ext_iff, Set.mem_inter_iff, Set.mem_sep_iff, and_assoc]
   intro t
   constructor
   · intro t_in_link
-    choose t_in_XY st_in_XY st_disj using t_in_link
-    choose t_in_X t_in_Y using t_in_XY
-    choose st_in_X st_in_Y using st_in_XY
-    constructor; constructor
-    assumption
-    constructor <;> assumption
-    constructor; assumption
-    constructor <;> assumption
+    choose t_in_X t_in_Y st_in_X st_in_Y st_disj using t_in_link
+    exact ⟨t_in_X, st_in_X, st_disj, t_in_Y, st_in_Y, st_disj⟩
   · intro t_in_inter
-    choose t_in_X t_in_Y using t_in_inter
-    choose t_in_X st_in_X st_disj using t_in_X
-    choose t_in_Y st_in_Y st_disj using t_in_Y
-    constructor; constructor <;> assumption
-    constructor; constructor <;> assumption
-    assumption
+    choose t_in_X st_in_X st_disj t_in_Y st_in_Y _ using t_in_inter
+    exact ⟨t_in_X, t_in_Y, st_in_X, st_in_Y, st_disj⟩
 
 theorem link_fact_union_left
     (X Y : AbstractSimplicialComplex E)
     (s : Finset E)
     (s_in_X : s ∈ X.faces)
     (s_nin_Y : s ∉ Y.faces)
-  : Lk(X ∪ Y, s).faces = Lk(X, s).faces :=
+  : Lk(X ∪ Y, s) = Lk(X, s) :=
 by
-  simp only [link, simplicialUnion, Set.ext_iff, Set.mem_sep_iff, Set.mem_union]
+  simp only [AbstractSimplicialComplex.ext_iff, link, simplicialUnion, Set.ext_iff,
+    Set.mem_sep_iff, Set.mem_union]
   intro t
   constructor
   · intro t_in_XY
@@ -366,44 +348,18 @@ theorem link_fact_union_right
     (s : Finset E)
     (s_nin_X : s ∉ X.faces)
     (s_in_Y : s ∈ Y.faces)
-  : Lk(X ∪ Y, s).faces = Lk(Y, s).faces :=
+  : Lk(X ∪ Y, s) = Lk(Y, s) :=
 by
-  simp only [link, simplicialUnion, Set.ext_iff, Set.mem_sep_iff, Set.mem_union]
-  intro t
-  constructor
-  · intro t_in_XY
-    choose t_in_XY st_in_XY st_disj using t_in_XY
-    cases' t_in_XY with contra t_in_Y <;> cases' st_in_XY with contra st_in_X
-    have s_in_X : s ∈ X.faces := by
-      apply X.down_closed contra
-      apply Finset.subset_union_left
-      apply face_nonempty Y s s_in_Y
-    contradiction
-    constructor
-    apply Y.down_closed st_in_X
-    apply Finset.subset_union_right
-    apply face_nonempty X t contra
-    constructor <;> assumption
-    have s_in_X : s ∈ X.faces := by
-      apply X.down_closed contra
-      apply Finset.subset_union_left
-      apply face_nonempty Y s s_in_Y
-    contradiction
-    constructor; assumption
-    constructor <;> assumption
-  · intro t_in_Y
-    choose t_in_Y st_in_Y st_disj using t_in_Y
-    constructor; right; assumption
-    constructor; right; assumption
-    assumption
+  rw [simplicial_union_comm]
+  exact link_fact_union_left Y X s s_in_Y s_nin_X
 
 theorem link_fact_union
     (X Y : AbstractSimplicialComplex E)
     (s : Finset E)
-    (s_in_XY : s ∈ (X ∩ Y).faces)
-  : Lk(X ∪ Y, s).faces = Lk(X, s).faces ∪ Lk(Y, s).faces :=
+  : Lk(X ∪ Y, s) = Lk(X, s) ∪ Lk(Y, s) :=
 by
-  simp only [link, simplicialUnion, Set.ext_iff, Set.mem_sep_iff, Set.mem_union]
+  simp only [AbstractSimplicialComplex.ext_iff, link, simplicialUnion, Set.ext_iff,
+    Set.mem_sep_iff, Set.mem_union]
   intro t
   constructor
   · intro t_in_XY
@@ -440,23 +396,22 @@ by
 
 theorem link_ident
     (X : AbstractSimplicialComplex E)
-  : (Lk(X, ∅)).faces = X.faces :=
+  : (Lk(X, ∅)) = X :=
 by
-  simp only [link, Set.ext_iff, Set.mem_sep_iff]
-  simp only [Finset.empty_union, Finset.empty_inter]
-  simp only [and_true, and_self, forall_const]
+  simp only [AbstractSimplicialComplex.ext_iff, link, Set.ext_iff, Set.mem_sep_iff,
+    Finset.empty_union, Finset.empty_inter, and_true]
+  simp only [and_self, forall_const]
 
 theorem link_ident_iso
     (X : AbstractSimplicialComplex E)
   : Lk(X, ∅) ≅ X :=
 by
-  apply simplicial_iso_preserves_equiv
-  apply link_ident
+  rw [link_ident]
 
 theorem link_disjoint_base
     (X : AbstractSimplicialComplex E)
     (s t : Finset E)
-  : t ∈ Lk(X, s).faces → Disjoint s t :=
+  : t ∈ Lk(X, s) → Disjoint s t :=
 by
   intro t_in_link
   simp only [link, Set.mem_sep_iff] at t_in_link
@@ -470,7 +425,7 @@ theorem face_in_link_of_complement
     (s_in_X : s ∈ X.faces)
     (t_sset_s : t ⊆ s)
     (t_ne_s : t ≠ s)
-  : s \ t ∈ Lk(X, t).faces :=
+  : s \ t ∈ Lk(X, t) :=
 by
   simp only [link, Set.mem_union, Set.mem_sep_iff]
   constructor
@@ -495,14 +450,12 @@ theorem link_of_face_complement
     (X : AbstractSimplicialComplex E)
     (s t : Finset E)
     (t_sset_s : t ⊆ s)
-  : Lk(X, s) ≅ Lk(Lk(X, t), s \ t) :=
+  : Lk(X, s) = Lk(Lk(X, t), s \ t) :=
 by
   by_cases h : s = t
   simp only [h, Finset.sdiff_self]
-  rw [simplicial_iso_symm]
-  apply link_ident_iso
-  apply simplicial_iso_preserves_equiv
-  simp only [link, Set.ext_iff]
+  rw [link_ident]
+  simp only [AbstractSimplicialComplex.ext_iff, link, Set.ext_iff]
   intro u
   constructor
   · intro u_in_link
@@ -522,7 +475,7 @@ by
     rw [Classical.not_not]
     intro u_empty
     subst u_empty
-    simp [X.empty_notMem] at u_in_X
+    simp only [X.empty_notMem] at u_in_X
     rw [← su_empty]
     apply Finset.inter_congr_right
     rw [su_empty]
@@ -541,7 +494,7 @@ by
     rw [Classical.not_not]
     intro u_empty
     subst u_empty
-    simp [X.empty_notMem] at u_in_X
+    simp only [X.empty_notMem] at u_in_X
     constructor
     rw [← Finset.union_assoc, Finset.union_comm t, Finset.sdiff_union_self_eq_union]
     have Hts : s ∪ t = s := by rw [Finset.union_eq_left]; assumption

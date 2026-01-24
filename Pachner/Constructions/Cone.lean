@@ -73,7 +73,7 @@ instance Ball.fintype
     (s : Finset E)
   : Fintype (mBall X s).faces :=
 by
-  simp only [mBall, AbstractSimplicialComplex.faces, Finset.coe_sdiff]
+  simp only [mBall, Finset.coe_sdiff]
   have fin_power : Fintype ↑(AbstractSimplicialComplex.vertices E Lk(X, s)).toFinset.powerset :=
   by
     apply FinsetCoe.fintype

@@ -15,11 +15,10 @@ variable [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
 -- Lemma 2.4 (1), p.8
 theorem join_distr_union_left
     (X Y Z : AbstractSimplicialComplex E)
-  : (X ⋆ (Y ∪ Z) : AbstractSimplicialComplex (E × 𝕜)) ≅ (X ⋆ Y ∪ X ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) :=
+  : (X ⋆ (Y ∪ Z)) = (X ⋆ Y ∪ X ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  apply simplicial_iso_preserves_equiv
-  dsimp only [simplicialJoin, simplicialUnion, AbstractSimplicialComplex.faces, AbstractSimplicialComplex.instHasUnion]
-  rw [Set.ext_iff]
+  simp only [AbstractSimplicialComplex.ext_iff, simplicialJoin, simplicialUnion,
+    AbstractSimplicialComplex.instHasUnion, Set.ext_iff]
   intro x
   constructor
   · intro H
@@ -72,6 +71,49 @@ by
     assumption
     assumption
 
+theorem simplicialJoin_distr_union_right
+    (X Y Z : AbstractSimplicialComplex E)
+  : ((Y ∪ Z) ⋆ X) = (Y ⋆ X ∪ (Z ⋆ X : AbstractSimplicialComplex (E × 𝕜))) :=
+by
+  simp only [AbstractSimplicialComplex.ext_iff, simplicialJoin,
+    AbstractSimplicialComplex.instHasUnion, simplicialUnion, Set.ext_iff, Set.mem_union,
+    Set.mem_diff, Set.mem_setOf]
+  intro u
+  constructor
+  · intro u_in_join
+    choose u_in_join u_ne using u_in_join
+    choose s s_in_YZ t t_in_X st_eq_u using u_in_join
+    rw [or_or_distrib_right] at s_in_YZ
+    cases' s_in_YZ with s_in_Y s_in_Z
+    left; constructor
+    use s; constructor; assumption
+    use t
+    assumption
+
+    right; constructor
+    use s; constructor; assumption
+    use t
+    assumption
+  · intro u_in_union
+    cases' u_in_union with u_in_XY u_in_XZ
+    choose u_in_XY u_ne using u_in_XY
+    choose s s_in_X t t_in_Y st_eq_u using u_in_XY
+    constructor
+    use s; constructor
+    rw [or_or_distrib_right]
+    left; assumption
+    use t
+    assumption
+
+    choose u_in_XZ u_ne using u_in_XZ
+    choose s s_in_X t t_in_Z st_eq_u using u_in_XZ
+    constructor
+    use s; constructor
+    rw [or_or_distrib_right]
+    right; assumption
+    use t
+    assumption
+
 end Union
 
 
@@ -86,11 +128,10 @@ variable [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
 -- Lemma 2.4 (2), p.8
 theorem join_distr_inter_left
     (X Y Z : AbstractSimplicialComplex E)
-  : (X ⋆ (Y ∩ Z) : AbstractSimplicialComplex (E × 𝕜)) ≅ (X ⋆ Y ∩ (X ⋆ Z) : AbstractSimplicialComplex (E × 𝕜)) :=
+  : (X ⋆ (Y ∩ Z) : AbstractSimplicialComplex (E × 𝕜)) = (X ⋆ Y ∩ (X ⋆ Z) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  apply simplicial_iso_preserves_equiv
-  dsimp only [simplicialJoin, simplicialInter, AbstractSimplicialComplex.faces, AbstractSimplicialComplex.instHasInter]
-  rw [Set.ext_iff]
+  simp only [AbstractSimplicialComplex.ext_iff, simplicialJoin, simplicialInter,
+    AbstractSimplicialComplex.instHasInter, Set.ext_iff]
   intro x
   constructor
   · intro H
@@ -157,13 +198,9 @@ theorem join_distl_star
     (X Y : AbstractSimplicialComplex E)
     (s : Finset E)
     (s_in_X : s ∈ X.faces)
-  : (Y ⋆ St(X, s) : AbstractSimplicialComplex (E × 𝕜)) ≅ (St(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
+  : (St(X, s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) = (St(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  apply simplicial_iso_trans (Y ⋆ St(X, s)) (St(X, s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜))
-  apply simplicialJoin_comm
-  apply simplicial_iso_preserves_equiv
-  dsimp only [simplicialJoin, _root_.star, AbstractSimplicialComplex.faces]
-  rw [Set.ext_iff]
+  simp only [simplicialJoin, _root_.star, AbstractSimplicialComplex.ext_iff, Set.ext_iff]
   intro x
   repeat' rw [Set.mem_setOf, Set.mem_diff, Set.mem_singleton_iff]
   constructor
@@ -266,16 +303,15 @@ variable [DecidableEq E ][AddCommGroup E]
 variable {𝕜 : Type _}
 variable [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
 
-theorem join_distr_starComplement_simplices
-    (X Y : AbstractSimplicialComplex E)
-    (s : Finset E)
+theorem join_distr_starComplement
+    {X Y : AbstractSimplicialComplex E}
+    {s : Finset E}
     [Nonempty s]
     (s_in_X : s ∈ X.faces)
-  : (starComplement X s ⋆ Y).faces =
-      (starComplement (X ⋆ Y) (s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)).faces :=
+  : (starComplement X s) ⋆ Y =
+      (starComplement (X ⋆ Y) (s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  dsimp only [simplicialJoin, starComplement, AbstractSimplicialComplex.faces]
-  rw [Set.ext_iff]
+  simp only [simplicialJoin, starComplement, AbstractSimplicialComplex.ext_iff, Set.ext_iff]
   intro x
   repeat' rw [Set.mem_setOf, Set.mem_diff, Set.mem_singleton_iff]
   constructor
@@ -333,19 +369,8 @@ by
       rw [t_empty]
       assumption
 
-theorem join_distr_starComplement
-    (X Y : AbstractSimplicialComplex E)
-    (s : Finset E)
-    [Nonempty s]
-    (s_in_X : s ∈ X.faces)
-  : ((starComplement X s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) ≅
-      (starComplement (X ⋆ Y) (s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
-by
-  apply simplicial_iso_preserves_equiv
-  apply join_distr_starComplement_simplices
-  assumption
-
 -- Lemma 2.2 (3), p.7
+-- TODO: could be = instead of ≅ but requires some work
 theorem join_distl_starComplement
     (X Y : AbstractSimplicialComplex E)
     (s : Finset E)
@@ -354,10 +379,9 @@ theorem join_distl_starComplement
   : (Y ⋆ (starComplement X s) : AbstractSimplicialComplex (E × 𝕜)) ≅
       (starComplement (X ⋆ Y) (s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  apply simplicial_iso_trans (Y ⋆ starComplement X s) (starComplement X s ⋆ Y : AbstractSimplicialComplex (E × 𝕜))
-  apply simplicialJoin_comm
-  apply join_distr_starComplement
-  assumption
+  calc Y ⋆ (starComplement X s)
+    _ ≅ (starComplement X s) ⋆ Y := simplicialJoin_comm
+    _ = starComplement (X ⋆ Y) (s ⊔ₛ ∅) := join_distr_starComplement s_in_X
 
 end StarComplement
 
@@ -372,16 +396,12 @@ variable [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
 
 -- Lemma 2.2 (1), p.7
 theorem join_distl_link
-    (X Y : AbstractSimplicialComplex E)
-    (s : Finset E)
+    {X Y : AbstractSimplicialComplex E}
+    {s : Finset E}
     (s_in_X : s ∈ X.faces)
-  : (Y ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜)) ≅ (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
+  : (Lk(X, s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) = (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  apply simplicial_iso_trans (Y ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜)) (Lk(X, s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜))
-  apply simplicialJoin_comm
-  apply simplicial_iso_preserves_equiv
-  dsimp only [simplicialJoin, link, AbstractSimplicialComplex.faces]
-  rw [Set.ext_iff]
+  simp only [simplicialJoin, link, AbstractSimplicialComplex.ext_iff, Set.ext_iff]
   intro x
   repeat' rw [Set.mem_setOf]
   constructor
@@ -506,11 +526,9 @@ theorem join_fact_link
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)
   : (Lk(X ⋆ Y, s ⊔ₛ t) : AbstractSimplicialComplex (E × 𝕜))
-      ≅ (Lk(X, s) ⋆ Lk(Y, t) : AbstractSimplicialComplex (E × 𝕜)) :=
+      = (Lk(X, s) ⋆ Lk(Y, t) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  apply simplicial_iso_preserves_equiv
-  dsimp only [link, simplicialJoin, AbstractSimplicialComplex.faces]
-  rw [Set.ext_iff]
+  simp only [link, simplicialJoin, AbstractSimplicialComplex.ext_iff, Set.ext_iff]
   intro x
   repeat' rw [Set.mem_setOf, Set.mem_diff, Set.mem_singleton_iff]
   constructor

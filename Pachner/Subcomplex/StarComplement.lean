@@ -34,9 +34,9 @@ notation X "\\St(" X ", " s ")" => starComplement X s
 instance starComplement.fintype
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
     (s : Finset E)
-  : Fintype (starComplement X s).faces :=
+  : Fintype (X\St(X, s)).faces :=
 by
-  simp only [starComplement, AbstractSimplicialComplex.faces]
+  simp only [starComplement]
   have H_dec : DecidablePred fun t : Finset E => ¬s ⊆ t :=
   by
     unfold DecidablePred
@@ -199,11 +199,10 @@ by
     assumption
 
 theorem starComplement_coe_image_left
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
-    (φ : SimplicialCoe X F)
-  : (starComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)).faces ⊆
-      (φ.coe ''ˢ X\St(X, s)).faces :=
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E}
+    {φ : SimplicialCoe X F}
+  : (starComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) ⊆ (φ.coe ''ˢ X\St(X, s)) :=
 by
   simp only [starComplement, simplicialImage, Set.subset_def]
   simp only [Set.mem_sep_iff, Set.mem_setOf]
@@ -222,12 +221,11 @@ by
   assumption
 
 theorem starComplement_coe_image_right
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E}
+    {φ : SimplicialCoe X F}
     (s_in_X : s ∈ X.faces)
-    (φ : SimplicialCoe X F)
-  : (φ.coe ''ˢ X\St(X, s)).faces ⊆
-      (starComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)).faces :=
+  : (φ.coe ''ˢ X\St(X, s)) ⊆ (starComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) :=
 by
   simp only [starComplement, simplicialImage, Set.subset_def]
   simp only [Set.mem_sep_iff, Set.mem_setOf]
@@ -254,16 +252,13 @@ by
   rw [vertex_iff_in_simplex]
   use s
 
+-- TODO: werid assymetry in ..._left and ..._right with hypothesis s_in_X
 theorem starComplement_coe_image
     (X : AbstractSimplicialComplex E)
     (s : Finset E)
     (s_in_X : s ∈ X.faces)
     (φ : SimplicialCoe X F)
-  : (starComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)).faces =
-      (φ.coe ''ˢ (X\St(X, s))).faces :=
+  : (starComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) = (φ.coe ''ˢ (X\St(X, s))) :=
 by
-  rw [Set.Subset.antisymm_iff]
-  constructor
-  apply starComplement_coe_image_left
-  apply starComplement_coe_image_right
-  assumption
+  rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
+  exact ⟨starComplement_coe_image_left, starComplement_coe_image_right s_in_X⟩

@@ -6,15 +6,14 @@ variable [AddCommGroup E]
 variable [Ring 𝕜] [Nontrivial 𝕜]
 
 theorem stellar_subdiv_link_of_barycenter_left
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
-    (x : E)
-    (s_in_X : s ∈ X.faces)
-    (x_nin_X : x ∉ X.vertices)
-  : Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), {x}).faces ⊆
-      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces :=
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E} [s_ne : Nonempty s]
+    {x : E}
+    {s_in_X : s ∈ X.faces}
+    {x_nin_X : x ∉ X.vertices}
+  : Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), {x}) ⊆
+      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
-  rw [Set.subset_def]
   intro a a_in_link
   simp only [link, Set.mem_sep_iff] at a_in_link
   choose a_in_subdiv xa_in_subdiv xa_disj using a_in_link
@@ -142,15 +141,14 @@ by
   apply face_nonempty _ _ a_in_subdiv
 
 theorem stellar_subdiv_link_of_barycenter_right
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
-    (x : E)
-    (s_in_X : s ∈ X.faces)
-    (x_nin_X : x ∉ X.vertices)
-  : ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces ⊆
-      Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), {x}).faces :=
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E} [s_ne : Nonempty s]
+    {x : E}
+    {s_in_X : s ∈ X.faces}
+    {x_nin_X : x ∉ X.vertices}
+  : ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) ⊆
+      Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), {x}) :=
 by
-  rw [Set.subset_def]
   intro a a_in_img
   rw [join_proj_mem] at a_in_img
   choose a₁ a₁_in_link a₂ a₂_in_bd a_decomp a_ne using a_in_img
@@ -229,10 +227,8 @@ theorem stellar_subdiv_link_of_barycenter
     (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), {x}).faces =
-      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces :=
+  : Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), {x}) =
+      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
-  rw [Set.Subset.antisymm_iff]
-  constructor
-  apply stellar_subdiv_link_of_barycenter_left
-  apply stellar_subdiv_link_of_barycenter_right
+  rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
+  exact ⟨stellar_subdiv_link_of_barycenter_left, stellar_subdiv_link_of_barycenter_right⟩

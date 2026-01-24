@@ -63,7 +63,7 @@ by
 
 theorem simplicial_union_simplices
     (X Y : AbstractSimplicialComplex E)
-  : (X ∪ Y).faces = X.faces ∪ Y.faces :=
+  : (X ∪ Y) = X ∪ Y :=
 by
   simp only [AbstractSimplicialComplex.instHasUnion, simplicialUnion]
 

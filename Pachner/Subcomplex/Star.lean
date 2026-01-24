@@ -8,21 +8,11 @@ variable [DecidableEq E] [DecidableEq F]
 def star
     (X : AbstractSimplicialComplex E)
     (s : Finset E)
-    -- I am slightly concerned that this is not required for the proofs so something might be wrong here
-    -- even if it's not required in the proofs, it probably still makes sense to have it
-    -- since it _is_ part of the ''mathematical'' definition
-    -- The point was to avoid the empty cpx being ∅ instead of {∅}. This is obviously obsolete now.
   : AbstractSimplicialComplex E :=
     AbstractSimplicialComplex.mk ({t ∈ X.faces | s ∪ t ∈ X.faces})
+    (by simp only [Set.mem_setOf_eq, Finset.union_empty, X.empty_notMem, not_and, false_implies])
     (by
-      simp
-      by_contra empty_in_X
-      simp at empty_in_X
-      choose empty_in_X _ using empty_in_X
-      apply X.empty_notMem
-      assumption)
-    (by
-      simp
+      simp only [Set.mem_setOf_eq, ne_eq, and_imp]
       intro s_1 t s_1_in_X s_s_1_in_X t_ss_s1 t_nonempty
       constructor
       · apply X.down_closed s_1_in_X t_ss_s1 t_nonempty
@@ -30,7 +20,7 @@ def star
         apply Finset.union_subset_union
         rfl
         assumption
-        simp
+        simp only [ne_eq, Finset.union_eq_empty, not_and]
         intro
         assumption)
 
@@ -43,7 +33,6 @@ instance star.fintype
   : Fintype (star X s).faces :=
 by
   unfold _root_.star
-  dsimp only [AbstractSimplicialComplex.faces]
   have H_dec : DecidablePred fun a : Finset E => s ∪ a ∈ X.faces :=
     by
     unfold DecidablePred
@@ -52,8 +41,8 @@ by
   apply Set.fintypeSep
 
 theorem star_subcomplex_simplices
-    (X : AbstractSimplicialComplex E)
-    (s t : Finset E)
+    {X : AbstractSimplicialComplex E}
+    {s t : Finset E}
   : t ∈ St(X, s).faces → t ∈ X.faces :=
 by
   intro t_in_star
@@ -64,12 +53,11 @@ by
 theorem star_subcomplex
     (X : AbstractSimplicialComplex E)
     (s : Finset E)
-  : IsSubcomplex St(X, s) X := -- something with '⊆' notation seems to be a problem again
-                               -- You have to call the explicit "AbstractSimplicialComplex.instHadSubset" or equivalent.
+  : St(X, s) ⊆ X :=
 by
-  simp only [IsSubcomplex, Set.subset_def]
+  simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def]
   intro t
-  apply star_subcomplex_simplices
+  exact star_subcomplex_simplices
 
 theorem star_iso
     (X : AbstractSimplicialComplex E)
@@ -80,7 +68,7 @@ theorem star_iso
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)
     (f_iso : IsSimplicialIso f) : Finset.image f.map s = t → St(X, s) ≅ St(Y, t) :=
-  by
+by
   intro fs_eq_t
   unfold IsSimpliciallyIso
   have f_simp : IsSimplicialMap St(X, s) St(Y, t) f.map :=

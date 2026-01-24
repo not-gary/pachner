@@ -6,16 +6,16 @@ variable [AddCommGroup E]
 variable [Ring 𝕜] [Nontrivial 𝕜]
 
 theorem stellar_subdiv_link_of_starComplement_left
-    (X : AbstractSimplicialComplex E)
-    (s t : Finset E) [s_ne : Nonempty s]
-    (x : E)
-    (s_in_X : s ∈ X.faces)
-    (x_nin_X : x ∉ X.vertices)
+    {X : AbstractSimplicialComplex E}
+    {s t : Finset E} [s_ne : Nonempty s]
+    {x : E}
+    {s_in_X : s ∈ X.faces}
+    {x_nin_X : x ∉ X.vertices}
     (t_in_star_comp : t ∈ X\St(X, s).faces)
   : t ∉ ((π₁[𝕜] (boundary_disjoint_link X s)).coe
       ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
-        Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces ⊆
-          Lk(X, t).faces :=
+        Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) ⊆
+          Lk(X, t) :=
 by
   intro t_nin_join
   simp only [starComplement, Set.mem_sep_iff] at t_in_star_comp
@@ -108,16 +108,16 @@ by
     contradiction
 
 theorem stellar_subdiv_link_of_starComplement_right
-    (X : AbstractSimplicialComplex E)
-    (s t : Finset E) [s_ne : Nonempty s]
-    (x : E)
-    (s_in_X : s ∈ X.faces)
-    (x_nin_X : x ∉ X.vertices)
+    {X : AbstractSimplicialComplex E}
+    {s t : Finset E} [s_ne : Nonempty s]
+    {x : E}
+    {s_in_X : s ∈ X.faces}
+    {x_nin_X : x ∉ X.vertices}
     (t_in_star_comp : t ∈ X\St(X, s).faces)
   : t ∉ ((π₁[𝕜] (boundary_disjoint_link X s)).coe
       ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
-        Lk(X, t).faces ⊆
-          Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces :=
+        Lk(X, t) ⊆
+          Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) :=
 by
   intro t_nin_join
   simp only [starComplement, Set.mem_sep_iff] at t_in_star_comp
@@ -224,13 +224,10 @@ theorem stellar_subdiv_link_of_starComplement
     (t_in_star_comp : t ∈ X\St(X, s).faces)
   : t ∉ ((π₁[𝕜] (boundary_disjoint_link X s)).coe
       ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
-        Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces =
-          Lk(X, t).faces :=
+        Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) =
+          Lk(X, t) :=
 by
   intro t_nin_join
-  rw [Set.Subset.antisymm_iff]
-  constructor
-  apply stellar_subdiv_link_of_starComplement_left <;>
-  assumption
-  apply stellar_subdiv_link_of_starComplement_right <;>
-  assumption
+  rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
+  exact ⟨stellar_subdiv_link_of_starComplement_left t_in_star_comp t_nin_join,
+    stellar_subdiv_link_of_starComplement_right t_in_star_comp t_nin_join⟩

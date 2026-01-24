@@ -457,8 +457,11 @@ by
   rw [Set.subset_def]
   intro z
   apply simplexBoundary_subcomplex_vert X s z s_in_X
-  dsimp only [AbstractSimplicialComplex.vertices, simplex, AbstractSimplicialComplex.faces] at y_in_barycenter
-  simp at y_in_barycenter
+  simp only [AbstractSimplicialComplex.vertices, simplex] at y_in_barycenter
+  simp only [Finset.coe_powerset, Finset.coe_singleton, Set.mem_diff, Set.mem_preimage,
+    Set.mem_powerset_iff, Set.subset_singleton_iff, Set.mem_singleton_iff, forall_eq,
+    Finset.singleton_ne_empty, not_false_eq_true, and_true,
+    Set.setOf_eq_eq_singleton] at y_in_barycenter
   subst y_in_barycenter
   assumption
 
@@ -474,16 +477,14 @@ by
   rw [Set.disjoint_left]
   intro y y_in_join
   rw [join_proj_vertices_mem] at y_in_join
-  simp only [AbstractSimplicialComplex.vertices_eq, link, AbstractSimplicialComplex.faces]
-  simp only [Set.mem_iUnion, not_exists]
+  simp only [AbstractSimplicialComplex.vertices_eq, link, Set.mem_iUnion, not_exists]
   intro u u_in_link
   simp only [Set.mem_sep_iff] at u_in_link
   rcases u_in_link with ⟨u_in_X, su_in_X, su_empty⟩
   cases' y_in_join with y_in_barycenter y_in_bd
 
   -- y ∈ {x}
-  simp only [AbstractSimplicialComplex.vertices_eq, simplex, AbstractSimplicialComplex.faces] at y_in_barycenter
-  simp only [Set.mem_iUnion] at y_in_barycenter
+  simp only [AbstractSimplicialComplex.vertices_eq, simplex, Set.mem_iUnion] at y_in_barycenter
   choose t Ht y_in_t using y_in_barycenter
   rw [Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at Ht
   choose Ht t_ne using Ht
@@ -500,8 +501,7 @@ by
   apply x_nin_X
 
   -- y ∈ ∂s
-  simp only [AbstractSimplicialComplex.vertices_eq, simplexBoundary, AbstractSimplicialComplex.faces] at y_in_bd
-  simp only [Set.mem_iUnion] at y_in_bd
+  simp only [AbstractSimplicialComplex.vertices_eq, simplexBoundary, Set.mem_iUnion] at y_in_bd
   choose t Ht y_in_t using y_in_bd
   rw [Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_iff] at Ht
   choose t_sset_s t_ne using Ht

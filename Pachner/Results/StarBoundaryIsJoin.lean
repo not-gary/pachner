@@ -6,19 +6,18 @@ variable [AddCommGroup E]
 variable [Ring 𝕜] [Nontrivial 𝕜]
 
 theorem star_boundary_is_join_left
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
-    (x : E)
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E} [s_ne : Nonempty s]
+    {x : E}
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : (X\St(X, s) ∩
       ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X)).coe
         ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
           ''ˢ (simplex {x} ⋆ ∂s)) ⋆
-              Lk(X, s)))).faces ⊆
-      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces :=
+              Lk(X, s)))) ⊆
+      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
-  rw [Set.subset_def]
   intro t t_in_inter
   simp only [AbstractSimplicialComplex.instHasInter, simplicialInter, Set.mem_inter_iff] at t_in_inter
   choose t_in_star_comp t_in_join using t_in_inter
@@ -70,19 +69,18 @@ by
   assumption
 
 theorem star_boundary_is_join_right
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
-    (x : E)
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E} [s_ne : Nonempty s]
+    {x : E}
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces ⊆
+  : ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) ⊆
       (X\St(X, s) ∩
         ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X)).coe
             ''ˢ ((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
               ''ˢ (simplex {x} ⋆ ∂s) ⋆
-                Lk(X, s)))).faces :=
+                Lk(X, s)))) :=
 by
-  rw [Set.subset_def]
   intro t t_in_join
   rw [join_proj_mem] at t_in_join
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_join
@@ -183,10 +181,8 @@ theorem star_boundary_is_join
       ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X)).coe
         ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
           ''ˢ (simplex {x} ⋆ ∂s)) ⋆
-              Lk(X, s)))).faces =
-      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces :=
+              Lk(X, s)))) =
+      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
-  rw [Set.Subset.antisymm_iff]
-  constructor
-  apply star_boundary_is_join_left <;> assumption
-  apply star_boundary_is_join_right <;> assumption
+  rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
+  exact ⟨star_boundary_is_join_left s_in_X x_nin_X, star_boundary_is_join_right s_in_X x_nin_X⟩
