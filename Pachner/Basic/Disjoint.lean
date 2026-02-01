@@ -1,20 +1,21 @@
 import Pachner.Basic.AbstractSimplicialComplex
 
 section Disjoint
-variable {E : Type _}
+variable {E 𝕜 : Type _}
+variable [Ring 𝕜] [PartialOrder 𝕜] [AddCommGroup E] [Module 𝕜 E]
 
 def DisjointComplexes
-    (X Y : AbstractSimplicialComplex E) : Prop :=
+    (X Y : Geometry.SimplicialComplex 𝕜 E) : Prop :=
   Disjoint (X.vertices) (Y.vertices)
 
 theorem disjoint_simplices_iff_disj_vertices [DecidableEq E]
-    (X Y : AbstractSimplicialComplex E)
+    (X Y : Geometry.SimplicialComplex 𝕜 E)
     (s t : Finset E)
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)
   : DisjointComplexes X Y → Disjoint s t :=
 by
-  simp only [DisjointComplexes, AbstractSimplicialComplex.vertices_eq]
+  simp only [DisjointComplexes, Geometry.SimplicialComplex.vertices_eq]
   intro XY_disj
   rw [Set.disjoint_iff_inter_eq_empty, ← Set.subset_empty_iff] at XY_disj
   rw [Finset.disjoint_iff_inter_eq_empty, ← Finset.subset_empty, ← Finset.coe_subset,
@@ -27,7 +28,7 @@ by
   assumption
 
 theorem disjoint_singleton
-    (X : AbstractSimplicialComplex E)
+    (X : Geometry.SimplicialComplex 𝕜 E)
     (x : E)
   : x ∉ X.vertices → DisjointComplexes X (simplex {x}) :=
 by
@@ -37,7 +38,7 @@ by
   assumption
 
 theorem disjoint_complexes_disjoint_simplices
-    (X Y : AbstractSimplicialComplex E)
+    (X Y : Geometry.SimplicialComplex 𝕜 E)
     (s t : Finset E)
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)

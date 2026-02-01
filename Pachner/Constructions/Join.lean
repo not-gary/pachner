@@ -1,5 +1,6 @@
 import Pachner.Basic.Disjoint
 import Pachner.Maps.SimplicialCoercion
+import Mathlib.Analysis.Convex.SimplicialComplex.Basic
 
 /-
 # Simplicial joins
@@ -9,7 +10,39 @@ section Join
 variable {E F 𝕜 : Type _}
 variable [DecidableEq E] [DecidableEq F] [DecidableEq 𝕜]
 variable [AddCommGroup E] [AddCommGroup F]
-variable [Ring 𝕜] [Nontrivial 𝕜]
+variable [Ring 𝕜] [PartialOrder 𝕜] [Nontrivial 𝕜] [Module 𝕜 E]
+
+def simplicialJoin_faces
+    (X Y : Geometry.SimplicialComplex 𝕜 E)
+  : Set (Finset (E × 𝕜)) :=
+    {(s ⊔ₛ t : Finset (E × 𝕜)) | (s ∈ X.faces ∪ {∅}) (t ∈ Y.faces ∪ {∅})} \ {∅}
+
+theorem simplicialJoin_empty_notMem
+    {X Y : Geometry.SimplicialComplex 𝕜 E}
+  : ∅ ∉ simplicialJoin_faces X Y :=
+by
+  rw [Set.mem_diff, not_and]
+  intro h
+  simp only [Set.mem_singleton_iff, not_true_eq_false, not_false_eq_true]
+
+theorem simplicialJoin_inter_subset_convexHull
+    {X Y : Geometry.SimplicialComplex 𝕜 E}
+    {s t : Finset (E × 𝕜)}
+  : s ∈ simplicialJoin_faces X Y →
+      t ∈ simplicialJoin_faces X Y →
+        (convexHull 𝕜) ↑s ∩ (convexHull 𝕜) ↑t ⊆ (convexHull 𝕜) (s ∩ t : Set (E × 𝕜)) :=
+by
+  unfold simplicialJoin_faces
+  intros s_in_join t_in_join
+  simp only [Set.mem_diff, Set.mem_setOf, Set.mem_union, Set.mem_singleton_iff] at s_in_join t_in_join
+
+  choose s_in_join s_ne using s_in_join
+  choose t_in_join t_ne using t_in_join
+
+  choose s₁ s₁_in_X s₂ s₂_in_Y s_eq_s₁s₂ using s_in_join
+  choose t₁ t₁_in_X t₂ t₂_in_Y t_eq_t₁t₂ using t_in_join
+  subst s_eq_s₁s₂ t_eq_t₁t₂
+  simp only [← Finset.coe_inter, simplex_disjoint_distr_inter]
 
 -- Define simplicial join.
 @[simp]

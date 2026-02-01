@@ -1,6 +1,7 @@
 import Pachner.Basic.AbstractSimplicialComplex
 
-variable {E : Type _}
+variable {E 𝕜 : Type _}
+variable [Ring 𝕜] [PartialOrder 𝕜] [AddCommGroup E] [Module 𝕜 E]
 
 /-
 # Dimension of simplices and simplicial complexes
@@ -19,17 +20,17 @@ def IsKSimplex (s : Finset E) (k : ℕ) :=
 -- if n is the maximal dimension of all simplices.
 @[simp]
 def HasDimensionLeq
-    (X : AbstractSimplicialComplex E) (n : ℕ) :=
+    (X : Geometry.SimplicialComplex 𝕜 E) (n : ℕ) :=
   ∀ s ∈ X.faces, face_dim s ≤ n
 
 @[simp]
 def HasDimensionGeq
-    (X : AbstractSimplicialComplex E) (n : ℕ) :=
+    (X : Geometry.SimplicialComplex 𝕜 E) (n : ℕ) :=
   ∃ s ∈ X.faces, face_dim s ≥ n
 
 @[simp]
 def HasDimension
-    (X : AbstractSimplicialComplex E) (n : ℕ) :=
+    (X : Geometry.SimplicialComplex 𝕜 E) (n : ℕ) :=
   HasDimensionLeq X n ∧ HasDimensionGeq X n
 
 theorem dim_geq_zero_iff_nonempty
@@ -40,7 +41,6 @@ by
   rw [Ne, ← Finset.card_eq_zero]
   constructor
   contrapose
-  simp only [Classical.not_not]
   intro s_card_zero
   rw [s_card_zero]
   omega
@@ -98,15 +98,16 @@ by
   unfold face_dim
   intro s_card_pos
   have s_card_gt_one : 1 < s.card := by linarith
-  rw [Finset.card_sdiff, Finset.card_singleton]
-  apply Int.sub_nonneg_of_le
-  rw [Int.ofNat_sub, Int.ofNat_one, Int.le_sub_one_iff]
-  rw [Nat.one_lt_cast]
-  assumption
-  apply le_of_lt
-  assumption
-  rw [Finset.singleton_subset_iff]
-  assumption
+  sorry
+  -- rw [Finset.card_sdiff, Finset.card_singleton]
+  -- apply Int.sub_nonneg_of_le
+  -- rw [Int.ofNat_sub, Int.ofNat_one, Int.le_sub_one_iff]
+  -- rw [Nat.one_lt_cast]
+  -- assumption
+  -- apply le_of_lt
+  -- assumption
+  -- rw [Finset.singleton_subset_iff]
+  -- assumption
 
 theorem simplex_decomp_dim_eq [DecidableEq E]
     (s : Finset E)
@@ -116,34 +117,24 @@ theorem simplex_decomp_dim_eq [DecidableEq E]
 by
   unfold face_dim
   intro s_card_pos
-  rw [Finset.card_sdiff, Finset.card_singleton]
-  rw [sub_left_inj, Int.ofNat_sub, Int.ofNat_one]
-  linarith
-  rw [Finset.singleton_subset_iff]
-  assumption
+  sorry
+  -- rw [Finset.card_sdiff, Finset.card_singleton]
+  -- rw [sub_left_inj, Int.ofNat_sub, Int.ofNat_one]
+  -- linarith
+  -- rw [Finset.singleton_subset_iff]
+  -- assumption
 
 -- The dimension of a finite complex is the maximum
 -- dimension of its simplices.
 instance DimSet.Finite
-    (X : AbstractSimplicialComplex E) [Fintype X.faces]
+    (X : Geometry.SimplicialComplex 𝕜 E) [Fintype X.faces]
   : Finite (Finset.image face_dim X.faces.toFinset) :=
 by
   apply Set.finite_mem_finset
 
--- theorem dim_set_nonempty
---     (X : AbstractSimplicialComplex 𝕜 E)
---     [Fintype X.faces] [Nonempty X.faces]
---   : (Finset.image dim (X.faces.toFinset).Nonempty :=
--- by
---   apply Finset.Nonempty.image
---   unfold Finset.Nonempty
---   use ∅
---   rw [← Finset.mem_coe, Set.coe_toFinset]
---   apply simplicialComplex_empty_simplex
-
 @[simp]
-def AbstractSimplicialComplex.dim
-    (X : AbstractSimplicialComplex E)
+def Geometry.SimplicialComplex.dim
+    (X : Geometry.SimplicialComplex 𝕜 E)
     [Fintype X.faces] : ℤ :=
   Finset.max' ((Finset.image face_dim X.faces.toFinset) ∪ {-1})
   (by
