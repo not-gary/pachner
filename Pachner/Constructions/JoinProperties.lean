@@ -394,137 +394,13 @@ variable [DecidableEq E] [AddCommGroup E]
 variable {𝕜 : Type _}
 variable [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
 
--- Lemma 2.2 (1), p.7
-theorem join_distl_link
-    {X Y : AbstractSimplicialComplex E}
-    {s : Finset E}
-    (s_in_X : s ∈ X.faces)
-  : (Lk(X, s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) = (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
-by
-  simp only [simplicialJoin, link, AbstractSimplicialComplex.ext_iff, Set.ext_iff]
-  intro x
-  repeat' rw [Set.mem_setOf]
-  constructor
-  · intro H
-    rw [Set.mem_diff] at H
-    choose H x_nonempty using H
-    rcases H with ⟨t, Ht, u, Hu, Hx⟩
-    rw [Set.mem_union] at Ht
-    rw [Set.mem_sep_iff] at Ht
-    cases' Ht with Ht t_empty
-    · rcases Ht with ⟨Ht, Hst, Hst_empty⟩
-      constructor
-      rw [Set.mem_diff]
-      constructor
-      · use t; constructor; tauto
-        use u
-      · assumption
-      constructor
-      rw [Set.mem_diff]
-      constructor
-      · subst Hx
-        rw [simplex_disjoint_distr_union]
-        use s ∪ t; constructor; tauto
-        use u; constructor; tauto
-        simp
-      · simp at x_nonempty ⊢
-        intro s_empty
-        assumption
-      subst Hx
-      rw [simplex_disjoint_distr_inter]
-      simp; tauto
-    · constructor
-      rw [Set.mem_diff]
-      constructor
-      · use t; constructor; tauto
-        use u
-      · assumption
-      constructor
-      rw [Set.mem_diff]
-      constructor
-      · subst Hx
-        rw [simplex_disjoint_distr_union]
-        use s ∪ t
-        constructor
-        simp at t_empty
-        simp [t_empty]
-        right
-        assumption
-        use u; constructor; tauto
-        simp
-      · simp at x_nonempty ⊢
-        intro s_empty
-        assumption
-      subst Hx
-      rw [simplex_disjoint_distr_inter]
-      simp
-      simp at t_empty
-      simp [t_empty]
-  · intro H
-    rcases H with ⟨Hx, Hx_union, Hsx_empty⟩
-    rw [Set.mem_diff] at Hx
-    choose Hx x_nonempty using Hx
-    rcases Hx with ⟨t, Ht, u, Hu, Hx⟩
-    rw [Set.mem_diff] at Hx_union
-    choose Hx_union x_union_nonempty using Hx_union
-    rcases Hx_union with ⟨t', Ht', u', Hu', Hx_union⟩
-    subst Hx
-    rw [simplex_disjoint_distr_union, simplex_disjoint_eq_unique] at Hx_union
-    choose a b using Hx_union
-    simp at b
-    symm at b
-    subst b
-    subst a
-    rw [simplex_disjoint_distr_inter, simplex_disjoint_empty] at Hsx_empty
-    rw [simplex_disjoint_distr_union] at x_union_nonempty
-    simp at x_union_nonempty
-    cases' Hsx_empty with Hst_empty Hu'_trivial
-    rw [Set.mem_diff]
-    cases' Ht with t_in_X t_empty
-    · constructor
-      use t
-      constructor
-      simp
-      right
-      constructor
-      constructor
-      assumption
-      cases' Ht' with st_in_X st_empty
-      · assumption
-      · simp at st_empty
-        choose s_empty t_empty using st_empty
-        subst s_empty t_empty
-        revert s_in_X
-        contrapose
-        intro empty_in_X
-        simp at empty_in_X
-        assumption
-      constructor
-      assumption
-      assumption
-      use u
-      assumption
-    · constructor
-      use ∅
-      constructor
-      simp
-      use u
-      constructor
-      assumption
-      rw [simplex_disjoint_eq_unique]
-      constructor
-      rw [Set.mem_singleton_iff] at t_empty
-      symm
-      assumption
-      trivial
-      assumption
 
 -- Lemma 2.3, p.8
 theorem join_fact_link
     (X Y : AbstractSimplicialComplex E)
     (s t : Finset E)
     (s_in_X : s ∈ X.faces)
-    (t_in_Y : t ∈ Y.faces)
+    (t_in_Y : t ∈ Y.faces ∨ t = ∅)
   : (Lk(X ⋆ Y, s ⊔ₛ t) : AbstractSimplicialComplex (E × 𝕜))
       = (Lk(X, s) ⋆ Lk(Y, t) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
@@ -653,5 +529,14 @@ by
       rw [Set.mem_singleton_iff] at t_empty
       subst t_empty
       simp
+
+-- Lemma 2.2 (1), p.7
+theorem join_distl_link
+    {X Y : AbstractSimplicialComplex E}
+    {s : Finset E}
+    (s_in_X : s ∈ X.faces)
+  : (Lk(X, s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) = (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
+by
+  rw [join_fact_link X Y s ∅ s_in_X (by right; rfl), link_ident]
 
 end Link

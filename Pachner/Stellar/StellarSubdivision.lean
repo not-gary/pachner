@@ -78,7 +78,7 @@ by
       by
         apply Finset.Nonempty.exists_mem
         rw [Finset.nonempty_iff_ne_empty]
-        apply face_nonempty X s s_in_X
+        exact face_nonempty s_in_X
 
       choose a a_in_s using s_nontriv
       have a_in_t : a ∈ t := by apply Finset.mem_of_subset s_ss_t a_in_s
@@ -104,7 +104,7 @@ by
       have s_ne : Nonempty {x // x ∈ s} :=
       by
         rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty]
-        apply face_nonempty X s s_in_X
+        exact face_nonempty s_in_X
       rw [simplexBoundary_mem_iff_subset]
       constructor
 
@@ -137,7 +137,7 @@ by
       apply Finset.sdiff_subset
 
       rw [ne_eq, Finset.union_eq_empty, not_and_or]
-      left; apply face_nonempty X s s_in_X
+      left; exact face_nonempty s_in_X
 
       apply Finset.inter_sdiff_self
       rw [Finset.union_assoc, Finset.sdiff_sdiff_left', Finset.union_inter_distrib_left]
@@ -190,7 +190,7 @@ by
         apply Finset.Nonempty.card_pos
         apply Finset.Nonempty.mono s_ss_t
         rw [Finset.nonempty_iff_ne_empty]
-        apply face_nonempty X s s_in_X
+        exact face_nonempty s_in_X
       apply Nat.cast_pred t_nontriv
       rw [Finset.singleton_subset_iff]
       assumption
@@ -253,7 +253,7 @@ by
     · have s_ne : Nonempty {x // x ∈ s} :=
       by
         rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty]
-        apply face_nonempty X s s_in_X
+        exact face_nonempty s_in_X
       have t₂_sss_s : t₂ ⊂ s :=
       by
         rw [Set.mem_union] at t₂_in_bd
@@ -361,7 +361,7 @@ by
       have s_ne : Nonempty {x // x ∈ s} :=
       by
         rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty]
-        apply face_nonempty X s s_in_X
+        exact face_nonempty s_in_X
 
       rw [simplexBoundary_mem_iff_subset s t₂, Finset.ssubset_iff_subset_ne] at t₂_in_bd
       choose t₂_ss_s t₂_ne using t₂_in_bd
@@ -606,7 +606,7 @@ by
   choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
   assumption
   apply Finset.subset_union_right
-  apply face_nonempty _ _ t₁_in_link
+  exact face_nonempty t₁_in_link
 
   rw [Set.mem_singleton_iff] at t'_empty t₁_empty
   rw [t'_empty, t₁_empty, Finset.union_empty] at t_decomp
@@ -1293,48 +1293,27 @@ theorem barycenter_vertex_stellar_subdiv
   : x ∈ σ(X, s, x; 𝕜, s_in_X, x_nin_X).vertices :=
 by
   rw [vertex_iff_in_simplex]
-  simp only [vertices_setOf, Set.subset_def, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, simplicialUnion,
-      Set.mem_union, Set.mem_setOf, join_proj_mem, link]
-  --simp only [stellarSubdivision, simplicialUnion, Set.mem_union, join_proj_mem]
-  --right
+  simp only [stellarSubdivision]
   use {x}
   constructor
-
-  right
-  use {x}
-  constructor
-
-  left
-  use {x}
-  constructor
-
-  simp only [simplex, Finset.mem_coe, Set.mem_diff, Finset.mem_powerset]
-  left
-  constructor
-  trivial
-  apply Finset.singleton_ne_empty
-
-  use ∅
-  constructor
-
-  right
-  trivial
-
-  constructor
-  trivial
-  apply Finset.singleton_ne_empty
-
-  use ∅
-  constructor
-
-  right
-  trivial
-
-  constructor
-  trivial
-  apply Finset.singleton_ne_empty
-
-  apply Finset.mem_singleton_self
+  · right
+    rw [join_proj_mem]
+    use {x}
+    constructor
+    · left
+      rw [join_proj_mem]
+      use {x}
+      constructor
+      · left
+        simp only [simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset]
+        constructor
+        rfl
+        simp only [Set.mem_singleton_iff, Finset.singleton_ne_empty, not_false_eq_true]
+      · use ∅
+        exact ⟨by right; rfl, by rfl, Finset.singleton_ne_empty x⟩
+    · use ∅
+      exact ⟨by right; rfl, by rfl, Finset.singleton_ne_empty x⟩
+  · rw [Finset.mem_singleton]
 
 theorem stellar_subdiv_iso_simp
     (X : AbstractSimplicialComplex E)
@@ -2118,15 +2097,15 @@ by
     contradiction
     rfl
 
-theorem stellar_subdiv_congr_simplices
+theorem stellar_subdiv_congr
     (X Y : AbstractSimplicialComplex E)
     (s : Finset E)
     (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (X_eq_Y : X.faces = Y.faces)
-  : σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces =
-      σ(Y, s, x; 𝕜, by rw [← X_eq_Y]; assumption, by rw [← vertices_congr X Y X_eq_Y]; assumption).faces :=
+  : σ(X, s, x; 𝕜, s_in_X, x_nin_X) =
+      σ(Y, s, x; 𝕜, by rw [← X_eq_Y]; assumption, by rw [← vertices_congr X Y X_eq_Y]; assumption) :=
 by
   simp only [stellarSubdivision, simplicialUnion, starComplement, link, simplex, simplexBoundary, X_eq_Y]
   rfl

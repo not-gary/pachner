@@ -658,7 +658,7 @@ by
 
   constructor; rfl
   rw [Finset.empty_union, ne_eq, Finset.union_eq_empty, not_and_or]
-  right; apply face_nonempty X u₁ u₁_in_X
+  right; exact face_nonempty u₁_in_X
 
   simp only [Finset.image_union, fu₂_t₂, Finset.image_empty]
   symm
@@ -1110,7 +1110,7 @@ by
 
   constructor; rfl
   simp only [Finset.empty_union]
-  apply face_nonempty X u₁ u₁_in_X
+  exact face_nonempty u₁_in_X
 
   simp only [Finset.image_union, Finset.image_singleton, Finset.image_empty]
   subst t₃_empty
@@ -1354,28 +1354,6 @@ by
   constructor; assumption
   assumption
 
-theorem stellar_subdiv_injective_image_simplices
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
-    (x : E)
-    (s_in_X : s ∈ X.faces)
-    (x_nin_X : x ∉ X.vertices)
-    (f : E → F)
-    (f_inj : Function.Injective f)
-  : (simplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces =
-      σ(simplicialImage f X, Finset.image f s, f x; 𝕜,
-          by
-            apply map_is_simplicial_onto_image
-            assumption,
-          barycenter_injective_image x_nin_X f_inj).faces :=
-by
-  rw [Set.Subset.antisymm_iff]
-  constructor
-  apply stellar_subdiv_injective_image_simplices_left
-  assumption
-  apply stellar_subdiv_injective_image_simplices_right
-  assumption
-
 theorem stellar_subdiv_injective_image
     (X : AbstractSimplicialComplex E)
     (s : Finset E) [s_ne : Nonempty s]
@@ -1384,15 +1362,18 @@ theorem stellar_subdiv_injective_image
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
     (f_inj : Function.Injective f)
-  : simplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X) ≅
+  : (simplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)) =
       σ(simplicialImage f X, Finset.image f s, f x; 𝕜,
           by
             apply map_is_simplicial_onto_image
             assumption,
           barycenter_injective_image x_nin_X f_inj) :=
 by
-  apply simplicial_iso_preserves_equiv
-  apply stellar_subdiv_injective_image_simplices
+  rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
+  constructor
+  apply stellar_subdiv_injective_image_simplices_left
+  assumption
+  apply stellar_subdiv_injective_image_simplices_right
   assumption
 
 theorem stellar_subdiv_exists_iso
@@ -1455,7 +1436,7 @@ by
     contradiction
     assumption
   use τx_nin_τX
-  apply stellar_subdiv_injective_image
+  rw [stellar_subdiv_injective_image]
   assumption
 
 theorem stellar_weld_exists_iso
@@ -1555,7 +1536,7 @@ by
   apply simplicial_iso_trans _ (φY.coe ''ˢ Y)
   apply φY.iso_onto_image
   apply simplicial_iso_preserves_equiv
-  apply simplicialImage_congr
+  rw [simplicialImage_congr φY.coe φ.map]
 
   rotate_left
   dsimp only

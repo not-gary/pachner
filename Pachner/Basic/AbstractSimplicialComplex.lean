@@ -101,8 +101,8 @@ end AbstractSimplicialComplex
 variable {E : Type _}
 
 theorem face_nonempty
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
+    {X : AbstractSimplicialComplex E}
+    {s : Finset E}
   : s ∈ X.faces → s ≠ ∅ :=
 by
   contrapose

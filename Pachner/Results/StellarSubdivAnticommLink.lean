@@ -41,7 +41,7 @@ by
   use a
 
   rw [t₂_empty, Finset.sdiff_empty]
-  apply face_nonempty X s s_in_X
+  exact face_nonempty s_in_X
 
   constructor
   rw [Finset.union_sdiff_self_eq_union, t_decomp, Finset.union_assoc]
@@ -79,7 +79,7 @@ by
   use a
 
   rw [t₂_empty, Finset.sdiff_empty]
-  apply face_nonempty X s s_in_X
+  exact face_nonempty s_in_X
 
   constructor
   rw [Finset.union_sdiff_self_eq_union, t_decomp, Finset.union_assoc]
@@ -566,7 +566,7 @@ by
     rw [Finset.union_empty]
     rw [Finset.union_empty]
     rw [ne_eq, Finset.union_eq_empty, not_and_or]
-    right; apply face_nonempty X u u_in_X
+    right; exact face_nonempty u_in_X
     assumption
 
     rw [t_decomp, t'₂_empty, Finset.empty_union, st₁_eq_s]
@@ -708,7 +708,7 @@ by
   apply Finset.union_subset_union_left
   apply t₂_ss_s
   rw [ne_eq, Finset.union_eq_empty, not_and_or, ← t_decomp]
-  left; apply face_nonempty X t t_in_X
+  left; exact face_nonempty t_in_X
   rw [← Finset.subset_empty]
   apply @Finset.Subset.trans _ _ (t ∩ u)
   apply Finset.inter_subset_inter_left
@@ -762,7 +762,7 @@ by
   assumption
 
   rw [ne_eq, Finset.union_eq_empty, not_and_or]
-  left; apply face_nonempty X t t_in_X
+  left; exact face_nonempty t_in_X
 
   rw [Finset.inter_union_distrib_left, Finset.inter_comm, Finset.sdiff_inter_self,
     Finset.empty_union]
@@ -1178,7 +1178,7 @@ by
 
       rw [Finset.union_comm]; assumption
       rw [← u'_decomp]; assumption
-      apply face_nonempty _ _ u₂_in_bd
+      exact face_nonempty u₂_in_bd
     · right; assumption
 
     constructor; rfl
@@ -1192,7 +1192,7 @@ by
         rotate_left
         rw [Finset.union_eq_empty] at tu_empty
         choose t_empty u_empty using tu_empty
-        have contra : u₁ ≠ ∅ := by apply face_nonempty _ _ u₁_in_X
+        have contra : u₁ ≠ ∅ := by exact face_nonempty u₁_in_X
         contradiction
 
         choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
@@ -1253,7 +1253,7 @@ by
         · rw [t_empty]; apply Finset.empty_subset
 
         rw [ne_eq, Finset.union_eq_empty, not_and_or]
-        right; apply face_nonempty _ _ u₁_in_X
+        right; exact face_nonempty u₁_in_X
 
         rw [← Finset.subset_empty] at tu_disj ⊢
         apply subset_trans _ tu_disj
@@ -1288,18 +1288,18 @@ by
     · right; assumption
 
     constructor; rw [← u'_decomp]; assumption
-    apply face_nonempty _ _ u_in_join
+    exact face_nonempty u_in_join
   · subst u'₂_empty; rw [Finset.empty_union] at *; subst u_decomp
     cases' u₁_in_link with u₁_in_link u₁_empty
     rotate_left
-    have contra : u ≠ ∅ := by apply face_nonempty _ _ u_in_join
+    have contra : u ≠ ∅ := by exact face_nonempty u_in_join
     contradiction
 
     cases' tu_in_link with tu_in_link tu_empty
     rotate_left
     rw [Finset.union_eq_empty] at tu_empty
     choose t₁_empty u₁_empty using tu_empty
-    have contra : u ≠ ∅ := by apply face_nonempty _ _ u_in_join
+    have contra : u ≠ ∅ := by exact face_nonempty u_in_join
     contradiction
 
     cases' t₁_in_link with t₁_in_link t₁_empty
@@ -1332,7 +1332,7 @@ by
         left; assumption
         constructor
         rw [Finset.empty_union]
-        apply face_nonempty _ _ t₂_in_bd
+        exact face_nonempty t₂_in_bd
       · right; assumption
 
       assumption
@@ -1377,7 +1377,7 @@ by
         rw [← Finset.disjoint_iff_inter_eq_empty, Finset.disjoint_left] at su_disj
         specialize su_disj a_in_t
         assumption
-      · have contra : t ≠ ∅ := by apply face_nonempty _ _ t_in_X
+      · have contra : t ≠ ∅ := by exact face_nonempty t_in_X
         contradiction
 
 theorem stellar_subdiv_anticomm_link_left
@@ -1577,7 +1577,7 @@ by
         cases' u₃_in_barycenter with contra u₃_eq_x; contradiction
 
         rw [u₃_eq_x, Finset.subset_singleton_iff, not_or]
-        constructor; apply face_nonempty X s s_in_X
+        constructor; exact face_nonempty s_in_X
         by_cases s_eq_x : s = {x}
         rotate_left; assumption
         have contra : x ∈ X.vertices :=
@@ -1654,7 +1654,7 @@ by
     apply Finset.subset_union_right
 
     rw [ne_eq, Finset.union_eq_empty, not_and_or]
-    left; apply face_nonempty X s s_in_X
+    left; exact face_nonempty s_in_X
 
     rw [← Finset.union_empty (s \ (t₁ ∪ t₂) ∩ u₁), ← tu_disj, ← Finset.union_inter_distrib_right, tu_disj] at stu_disj
     rw [Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self] at stu_disj
@@ -1668,7 +1668,7 @@ by
 
     constructor; assumption
     rw [u_decomp, ne_eq, Finset.union_eq_empty, not_and_or]
-    right; apply face_nonempty X u₁ u_in_X
+    right; exact face_nonempty u_in_X
 
     constructor; right
     rw [join_proj_mem]
@@ -1741,7 +1741,7 @@ by
         choose t₂_ss_s t₂_ne_s using t₂_sss_s
         assumption
       · rw [t₂_empty]; symm
-        apply face_nonempty X s s_in_X
+        exact face_nonempty s_in_X
 
     assumption
 
@@ -1756,7 +1756,7 @@ by
     rw [Finset.union_comm _ u₁, ← Finset.union_assoc]
     apply Finset.subset_union_left
     rw [ne_eq, Finset.union_eq_empty, not_and_or]
-    left; apply face_nonempty X u₁ u_in_X
+    left; exact face_nonempty u_in_X
 
     constructor
     rw [Finset.sdiff_union_distrib, ← Finset.union_assoc, Finset.union_inter_distrib_left] at tstu_in_X
@@ -1769,7 +1769,7 @@ by
     apply Finset.subset_union_left
 
     rw [ne_eq, Finset.union_eq_empty, not_and_or]
-    left; apply face_nonempty X s s_in_X
+    left; exact face_nonempty s_in_X
 
     rw [Finset.inter_union_distrib_left, Finset.union_eq_empty]
     constructor
@@ -1928,7 +1928,7 @@ by
         choose t₂_ss_s t₂_ne_s using t₂_sss_s
         assumption
       · rw [t₂_empty]; symm
-        apply face_nonempty X s s_in_X
+        exact face_nonempty s_in_X
 
     assumption
 

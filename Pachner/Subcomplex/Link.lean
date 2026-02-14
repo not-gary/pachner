@@ -325,17 +325,17 @@ by
       apply Y.down_closed
       assumption
       apply Finset.subset_union_left
-      apply face_nonempty X s s_in_X
+      exact face_nonempty s_in_X
     contradiction
     constructor
     apply X.down_closed st_in_X
     apply Finset.subset_union_right
-    apply face_nonempty Y t contra
+    exact face_nonempty contra
     constructor <;> assumption
     have s_in_Y : s ∈ Y.faces := by
       apply Y.down_closed contra
       apply Finset.subset_union_left
-      apply face_nonempty X s s_in_X
+      exact face_nonempty s_in_X
     contradiction
   · intro t_in_X
     choose t_in_X st_in_X st_disj using t_in_X
@@ -372,13 +372,13 @@ by
     constructor
     apply Y.down_closed st_in_Y
     apply Finset.subset_union_right
-    apply face_nonempty X t t_in_X
+    exact face_nonempty t_in_X
     constructor <;> assumption
     left
     constructor
     apply X.down_closed st_in_X
     apply Finset.subset_union_right
-    apply face_nonempty Y t t_in_Y
+    exact face_nonempty t_in_Y
     constructor <;> assumption
     right
     constructor; assumption

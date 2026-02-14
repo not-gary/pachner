@@ -172,24 +172,10 @@ theorem simplicialJoin_incl_left
   : s ∈ X.faces → (s ⊔ₛ ∅ : Finset (E × 𝕜)) ∈ (X ⋆ Y).faces :=
 by
   intro s_in_X
-  rw [simplicialJoin, Set.mem_diff, Set.mem_setOf]
-  constructor
-  use s; constructor
-  rw [Set.mem_union]
-  left; assumption
-  use ∅; constructor
-  rw [Set.mem_union]
-  right; apply Set.mem_singleton
-  rfl
-
-  rw [Set.mem_singleton_iff, simplex_disjoint_empty, not_and_or]
-  left
-  revert s_in_X
-  contrapose
-  rw [not_not]
-  intro s_empty
-  rw [s_empty]
-  apply X.empty_notMem
+  rw [simplicialJoin_sep]
+  exact ⟨Set.mem_union_left _ s_in_X,
+    Set.mem_union_right _ (Set.mem_singleton ∅),
+    by left; exact face_nonempty s_in_X⟩
 
 theorem simplicialJoin_incl_right
     {X Y : AbstractSimplicialComplex E}
@@ -197,24 +183,10 @@ theorem simplicialJoin_incl_right
   : t ∈ Y.faces → (∅ ⊔ₛ t : Finset (E × 𝕜)) ∈ (X ⋆ Y).faces :=
 by
   intro t_in_Y
-  rw [simplicialJoin, Set.mem_diff, Set.mem_setOf]
-  constructor
-  use ∅; constructor
-  rw [Set.mem_union]
-  right; apply Set.mem_singleton
-  use t; constructor
-  rw [Set.mem_union]
-  left; assumption
-  rfl
-
-  rw [Set.mem_singleton_iff, simplex_disjoint_empty, not_and_or]
-  right
-  revert t_in_Y
-  contrapose
-  rw [not_not]
-  intro t_empty
-  rw [t_empty]
-  apply Y.empty_notMem
+  rw [simplicialJoin_sep]
+  exact ⟨Set.mem_union_right _ (Set.mem_singleton ∅),
+    Set.mem_union_left _ t_in_Y,
+    by right; exact face_nonempty t_in_Y⟩
 
 theorem simplicialJoin_vertices_mem_left
     (X Y : AbstractSimplicialComplex E)

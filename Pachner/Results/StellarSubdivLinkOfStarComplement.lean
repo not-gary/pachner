@@ -38,7 +38,7 @@ by
     constructor
     apply X.down_closed tu_in_X
     apply Finset.subset_union_right
-    apply face_nonempty _ _ u_in_join
+    exact face_nonempty u_in_join
     constructor <;> assumption
   -- Case B + (C/D).
   · rw [join_proj_disj_union_mem] at ut_in_join
@@ -77,7 +77,7 @@ by
       rw [Finset.union_comm]
       constructor
       assumption
-      apply face_nonempty X t t_in_X
+      exact face_nonempty t_in_X
     contradiction
 
     -- tu'_empty case.
@@ -99,7 +99,7 @@ by
     assumption
 
     rw [Set.mem_singleton_iff] at u_empty
-    have u_ne : u ≠ ∅ := by apply face_nonempty _ _ u_in_subdiv
+    have u_ne : u ≠ ∅ := by exact face_nonempty u_in_subdiv
     contradiction
 
     constructor <;> assumption
@@ -138,7 +138,7 @@ by
       apply Finset.union_subset_union_right
       assumption
       rw [ne_eq, Finset.union_eq_empty, not_and_or]
-      right; apply face_nonempty X t t_in_X
+      right; exact face_nonempty t_in_X
       rw [← Finset.subset_empty]
       apply @Finset.Subset.trans _ _ (t ∩ u)
       rw [Finset.inter_comm]
@@ -162,7 +162,7 @@ by
     cases' t_ne_t with t_ne_t t_empty
     rw [Finset.union_empty] at t_ne_t; contradiction
     rw [not_not] at t_empty
-    have t_ne : t ≠ ∅ := by apply face_nonempty X t t_in_X
+    have t_ne : t ≠ ∅ := by exact face_nonempty t_in_X
     contradiction
   constructor
   left; constructor <;> assumption
@@ -196,7 +196,7 @@ by
   assumption
 
   rw [ne_eq, Finset.union_eq_empty, not_and_or]
-  left; apply face_nonempty X s s_in_X
+  left; exact face_nonempty s_in_X
 
   rw [Finset.inter_comm]
   apply Finset.sdiff_inter_self
@@ -212,7 +212,7 @@ by
   rw [ne_eq, Finset.inter_eq_right]
   assumption; assumption
   rw [Finset.sdiff_union_inter]
-  constructor; rfl; apply face_nonempty X t t_in_X
+  constructor; rfl; exact face_nonempty t_in_X
   assumption
 
 theorem stellar_subdiv_link_of_starComplement

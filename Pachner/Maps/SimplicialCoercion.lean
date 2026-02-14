@@ -123,15 +123,10 @@ theorem coe_preserves_iso [Nonempty E]
   : (X ≅ Y) → (φ.coe ''ˢ X ≅ ψ.coe ''ˢ Y) :=
 by
   intro X_iso_Y
-  apply simplicial_iso_trans (φ.coe ''ˢ X) X
-  rw [simplicial_iso_symm]
-  apply φ.iso_onto_image
-  rw [simplicial_iso_symm]
-  apply simplicial_iso_trans (ψ.coe ''ˢ Y) Y
-  rw [simplicial_iso_symm]
-  apply ψ.iso_onto_image
-  rw [simplicial_iso_symm]
-  assumption
+  calc φ.coe ''ˢ X
+    _ ≅ X := by rw [simplicial_iso_symm]; exact φ.iso_onto_image
+    _ ≅ Y := X_iso_Y
+    _ ≅ ψ.coe ''ˢ Y := ψ.iso_onto_image
 
 theorem coe_comp_is_injective
     {X : AbstractSimplicialComplex E}
@@ -139,48 +134,15 @@ theorem coe_comp_is_injective
     (ψ : SimplicialCoe (φ.coe ''ˢ X) G)
   : Set.InjOn (ψ.coe ∘ φ.coe) X.vertices :=
 by
-  apply Set.InjOn.comp ψ.Injective φ.Injective
-  simp only [Set.MapsTo]
-  intro x x_vert
-  rw [AbstractSimplicialComplex.vertices_eq]
-  simp only [simplicialImage, Set.mem_iUnion]
-  use {φ.coe x}
-  constructor
-  rw [Finset.mem_coe]
-  apply Finset.mem_singleton_self
-  simp only [Set.mem_setOf]
-  use{x}
-  constructor
-  assumption
-  rw [Finset.image_singleton]
+  simp only [Set.InjOn.comp ψ.Injective φ.Injective, simplicialImage_vertices, Set.mapsTo_image]
 
 theorem coe_comp_image
     (X : AbstractSimplicialComplex E)
     (φ : SimplicialCoe X F)
     (ψ : SimplicialCoe (φ.coe ''ˢ X) G)
-  : ((ψ.coe ∘ φ.coe) ''ˢ X).faces = (ψ.coe ''ˢ (φ.coe ''ˢ X)).faces :=
-  by
-  simp only [simplicialImage, Set.ext_iff]
-  intro s
-  constructor
-  · intro s_in_comp
-    rw [Set.mem_setOf] at *
-    choose t Ht img_eq_s using s_in_comp
-    set u : Finset F := Finset.image φ.coe t
-    use u
-    constructor
-    rw [Set.mem_setOf]
-    use t
-    rw [← Finset.image_image] at img_eq_s
-    assumption
-  · intro s_in_coe
-    rw [Set.mem_setOf] at *
-    choose t Ht img_eq_s using s_in_coe
-    rw [Set.mem_setOf] at Ht
-    choose u u_in_X img_u_eq_t using Ht
-    use u; constructor; assumption
-    rw [← Finset.image_image, img_u_eq_t]
-    assumption
+  : ((ψ.coe ∘ φ.coe) ''ˢ X) = (ψ.coe ''ˢ (φ.coe ''ˢ X)) :=
+by
+  exact simplicialImage_comp φ.coe ψ.coe
 
 @[simp]
 def SimplicialCoe.comp
@@ -250,31 +212,21 @@ def simplicialCoeOnImage
       apply f.is_simplicial
       assumption)
 
-theorem simplicialCoe_union_simplices
-    (X Y : AbstractSimplicialComplex E)
-    (φ : SimplicialCoe (X ∪ Y) F)
-  : (φ.coe ''ˢ (X ∪ Y)).faces =
-      (φ[X; (by apply is_subcomplex_vertices; apply subcomplex_simplicial_union_left)].coe ''ˢ X ∪
-          φ[Y; (by apply is_subcomplex_vertices; apply subcomplex_simplicial_union_right)].coe ''ˢ Y).faces :=
-by
-  apply simplicialImage_union
-
 theorem simplicialCoe_union
     (X Y : AbstractSimplicialComplex E)
     (φ : SimplicialCoe (X ∪ Y) F)
-  : φ.coe ''ˢ (X ∪ Y) ≅
+  : φ.coe ''ˢ (X ∪ Y) =
       φ[X; by apply is_subcomplex_vertices; apply subcomplex_simplicial_union_left].coe ''ˢ X ∪
         φ[Y; by apply is_subcomplex_vertices; apply subcomplex_simplicial_union_right].coe ''ˢ Y :=
 by
-  apply simplicial_iso_preserves_equiv
-  apply simplicialCoe_union_simplices
+  exact simplicialImage_union φ.coe
 
 theorem simplicialCoe_injective_vertices
     {X : AbstractSimplicialComplex E}
     (φ : SimplicialCoe X F)
   : Set.InjOn φ.coe X.vertices :=
 by
-  apply φ.Injective
+  exact φ.Injective
 
 theorem simplicialCoe_surjective_vertices
     {X : AbstractSimplicialComplex E}
@@ -288,21 +240,14 @@ theorem simplicialCoe_mapsTo_vertices
     (φ : SimplicialCoe X F)
   : Set.MapsTo φ.coe X.vertices (φ.coe ''ˢ X).vertices :=
 by
-  simp only [Set.MapsTo, simplicialImage_vertices]
-  intro x x_in_X
-  apply Set.mem_image_of_mem
-  assumption
+  simp only [simplicialImage_vertices, Set.mapsTo_image]
 
 theorem simplicialCoe_bijective_vertices
     {X : AbstractSimplicialComplex E}
     (φ : SimplicialCoe X F)
   : Set.BijOn φ.coe X.vertices (φ.coe ''ˢ X).vertices :=
 by
-  simp only [Set.BijOn]
-  constructor
-  apply simplicialCoe_mapsTo_vertices
-  constructor
-  apply simplicialCoe_injective_vertices
-  apply simplicialCoe_surjective_vertices
+  simp only [Set.BijOn, simplicialCoe_mapsTo_vertices, simplicialCoe_injective_vertices,
+      simplicialCoe_surjective_vertices, and_true]
 
 end Coercion

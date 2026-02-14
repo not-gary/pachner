@@ -161,7 +161,7 @@ by
   use t₂; constructor; left; assumption
   constructor; rfl
   rw [Finset.empty_union]
-  apply face_nonempty _ _ t₂_in_bd
+  exact face_nonempty t₂_in_bd
 
   right; rw [t₂_empty, Finset.empty_union]
 

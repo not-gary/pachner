@@ -413,26 +413,8 @@ theorem simplicial_iso_preserves_equiv
   : X.faces = Y.faces → X ≅ Y :=
 by
   intro H
-  unfold IsSimpliciallyIso
-  have id_simplicial_X : IsSimplicialMap X Y id :=
-    by
-    unfold IsSimplicialMap
-    intro s Hs
-    rw [Finset.image_id, ← H]
-    assumption
-  have id_simplicial_Y : IsSimplicialMap Y X id :=
-    by
-    unfold IsSimplicialMap
-    intro s Hs
-    rw [Finset.image_id, H]
-    assumption
-  set id_X := SimplicialMap.mk id id_simplicial_X
-  use id_X
-  unfold IsSimplicialIso
-  set id_Y := SimplicialMap.mk id id_simplicial_Y
-  use id_Y
-  unfold IsInverseSimplicialIso
-  constructor <;> simp only [SimplicialMap.comp] <;> rw [Function.id_comp]
+  have X_eq_Y : X = Y := by rw [AbstractSimplicialComplex.ext_iff, H]
+  rw [X_eq_Y]
 
 theorem simplicial_iso_preserves_subcomplex_image
     (X Y Z : AbstractSimplicialComplex E)

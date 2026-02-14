@@ -550,7 +550,6 @@ theorem stellar_coe_image
             assumption,
           y_nin_coe) :=
 by
-  apply simplicial_iso_preserves_equiv
   have x_nin_s : x ∉ s := by
     revert x_nin_X
     contrapose
@@ -563,8 +562,8 @@ by
     assumption
   simp only [stellar_coe_simplex_image s x y φ.coe x_nin_s]
   simp only [stellarCoeMap, eq_self_iff_true, if_true]
-  apply stellar_subdiv_congr_simplices
-  apply simplicialImage_congr
+  rw [stellar_subdiv_congr]
+  rw [simplicialImage_congr]
   simp only [Set.EqOn]
   intro z z_in_X
 

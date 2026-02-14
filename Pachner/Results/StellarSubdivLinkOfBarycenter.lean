@@ -123,7 +123,7 @@ by
   use a₂; constructor; assumption
   rw [Finset.union_comm]
   constructor; assumption
-  apply face_nonempty _ _ a_in_subdiv
+  exact face_nonempty a_in_subdiv
 
   -- xa'_empty case.
   rw [Finset.union_eq_empty] at xa'_empty
@@ -138,7 +138,7 @@ by
   right; apply Set.mem_singleton
   constructor
   rw [Finset.union_empty]
-  apply face_nonempty _ _ a_in_subdiv
+  exact face_nonempty a_in_subdiv
 
 theorem stellar_subdiv_link_of_barycenter_right
     {X : AbstractSimplicialComplex E}
@@ -163,7 +163,7 @@ by
   use a₂; constructor; left; assumption
   constructor; rfl
   rw [Finset.empty_union]
-  apply face_nonempty _ _ a₂_in_bd
+  exact face_nonempty a₂_in_bd
 
   right; rw [a₂_empty, Finset.union_empty]
 

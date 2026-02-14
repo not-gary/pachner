@@ -88,7 +88,7 @@ by
   apply Set.subset_union_left
 
 theorem subcomplex_simplicial_union_left [DecidableEq E]
-    (X Y : AbstractSimplicialComplex E)
+    {X Y : AbstractSimplicialComplex E}
   : X ⊆ X ∪ Y :=
 by
   simp only [AbstractSimplicialComplex.instHasUnion, AbstractSimplicialComplex.instHasSubset, IsSubcomplex, simplicialUnion]
@@ -101,7 +101,7 @@ by
   apply Set.subset_union_right
 
 theorem subcomplex_simplicial_union_right [DecidableEq E]
-    (X Y : AbstractSimplicialComplex E)
+    {X Y : AbstractSimplicialComplex E}
   : Y ⊆ X ∪ Y :=
 by
   simp only [AbstractSimplicialComplex.instHasUnion, AbstractSimplicialComplex.instHasSubset, IsSubcomplex, simplicialUnion]
