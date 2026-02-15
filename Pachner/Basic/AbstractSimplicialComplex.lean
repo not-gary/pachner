@@ -1,5 +1,6 @@
 import Mathlib.Tactic
-
+import Mathlib.LinearAlgebra.AffineSpace.Independent
+import Mathlib.Analysis.Convex.SimplicialComplex.Basic
 
 section AbstractSimplicialComplex
 variable (E : Type _)
@@ -35,6 +36,11 @@ def ofSubcomplex
     { faces
       empty_notMem := fun h => K.empty_notMem (subset h)
       down_closed := fun hs hts _ => down_closed hs hts }
+
+@[simp]
+def ofGeometric {𝕜 E} [Ring 𝕜] [PartialOrder 𝕜] [AddCommGroup E] [Module 𝕜 E]
+    (K : Geometry.SimplicialComplex 𝕜 E)
+  : AbstractSimplicialComplex E := ⟨K.faces, K.empty_notMem, K.down_closed⟩
 
 def vertices (K : AbstractSimplicialComplex E) : Set E :=
   { x | {x} ∈ K.faces }
@@ -97,6 +103,36 @@ by
   apply facets_subset
 
 end AbstractSimplicialComplex
+
+@[simp]
+def Geometry.SimplicialComplex.ofAbstract {𝕜 E}
+    [Ring 𝕜] [PartialOrder 𝕜]
+    [AddCommGroup E] [Module 𝕜 E]
+    (K : AbstractSimplicialComplex E)
+    (indep : ∀ {s}, s ∈ K.faces → AffineIndependent 𝕜 ((↑) : s → E))
+    (inter_subset_convexHull : ∀ {s t}, s ∈ K.faces → t ∈ K.faces →
+        convexHull 𝕜 ↑s ∩ convexHull 𝕜 ↑t ⊆ convexHull 𝕜 (s ∩ t : Set E))
+  : Geometry.SimplicialComplex 𝕜 E :=
+    ⟨K.faces, K.empty_notMem, indep, K.down_closed, inter_subset_convexHull⟩
+
+theorem ofAbstract_ofGeometric_id {𝕜 E}
+    [Ring 𝕜] [PartialOrder 𝕜]
+    [AddCommGroup E] [Module 𝕜 E]
+    (K : AbstractSimplicialComplex E)
+    (indep : ∀ {s}, s ∈ K.faces → AffineIndependent 𝕜 ((↑) : s → E))
+    (inter_subset_convexHull : ∀ {s t}, s ∈ K.faces → t ∈ K.faces →
+        convexHull 𝕜 ↑s ∩ convexHull 𝕜 ↑t ⊆ convexHull 𝕜 (s ∩ t : Set E))
+  : AbstractSimplicialComplex.ofGeometric (Geometry.SimplicialComplex.ofAbstract K indep inter_subset_convexHull) = K :=
+by
+  simp only [AbstractSimplicialComplex.ofGeometric, Geometry.SimplicialComplex.ofAbstract]
+
+theorem ofGeometric_ofAbstract_id {𝕜 E}
+    [Ring 𝕜] [PartialOrder 𝕜]
+    [AddCommGroup E] [Module 𝕜 E]
+    (K : Geometry.SimplicialComplex 𝕜 E)
+  : Geometry.SimplicialComplex.ofAbstract (AbstractSimplicialComplex.ofGeometric K) K.indep K.inter_subset_convexHull = K :=
+by
+  simp only [Geometry.SimplicialComplex.ofAbstract, AbstractSimplicialComplex.ofGeometric]
 
 variable {E : Type _}
 
