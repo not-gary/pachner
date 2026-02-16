@@ -56,10 +56,10 @@ def Graph.ofAbstract
           cases' fs_eq_e with a_eq_x b_eq_x
           · choose a_eq_x _ using a_eq_x
             simp only [a_eq_x, true_or, iff_true] at s_eq_ab
-            exact simplex_mem_is_vertex _ _ _ s_in_X s_eq_ab
+            exact vertex_if_mem_face s_in_X s_eq_ab
           · choose _ b_eq_x using b_eq_x
             simp only [b_eq_x, or_true, iff_true] at s_eq_ab
-            exact simplex_mem_is_vertex _ _ _ s_in_X s_eq_ab
+            exact vertex_if_mem_face s_in_X s_eq_ab
         · case h_2 s_eq_ab_false =>
           simp only [reduceCtorEq] at fs_eq_e
       edge_mem_iff_exists_isLink e := by

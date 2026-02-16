@@ -582,7 +582,7 @@ by
   cases' t_in_subdiv with t_in_star_comp t_in_join
   left
   use t; constructor
-  apply simplex_if_in_subcomplex (X\St(X, s))
+  apply isSubcomplex_face_imp_face
   assumption
 
   apply starComplement_subcomplex
@@ -634,7 +634,7 @@ by
 
   left
   use t₂; constructor
-  apply simplex_if_in_subcomplex (∂s)
+  apply isSubcomplex_face_imp_face
   assumption
   apply simplexBoundary_subcomplex
   assumption
@@ -642,7 +642,7 @@ by
 
   left;
   use t₁; constructor
-  apply simplex_if_in_subcomplex Lk(X, s)
+  apply isSubcomplex_face_imp_face
   cases' t₁_in_link with t₁_in_link t₁_empty
   assumption
 
@@ -1683,7 +1683,7 @@ by
       have contra : x ∈ X.vertices := by
         rw [vertex_iff_in_simplex]
         use s; constructor
-        apply simplex_if_in_subcomplex
+        apply isSubcomplex_face_imp_face
         apply s_in_star_comp
         apply starComplement_subcomplex
         assumption
@@ -1702,7 +1702,7 @@ by
       have contra : x ∈ X.vertices := by
         rw [vertex_iff_in_simplex]
         use s; constructor
-        apply simplex_if_in_subcomplex
+        apply isSubcomplex_face_imp_face
         apply s_in_star_comp
         apply starComplement_subcomplex
         assumption
@@ -1711,7 +1711,7 @@ by
     unfold stellarSubdivOfSingletonMap
     simp only [a_ne_x, if_false]
   rw [id_s]
-  apply simplex_if_in_subcomplex
+  apply isSubcomplex_face_imp_face
   apply s_in_star_comp
   apply starComplement_subcomplex
   -- join case.
@@ -2105,7 +2105,7 @@ theorem stellar_subdiv_congr
     (x_nin_X : x ∉ X.vertices)
     (X_eq_Y : X.faces = Y.faces)
   : σ(X, s, x; 𝕜, s_in_X, x_nin_X) =
-      σ(Y, s, x; 𝕜, by rw [← X_eq_Y]; assumption, by rw [← vertices_congr X Y X_eq_Y]; assumption) :=
+      σ(Y, s, x; 𝕜, by rw [← X_eq_Y]; assumption, by rw [← vertices_congr X_eq_Y]; assumption) :=
 by
   simp only [stellarSubdivision, simplicialUnion, starComplement, link, simplex, simplexBoundary, X_eq_Y]
   rfl

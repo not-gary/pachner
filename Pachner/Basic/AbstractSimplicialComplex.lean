@@ -12,7 +12,7 @@ structure AbstractSimplicialComplex where
   down_closed : ∀ {s t}, s ∈ faces → t ⊆ s → t ≠ ∅ → t ∈ faces
 
 namespace AbstractSimplicialComplex
-variable {K : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
+variable {E : Type _} {X : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
 instance : Membership (Finset E) (AbstractSimplicialComplex E) :=
   ⟨fun K s => s ∈ K.faces⟩
@@ -45,26 +45,26 @@ def ofGeometric {𝕜 E} [Ring 𝕜] [PartialOrder 𝕜] [AddCommGroup E] [Modul
 def vertices (K : AbstractSimplicialComplex E) : Set E :=
   { x | {x} ∈ K.faces }
 
-theorem mem_vertices : x ∈ K.vertices ↔ {x} ∈ K.faces := Iff.rfl
+theorem mem_vertices : x ∈ X.vertices ↔ {x} ∈ X.faces := Iff.rfl
 
-theorem vertices_eq : K.vertices = ⋃ k ∈ K.faces, (k : Set E) := by
+theorem vertices_eq : X.vertices = ⋃ k ∈ X.faces, (k : Set E) := by
   ext x
   refine ⟨fun h => Set.mem_biUnion h <| Finset.mem_coe.2 <| Finset.mem_singleton_self x, fun h => ?_⟩
   obtain ⟨s, hs, hx⟩ := Set.mem_iUnion₂.1 h
-  exact K.down_closed hs (Finset.singleton_subset_iff.2 <| Finset.mem_coe.1 hx) (Finset.singleton_ne_empty _)
+  exact X.down_closed hs (Finset.singleton_subset_iff.2 <| Finset.mem_coe.1 hx) (Finset.singleton_ne_empty _)
 
 def facets (K : AbstractSimplicialComplex E) : Set (Finset E) :=
   { s ∈ K.faces | ∀ ⦃t⦄, t ∈ K.faces → s ⊆ t → s = t }
 
-theorem mem_facets : s ∈ K.facets ↔ s ∈ K.faces ∧ ∀ t ∈ K.faces, s ⊆ t → s = t :=
+theorem mem_facets_iff : s ∈ X.facets ↔ s ∈ X.faces ∧ ∀ t ∈ X.faces, s ⊆ t → s = t :=
   Set.mem_sep_iff
 
-theorem facets_subset : K.facets ⊆ K.faces := fun _ hs => hs.1
+theorem facets_subset_faces : X.facets ⊆ X.faces := fun _ hs => hs.1
 
-theorem not_facet_iff_subface (hs : s ∈ K.faces) : s ∉ K.facets ↔ ∃ t, t ∈ K.faces ∧ s ⊂ t := by
+theorem notMem_facet_iff_subface (s_in_X : s ∈ X.faces) : s ∉ X.facets ↔ ∃ t, t ∈ X.faces ∧ s ⊂ t := by
   refine ⟨fun hs' : ¬(_ ∧ _) => ?_, ?_⟩
   · push_neg at hs'
-    obtain ⟨t, ht⟩ := hs' hs
+    obtain ⟨t, ht⟩ := hs' s_in_X
     exact ⟨t, ht.1, ⟨ht.2.1, fun hts => ht.2.2 (Finset.Subset.antisymm ht.2.1 hts)⟩⟩
   · rintro ⟨t, ht⟩ ⟨hs, hs'⟩
     have := hs' ht.1 ht.2.1
@@ -90,19 +90,21 @@ instance hasBot : Bot (AbstractSimplicialComplex E) :=
       down_closed := fun hs => (Set.notMem_empty _ hs).elim }⟩
 
 instance : OrderBot (AbstractSimplicialComplex E) :=
-  { AbstractSimplicialComplex.hasBot E with bot_le := fun _ => Set.empty_subset _ }
+  { AbstractSimplicialComplex.hasBot with bot_le := fun _ => Set.empty_subset _ }
 
 instance : Inhabited (AbstractSimplicialComplex E) :=
   ⟨⊥⟩
 
-theorem faces_bot : (⊥ : AbstractSimplicialComplex E).faces = ∅ := rfl
+theorem faces_bot_eq_empty : (⊥ : AbstractSimplicialComplex E).faces = ∅ := rfl
 
-theorem facets_bot : (⊥ : AbstractSimplicialComplex E).facets = ∅ :=
+theorem facets_bot_eq_empty : (⊥ : AbstractSimplicialComplex E).facets = ∅ :=
 by
   apply Set.eq_empty_of_subset_empty
-  apply facets_subset
+  apply facets_subset_faces
 
 end AbstractSimplicialComplex
+
+variable {E : Type _} {X Y : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
 @[simp]
 def Geometry.SimplicialComplex.ofAbstract {𝕜 E}
@@ -134,22 +136,14 @@ theorem ofGeometric_ofAbstract_id {𝕜 E}
 by
   simp only [Geometry.SimplicialComplex.ofAbstract, AbstractSimplicialComplex.ofGeometric]
 
-variable {E : Type _}
-
-theorem face_nonempty
-    {X : AbstractSimplicialComplex E}
-    {s : Finset E}
-  : s ∈ X.faces → s ≠ ∅ :=
-by
+theorem face_nonempty : s ∈ X.faces → s ≠ ∅ := by
   contrapose
   rw [ne_eq, not_not]
   intro s_empty
   rw [s_empty]
   apply X.empty_notMem
 
-theorem vertices_setOf (X : AbstractSimplicialComplex E) :
-    X.vertices = {x : E | ∃ s ∈ X.faces, x ∈ s} :=
-by
+theorem vertices_setOf : X.vertices = {x : E | ∃ s ∈ X.faces, x ∈ s} := by
   simp only [Set.ext_iff, Set.mem_setOf]
   intros v
   constructor
@@ -178,10 +172,7 @@ by
   intros s_in_X
   simp only [Finset.finite_toSet]
 
-theorem simplex_subset_vertices
-    (X : AbstractSimplicialComplex E) (s : Finset E) :
-      s ∈ X.faces → ↑s ⊆ X.vertices :=
-by
+theorem simplex_subset_vertices : s ∈ X.faces → ↑s ⊆ X.vertices := by
   intro s_in_X
   rw [vertices_setOf, Set.subset_def]
   intro x x_in_s
@@ -207,9 +198,7 @@ by
   rw [AbstractSimplicialComplex.vertices_eq, Set.biUnion_eq_iUnion]
   apply Set.fintypeiUnion
 
-theorem simplex_mem_is_vertex
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) (x : E)
+theorem vertex_if_mem_face
     (s_in_X : s ∈ X.faces)
     (x_in_s : x ∈ s)
   : x ∈ X.vertices :=
@@ -217,9 +206,7 @@ by
   rw [vertices_setOf, Set.mem_setOf]
   use s
 
-theorem vertex_iff_in_simplex
-    (X : AbstractSimplicialComplex E) (x : E)
-  : x ∈ X.vertices ↔ ∃ s ∈ X.faces, x ∈ s := by rw [vertices_setOf, Set.mem_setOf]
+theorem vertex_iff_in_simplex : x ∈ X.vertices ↔ ∃ s ∈ X.faces, x ∈ s := by rw [vertices_setOf, Set.mem_setOf]
 
 theorem vertices_bot : (⊥ : AbstractSimplicialComplex E).vertices = ∅ :=
 by
@@ -229,13 +216,10 @@ by
   intro s
   rw [not_and]
   intro s_empty
-  rw [AbstractSimplicialComplex.faces_bot] at s_empty
+  rw [AbstractSimplicialComplex.faces_bot_eq_empty] at s_empty
   contradiction
 
-theorem vertices_congr
-    (X Y : AbstractSimplicialComplex E)
-  : X.faces = Y.faces → X.vertices = Y.vertices :=
-by
+theorem vertices_congr : X.faces = Y.faces → X.vertices = Y.vertices := by
   intro X_eq_Y
   simp only [vertices_setOf, X_eq_Y]
 
@@ -273,7 +257,7 @@ by
 
 theorem simplex_vertices
     (s : Finset E)
-  : (@simplex E s).vertices = s :=
+  : (simplex s).vertices = s :=
 by
   rw [vertices_setOf]
   simp only [Set.ext_iff, Set.mem_setOf, simplex, Set.mem_singleton_iff]
@@ -317,8 +301,7 @@ def IsSubcomplex
 instance AbstractSimplicialComplex.instHasSubset : HasSubset (AbstractSimplicialComplex E) :=
   ⟨IsSubcomplex⟩
 
-theorem is_subcomplex_vertex
-    (X Y : AbstractSimplicialComplex E)
+theorem isSubcomplex_vertices
     (Y_subcomp_X : Y ⊆ X)
   : ∀ x : E, x ∈ Y.vertices → x ∈ X.vertices :=
 by
@@ -329,12 +312,11 @@ by
   specialize Y_subcomp_X s Hs
   use s
 
-theorem is_subcomplex_vertices
-    (X Y : AbstractSimplicialComplex E)
+theorem isSubcomplex_vertices_subset
     (Y_subcomp_X : Y ⊆ X)
   : Y.vertices ⊆ X.vertices := by
   simp only [Set.subset_def]
-  apply is_subcomplex_vertex X Y Y_subcomp_X
+  apply isSubcomplex_vertices Y_subcomp_X
 
 -- Equivalent, useful definition of a simplex as a subcomplex of the original.
 def IsSimplex
@@ -343,11 +325,7 @@ def IsSimplex
   : Prop :=
     simplex s ⊆ X
 
-theorem simplex_iff_subcomplex_mem
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) [Nonempty s]
-  : s ∈ X.faces ↔ simplex s ⊆ X :=
-by
+theorem face_iff_simplex_subcomplex [Nonempty s] : s ∈ X.faces ↔ simplex s ⊆ X := by
   constructor
   intro s_in_X_simpl
   simp only [IsSubcomplex, simplex, AbstractSimplicialComplex.instHasSubset]
@@ -372,11 +350,7 @@ by
       assumption)
   assumption
 
-theorem simplex_if_in_subcomplex
-    (X Y : AbstractSimplicialComplex E)
-    (s : Finset E)
-  : s ∈ X.faces → X ⊆ Y → s ∈ Y.faces :=
-by
+theorem isSubcomplex_face_imp_face : s ∈ X.faces → X ⊆ Y → s ∈ Y.faces := by
   intro s_in_X X_sub_Y
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def] at X_sub_Y
   specialize X_sub_Y s s_in_X

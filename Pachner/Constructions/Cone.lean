@@ -311,7 +311,7 @@ by
     simp only [Set.mem_diff, Set.mem_setOf, Set.mem_insert_iff, Set.mem_singleton_iff] at u_in_cone
     choose u_in_cone u_nonempty using u_in_cone
     choose s s_in_ball t t_in_x st_eq_u using u_in_cone
-    rw [← st_eq_u, simplex_disjoint_mem] at z_in_u
+    rw [← st_eq_u, simplexDisjoint_mem_iff] at z_in_u
     cases' z_in_u with z_in_ball z_in_t
     cases' s_in_ball with s_eq_x contra
     rw [s_eq_x, Finset.mem_singleton] at z_in_ball
@@ -347,7 +347,7 @@ by
     simp only [Set.mem_diff, Set.mem_setOf, Set.mem_insert_iff, Set.mem_singleton_iff] at u_in_cone
     choose u_in_cone u_nonempty using u_in_cone
     choose s s_in_ball t t_in_x st_eq_u using u_in_cone
-    rw [← st_eq_u, simplex_disjoint_mem] at z_in_u
+    rw [← st_eq_u, simplexDisjoint_mem_iff] at z_in_u
     cases' z_in_u with z_in_ball z_in_t
     cases' s_in_ball with s_eq_x contra
     rw [s_eq_x, Finset.mem_singleton] at z_in_ball

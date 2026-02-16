@@ -25,7 +25,7 @@ def simplicialJoin (X Y : AbstractSimplicialComplex E) : AbstractSimplicialCompl
       rw [Set.mem_diff, Set.mem_setOf] at *
       choose s_in_XY s_ne using s_in_XY
       choose u Hu v Hv uv_eq_s using s_in_XY
-      rw [← uv_eq_s, simplex_disjoint_subset_sep] at t_sset_s
+      rw [← uv_eq_s, simplexDisjoint_subset_sep] at t_sset_s
       choose z w t_eq_zw using t_sset_s
       choose t_eq_zw z_sset_u w_sset_v using t_eq_zw
       constructor
@@ -122,7 +122,7 @@ by
   · intro st_in_XY
     choose st_in_XY st_ne using st_in_XY
     choose u Hu w Hw uw_eq_st using st_in_XY
-    rw [simplex_disjoint_eq_unique] at uw_eq_st
+    rw [simplexDisjoint_eq_unique] at uw_eq_st
     cases' uw_eq_st with u_eq_s w_eq_t
     constructor
     rw [u_eq_s] at Hu
@@ -130,14 +130,14 @@ by
     rw [w_eq_t] at Hw
     constructor
     assumption
-    rw [Set.mem_singleton_iff, simplex_disjoint_empty, not_and_or] at st_ne
+    rw [Set.mem_singleton_iff, simplexDisjoint_empty, not_and_or] at st_ne
     assumption
   · intro st_in_XY
     choose s_in_X t_in_Y st_ne using st_in_XY
     constructor
     use s; constructor; assumption
     use t
-    rw [Set.mem_singleton_iff, simplex_disjoint_empty, not_and_or]
+    rw [Set.mem_singleton_iff, simplexDisjoint_empty, not_and_or]
     assumption
 
 theorem simplicialJoin_mem
@@ -208,11 +208,11 @@ by
       rw [← Finset.mem_coe]
       assumption
     rw [Finset.mem_coe]
-    rw [← tu_eq_s, simplex_disjoint_mem_left] at Hx_0
+    rw [← tu_eq_s, simplexDisjoint_mem_iff_left] at Hx_0
     assumption
 
     rw [Set.mem_singleton_iff] at t_empty
-    rw [Finset.mem_coe, ← tu_eq_s, t_empty, simplex_disjoint_mem_left] at x0_in_s
+    rw [Finset.mem_coe, ← tu_eq_s, t_empty, simplexDisjoint_mem_iff_left] at x0_in_s
     contradiction
   · intro x_in_s
     choose s Hs x_in_s using x_in_s
@@ -220,7 +220,7 @@ by
     rw [Set.mem_setOf]
     constructor
 
-    rw [Finset.mem_coe, simplex_disjoint_mem_left]
+    rw [Finset.mem_coe, simplexDisjoint_mem_iff_left]
     assumption
 
     constructor
@@ -230,7 +230,7 @@ by
     rw [Set.mem_union]; right; apply Set.mem_singleton
     rfl
 
-    rw [Set.mem_singleton_iff, simplex_disjoint_empty, not_and_or]
+    rw [Set.mem_singleton_iff, simplexDisjoint_empty, not_and_or]
     left
     revert Hs
     contrapose
@@ -256,18 +256,18 @@ by
     cases' Hu with u_in_Y u_empty
 
     use u_in_Y
-    rw [← tu_eq_s, Finset.mem_coe, simplex_disjoint_mem_right] at x1_in_s
+    rw [← tu_eq_s, Finset.mem_coe, simplexDisjoint_mem_iff_right] at x1_in_s
     assumption
 
     rw [Set.mem_singleton_iff] at u_empty
-    rw [← tu_eq_s, Finset.mem_coe, simplex_disjoint_mem_right, u_empty] at x1_in_s
+    rw [← tu_eq_s, Finset.mem_coe, simplexDisjoint_mem_iff_right, u_empty] at x1_in_s
     contradiction
   · intro x_in_s
     choose s Hs x_in_s using x_in_s
     use ∅ ⊔ₛ s
     constructor
 
-    rw [Finset.mem_coe, simplex_disjoint_mem_right]
+    rw [Finset.mem_coe, simplexDisjoint_mem_iff_right]
     assumption
 
     constructor
@@ -280,7 +280,7 @@ by
     left; assumption
     rfl
 
-    rw [Set.mem_singleton_iff, simplex_disjoint_empty, not_and_or]
+    rw [Set.mem_singleton_iff, simplexDisjoint_empty, not_and_or]
     right
     revert Hs
     contrapose
@@ -312,7 +312,7 @@ by
     cases' st_eq_y with st_imp_y y_imp_st
     rw [Finset.mem_coe] at x_in_y
     specialize y_imp_st x_in_y
-    rw [simplex_disjoint_mem] at y_imp_st
+    rw [simplexDisjoint_mem_iff] at y_imp_st
     cases' y_imp_st with x_in_s x_in_t
     left
     cases' x_in_s with x_in_s x0
@@ -359,7 +359,7 @@ by
     rw [Set.mem_iUnion] at *
     choose s_in_X x_in_s using x_in_X
     use simplicialJoin_incl_left s_in_X
-    rw [Finset.mem_coe, simplex_disjoint_mem]
+    rw [Finset.mem_coe, simplexDisjoint_mem_iff]
     left
     rw [Finset.mem_coe] at x_in_s
     constructor <;> assumption
@@ -371,7 +371,7 @@ by
     rw [Set.mem_iUnion] at *
     choose t_in_Y x_in_t using x_in_Y
     use simplicialJoin_incl_right t_in_Y
-    rw [Finset.mem_coe, simplex_disjoint_mem]
+    rw [Finset.mem_coe, simplexDisjoint_mem_iff]
     right
     rw [Finset.mem_coe] at x_in_t
     constructor <;> assumption
@@ -532,7 +532,7 @@ by
     rw [x1]
 
   rw [ne_eq, Finset.union_eq_empty, not_and_or]
-  rw [ne_eq, s_eq_tu, simplex_disjoint_empty, not_and_or] at s_ne
+  rw [ne_eq, s_eq_tu, simplexDisjoint_empty, not_and_or] at s_ne
   cases' s_ne with t_ne u_ne
 
   left
@@ -694,7 +694,7 @@ by
   have y_rw : y = (y.fst, 0) := by
     simp only [Prod.ext_iff]
     constructor; trivial; assumption
-  rw [y_rw, simplex_disjoint_mem_left, Finset.mem_image] at y_in_u
+  rw [y_rw, simplexDisjoint_mem_iff_left, Finset.mem_image] at y_in_u
   choose z z_in_ab coe_z_y using y_in_u
   have z_in_join : z ∈ (X ⋆ Y).vertices :=
     by
@@ -720,7 +720,7 @@ by
   left
   rw [← coe_z_y, fφ_id] at fy_x h_1
   subst fy_x
-  rw [simplex_disjoint_mem] at z_in_ab
+  rw [simplexDisjoint_mem_iff] at z_in_ab
   cases' z_in_ab with z_in_a contra
   assumption
   choose z_in_b contra using contra
@@ -731,7 +731,7 @@ by
   rw [← coe_z_y, fφ_id] at ψfy_x h_1
   subst ψfy_x
   simp only [Prod.fst, Prod.snd]
-  rw [simplex_disjoint_mem] at z_in_ab
+  rw [simplexDisjoint_mem_iff] at z_in_ab
   cases' z_in_ab with contra z_in_b
   choose z_in_a contra using contra
   contradiction
@@ -744,7 +744,7 @@ by
   assumption
   intro ψy_x
   right
-  rw [simplex_disjoint_mem] at y_in_u
+  rw [simplexDisjoint_mem_iff] at y_in_u
   cases' y_in_u with contra y_in_t
   choose y_in_a contra using contra
   contradiction
@@ -777,7 +777,7 @@ by
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
     id] at f_inv
   choose fφ_id φf_id using f_inv
-  simp only [simplex_disjoint_mem, Finset.mem_image] at x_in_join
+  simp only [simplexDisjoint_mem_iff, Finset.mem_image] at x_in_join
   simp only [Finset.mem_image, simplicialJoinAssocForwardAux]
   cases' x_in_join with x_in_a x_in_ψ
   have x_in_XY : x ∈ (X ⋆ Y).vertices :=
@@ -791,19 +791,19 @@ by
     assumption
     constructor
     rfl
-    rw [ne_eq, simplex_disjoint_empty, not_and_or, Finset.eq_empty_iff_forall_notMem, not_forall]
+    rw [ne_eq, simplexDisjoint_empty, not_and_or, Finset.eq_empty_iff_forall_notMem, not_forall]
     left; use x.1; rw [not_not]
     choose x_in_a x_zero using x_in_a
     assumption
-    rw [simplex_disjoint_mem]
+    rw [simplexDisjoint_mem_iff]
     left; assumption
   specialize fφ_id x_in_XY
   have coe_rw : φ.simplicialMap.map = φ.coe := by rfl
   rw [coe_rw] at fφ_id
   use(φ.coe x, 0); constructor
-  rw [simplex_disjoint_mem_left]
+  rw [simplexDisjoint_mem_iff_left]
   apply Finset.mem_image_of_mem
-  rw [simplex_disjoint_mem]
+  rw [simplexDisjoint_mem_iff]
   left; assumption
   choose x_in_a x_zero using x_in_a
   simp only [fφ_id, x_zero, eq_self_iff_true, if_true]
@@ -812,9 +812,9 @@ by
   cases' y_in_bt with y_in_b y_in_t
   choose y_in_b y_zero using y_in_b
   use(φ.coe (y.fst, 1), 0); constructor
-  rw [simplex_disjoint_mem_left]
+  rw [simplexDisjoint_mem_iff_left]
   apply Finset.mem_image_of_mem
-  rw [simplex_disjoint_mem]
+  rw [simplexDisjoint_mem_iff]
   right
   simp only [Prod.fst, Prod.snd]
   constructor; assumption; trivial
@@ -829,13 +829,13 @@ by
     assumption
     constructor
     rfl
-    rw [ne_eq, simplex_disjoint_empty, not_and_or]
+    rw [ne_eq, simplexDisjoint_empty, not_and_or]
     right
     rw [Finset.eq_empty_iff_forall_notMem, not_forall]
     use y.1
     rw [not_not]
     assumption
-    rw [simplex_disjoint_mem]
+    rw [simplexDisjoint_mem_iff]
     simp only [Prod.fst, Prod.snd]
     right
     constructor; assumption; trivial
@@ -853,7 +853,7 @@ by
   trivial
 
   use y; constructor
-  rw [simplex_disjoint_mem]
+  rw [simplexDisjoint_mem_iff]
   right; assumption
   choose y_in_t y_one using y_in_t
   have H : y.2 = 0 ↔ False := by simp only [y_one, one_ne_zero]
@@ -888,9 +888,9 @@ by
   use Finset.image ψ.coe (b ⊔ₛ t); constructor
   simp only [simplicialImage, Set.mem_union, Set.mem_setOf, simplicialJoin_mem]
 
-  rw [ne_eq, simplex_disjoint_empty, not_and_or] at u_ne
+  rw [ne_eq, simplexDisjoint_empty, not_and_or] at u_ne
   cases' u_ne with ab_ne t_ne
-  rw [Finset.image_eq_empty, simplex_disjoint_empty, not_and_or] at ab_ne
+  rw [Finset.image_eq_empty, simplexDisjoint_empty, not_and_or] at ab_ne
   simp only [Set.mem_union, Set.mem_singleton_iff] at t_in_Z b_in_Y a_in_X
   cases' b_in_Y with b_in_Y b_empty
 
@@ -898,7 +898,7 @@ by
   use b; constructor; left; assumption
   use t; constructor; assumption
   constructor; rfl
-  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  rw [ne_eq, simplexDisjoint_empty, not_and_or]
   left
   revert b_in_Y
   contrapose
@@ -914,7 +914,7 @@ by
   use ∅; constructor; right; apply Set.mem_singleton
   use t; constructor; left; assumption
   constructor; rfl
-  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  rw [ne_eq, simplexDisjoint_empty, not_and_or]
   right
   revert t_in_Z
   contrapose
@@ -934,7 +934,7 @@ by
   use b; constructor; assumption
   use t; constructor; assumption
   constructor; rfl
-  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  rw [ne_eq, simplexDisjoint_empty, not_and_or]
   right; assumption
   rfl
 
@@ -974,7 +974,7 @@ by
   choose a a_in_u fa_x using x_in_img
   choose u_eq_st u_ne using u_eq_st
   subst u_eq_st
-  rw [simplex_disjoint_mem] at ⊢ a_in_u
+  rw [simplexDisjoint_mem_iff] at ⊢ a_in_u
   cases' a_in_u with contra a_in_t
   choose contra a2_zero using contra
   contradiction
@@ -986,13 +986,13 @@ by
   right; constructor
   rw [Finset.mem_image]
   use a; constructor
-  rw [simplex_disjoint_mem]
+  rw [simplexDisjoint_mem_iff]
   right; constructor <;> assumption
   assumption
   symm; assumption
 
   intro x_in_union
-  rw [simplex_disjoint_mem] at x_in_union
+  rw [simplexDisjoint_mem_iff] at x_in_union
   cases' x_in_union with contra x_in_img
   choose contra x2_zero using contra
   contradiction
@@ -1003,7 +1003,7 @@ by
   choose u_eq_st u_ne using u_eq_st
   subst u_eq_st
   use a; constructor; assumption
-  rw [simplex_disjoint_mem] at a_in_t
+  rw [simplexDisjoint_mem_iff] at a_in_t
   cases' a_in_t with contra a_in_t
   choose contra a2_zero using contra
   contradiction
@@ -1050,7 +1050,7 @@ by
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
     id] at g_inv
   choose gψ_id ψg_id using g_inv
-  simp only [Finset.mem_image, simplex_disjoint_mem, simplicialJoinAssocInvMap] at x_in_img
+  simp only [Finset.mem_image, simplexDisjoint_mem_iff, simplicialJoinAssocInvMap] at x_in_img
   choose y y_in_join img_y_x using x_in_img
   simp only [simplexDisjointUnion, Finset.mem_union, Finset.mem_image, Finset.mem_product,
     Finset.mem_singleton]
@@ -1087,14 +1087,14 @@ by
     constructor
     rfl
 
-    rw [ne_eq, simplex_disjoint_empty, not_and_or]
+    rw [ne_eq, simplexDisjoint_empty, not_and_or]
     cases' z_in_join with z_in_a z_in_b
     choose z1_in_a z2_zero using z_in_a
     left; apply Finset.ne_empty_of_mem z1_in_a
     choose z1_in_b z2_one using z_in_b
     right; apply Finset.ne_empty_of_mem z1_in_b
 
-    rw [simplex_disjoint_mem]
+    rw [simplexDisjoint_mem_iff]
     assumption
   specialize gψ_id z_in_YZ
   have coe_rw : ψ.simplicialMap.map = ψ.coe := by rfl
@@ -1141,7 +1141,7 @@ by
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
     id] at g_inv
   choose gψ_id ψg_id using g_inv
-  simp only [simplex_disjoint_mem, Finset.mem_image] at x_in_join
+  simp only [simplexDisjoint_mem_iff, Finset.mem_image] at x_in_join
   simp only [Finset.mem_image, simplicialJoinAssocInvMap]
   cases' x_in_join with x_in_coe x_in_b
   choose x_in_coe x_zero using x_in_coe
@@ -1149,7 +1149,7 @@ by
   simp only [simplicialJoinAssocInvAux]
   cases' y_in_join with y_in_s y_in_a
   use y; constructor
-  rw [simplex_disjoint_mem]
+  rw [simplexDisjoint_mem_iff]
   left; assumption
   choose y_in_s y_zero using y_in_s
   rw [@comm _ Eq] at x_zero
@@ -1157,9 +1157,9 @@ by
   constructor <;> assumption
   choose y_in_a y_one using y_in_a
   use(ψ.coe (y.fst, 0), 1); constructor
-  rw [simplex_disjoint_mem_right]
+  rw [simplexDisjoint_mem_iff_right]
   apply Finset.mem_image_of_mem
-  rw [simplex_disjoint_mem_left]
+  rw [simplexDisjoint_mem_iff_left]
   assumption
   have y_in_YZ : (y.fst, 0) ∈ (Y ⋆ Z : AbstractSimplicialComplex (E × 𝕜)).vertices :=
     by
@@ -1171,10 +1171,10 @@ by
     constructor
     rfl
 
-    rw [ne_eq, simplex_disjoint_empty, not_and_or]
+    rw [ne_eq, simplexDisjoint_empty, not_and_or]
     left; apply Finset.ne_empty_of_mem y_in_a
 
-    rw [simplex_disjoint_mem_left]
+    rw [simplexDisjoint_mem_iff_left]
     assumption
   specialize gψ_id y_in_YZ
   have coe_rw : ψ.simplicialMap.map = ψ.coe := by rfl
@@ -1186,9 +1186,9 @@ by
   rw [← y_one, ← x_zero, φy_x]
   simp only [Prod.ext_iff, x_zero, y_one, one_ne_zero, ↓reduceIte, and_self]
   use (ψ.coe x, 1); constructor
-  rw [simplex_disjoint_mem_right]
+  rw [simplexDisjoint_mem_iff_right]
   apply Finset.mem_image_of_mem
-  rw [simplex_disjoint_mem]
+  rw [simplexDisjoint_mem_iff]
   right; assumption
   have x_in_YZ : x ∈ (Y ⋆ Z).vertices :=
     by
@@ -1200,10 +1200,10 @@ by
     constructor; rfl
 
     choose x_in_b x_one using x_in_b
-    rw [ne_eq, simplex_disjoint_empty, not_and_or]
+    rw [ne_eq, simplexDisjoint_empty, not_and_or]
     right; apply Finset.ne_empty_of_mem x_in_b
 
-    rw [simplex_disjoint_mem]
+    rw [simplexDisjoint_mem_iff]
     right; assumption
   specialize gψ_id x_in_YZ
   have coe_rw : ψ.simplicialMap.map = ψ.coe := by rfl
@@ -1244,7 +1244,7 @@ by
   use s; constructor; left; assumption
   use a; constructor; assumption
   constructor; rfl
-  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  rw [ne_eq, simplexDisjoint_empty, not_and_or]
   left
   revert s_in_X
   contrapose
@@ -1261,7 +1261,7 @@ by
   use ∅; constructor; right; apply Set.mem_singleton
   use a; constructor; left; assumption
   constructor; rfl
-  rw [ne_eq, simplex_disjoint_empty, not_and_or]
+  rw [ne_eq, simplexDisjoint_empty, not_and_or]
   right
   revert a_in_Y
   contrapose
@@ -1274,7 +1274,7 @@ by
   rw [Set.mem_singleton_iff] at a_empty
   subst a_empty
   right
-  rw [Set.mem_singleton_iff, Finset.image_eq_empty, simplex_disjoint_empty]
+  rw [Set.mem_singleton_iff, Finset.image_eq_empty, simplexDisjoint_empty]
   constructor <;> rfl
 
   use b; constructor; assumption
@@ -1314,17 +1314,17 @@ by
   intro x_in_img
   simp only [Finset.mem_image, simplicialJoinAssocInvMap, simplicialJoinAssocInvAux] at x_in_img
   choose a a_in_s fa_x using x_in_img
-  rw [simplex_disjoint_mem] at a_in_s
+  rw [simplexDisjoint_mem_iff] at a_in_s
   cases' a_in_s with a_in_s contra
   choose a1_in_s a2_zero using a_in_s
   simp only [a2_zero] at fa_x
   simp only [↓reduceIte, simplicialJoin, simplexDisjointUnion] at fa_x
   simp only [Prod.ext_iff] at fa_x
   choose fa_x x2_zero using fa_x
-  rw [simplex_disjoint_mem, Finset.mem_image]
+  rw [simplexDisjoint_mem_iff, Finset.mem_image]
   constructor; constructor
   use a; constructor
-  rw [simplex_disjoint_mem]
+  rw [simplexDisjoint_mem_iff]
   left; constructor <;> assumption
   assumption
   symm; assumption
@@ -1333,13 +1333,13 @@ by
   contradiction
 
   intro x_in_union
-  rw [simplex_disjoint_mem, Finset.mem_image] at x_in_union
+  rw [simplexDisjoint_mem_iff, Finset.mem_image] at x_in_union
   cases' x_in_union with x_in_union contra
   choose fa_x x2_zero using x_in_union
   choose a a_in_s fa_x using fa_x
   simp only [Finset.mem_image, simplicialJoinAssocInvMap, simplicialJoinAssocInvAux]
   use a; constructor; assumption
-  rw [simplex_disjoint_mem] at a_in_s
+  rw [simplexDisjoint_mem_iff] at a_in_s
   cases' a_in_s with a_in_s contra
   choose a1_in_s a2_zero using a_in_s
   simp only [a2_zero]
@@ -1356,7 +1356,7 @@ by
   rw [ne_eq, Finset.image_eq_empty]; assumption
 
   subst s_empty
-  rw [ne_eq, simplex_disjoint_empty, not_and_or] at u_ne
+  rw [ne_eq, simplexDisjoint_empty, not_and_or] at u_ne
   cases u_ne <;> contradiction
 
 theorem simplicialJoin_assoc [Nonempty E]
@@ -1408,7 +1408,7 @@ by
     subst coe_v_s
     choose u_eq_st u_ne using u_eq_st
     subst u_eq_st
-    simp only [Finset.mem_image, simplex_disjoint_mem] at x_in_u
+    simp only [Finset.mem_image, simplexDisjoint_mem_iff] at x_in_u
     cases' x_in_u with x_in_coe x_in_t
     choose x_in_coe x_zero using x_in_coe
     choose y y_in_join φy_x using x_in_coe
@@ -1420,7 +1420,7 @@ by
       use a ⊔ₛ b; constructor
       rw [simplicialJoin_mem]
       use a; constructor; assumption
-      use b; rw [simplex_disjoint_mem]; assumption
+      use b; rw [simplexDisjoint_mem_iff]; assumption
     specialize gφ_id y_in_XY
     simp only [gφ_id]
     cases' y_in_join with y_in_a y_in_b
@@ -1459,9 +1459,9 @@ by
       use t; constructor; assumption
       constructor; rfl
       choose x1_in_t x2_one using x_in_t
-      rw [ne_eq, simplex_disjoint_empty, not_and_or]
+      rw [ne_eq, simplexDisjoint_empty, not_and_or]
       right; apply Finset.ne_empty_of_mem x1_in_t
-      rw [simplex_disjoint_mem]
+      rw [simplexDisjoint_mem_iff]
       right; assumption
     choose x_in_t x_one using x_in_t
     specialize gψ_id x_in_YZ
@@ -1476,7 +1476,7 @@ by
     subst u_eq_st
     rw [Set.mem_singleton_iff] at s_empty
     subst s_empty
-    rw [simplex_disjoint_mem] at x_in_u
+    rw [simplexDisjoint_mem_iff] at x_in_u
     cases' x_in_u with contra x_in_t
     choose contra x2_zero using contra
     contradiction
@@ -1492,7 +1492,7 @@ by
       rw [Set.mem_union]
       right; apply Set.mem_singleton
       use t
-      rw [simplex_disjoint_mem]
+      rw [simplexDisjoint_mem_iff]
       right; constructor <;> assumption
     specialize gψ_id x_in_YZ
     simp only [gψ_id, simplicialJoinAssocInvAux, x2_one]
@@ -1510,7 +1510,7 @@ by
     subst coe_v_t
     choose u_eq_st u_ne using u_eq_st
     subst u_eq_st
-    simp only [Finset.mem_image, simplex_disjoint_mem] at x_in_u
+    simp only [Finset.mem_image, simplexDisjoint_mem_iff] at x_in_u
     cases' x_in_u with x_in_s x_in_coe
     have x_in_XY : x ∈ (X ⋆ Y).vertices :=
     by
@@ -1521,9 +1521,9 @@ by
       use a; constructor; assumption
       constructor; rfl
       choose x1_in_s x2_zero using x_in_s
-      rw [ne_eq, simplex_disjoint_empty, not_and_or]
+      rw [ne_eq, simplexDisjoint_empty, not_and_or]
       left; apply Finset.ne_empty_of_mem x1_in_s
-      rw [simplex_disjoint_mem]
+      rw [simplexDisjoint_mem_iff]
       left; assumption
     choose x_in_s x_one using x_in_s
     specialize gφ_id x_in_XY
@@ -1541,9 +1541,9 @@ by
       use b; constructor; assumption
       constructor; rfl
       choose y1_in_a y2_zero using y_in_a
-      rw [ne_eq, simplex_disjoint_empty, not_and_or]
+      rw [ne_eq, simplexDisjoint_empty, not_and_or]
       left; apply Finset.ne_empty_of_mem y1_in_a
-      rw [simplex_disjoint_mem]
+      rw [simplexDisjoint_mem_iff]
       left; assumption
     choose y_in_a y_zero using y_in_a
     specialize gψ_id y_in_YZ
@@ -1576,9 +1576,9 @@ by
       use b; constructor; assumption
       constructor; rfl
       choose y1_in_b y2_one using y_in_b
-      rw [ne_eq, simplex_disjoint_empty, not_and_or]
+      rw [ne_eq, simplexDisjoint_empty, not_and_or]
       right; apply Finset.ne_empty_of_mem y1_in_b
-      rw [simplex_disjoint_mem]
+      rw [simplexDisjoint_mem_iff]
       right; assumption
     choose y_in_b y_one using y_in_b
     specialize gψ_id y_in_YZ
@@ -1592,7 +1592,7 @@ by
     subst t_empty
     choose u_eq_st u_ne using u_eq_st
     subst u_eq_st
-    rw [simplex_disjoint_mem] at x_in_u
+    rw [simplexDisjoint_mem_iff] at x_in_u
     cases' x_in_u with x_in_s contra
     choose x1_in_s x2_zero using x_in_s
     simp only [x2_zero]
@@ -1607,9 +1607,9 @@ by
       rw [Set.mem_union]
       right; apply Set.mem_singleton
       constructor; rfl
-      rw [ne_eq, simplex_disjoint_empty, not_and_or]
+      rw [ne_eq, simplexDisjoint_empty, not_and_or]
       left; apply Finset.ne_empty_of_mem x1_in_s
-      rw [simplex_disjoint_mem]
+      rw [simplexDisjoint_mem_iff]
       left; constructor <;> assumption
     specialize gφ_id x_in_XY
     simp only [gφ_id, simplicialJoinAssocForwardAux, x2_zero]
@@ -1634,26 +1634,26 @@ by
   simp only [Finset.ext_iff]
   intro x; constructor
   · intro x_in_ts
-    rw [simplex_disjoint_mem] at x_in_ts
+    rw [simplexDisjoint_mem_iff] at x_in_ts
     rw [Finset.mem_image]
     cases' x_in_ts with x_in_t x_in_s
     choose x_in_t x_zero using x_in_t
     use(x.fst, 1); constructor
-    rw [← st_eq_u, simplex_disjoint_mem_right]
+    rw [← st_eq_u, simplexDisjoint_mem_iff_right]
     assumption
     simp only [simplicialJoinCommMap, Nat.one_ne_zero]
     simp only [one_ne_zero, ↓reduceIte]
     simp only [← x_zero, Prod.ext_iff]
     choose x_in_s x_one using x_in_s
     use(x.fst, 0); constructor
-    rw [← st_eq_u, simplex_disjoint_mem_left]
+    rw [← st_eq_u, simplexDisjoint_mem_iff_left]
     assumption
 
     simp only [simplicialJoinCommMap, eq_self_iff_true, ↓reduceIte]
     simp only [← x_one, Prod.ext_iff]
   · intro x_in_img
     rw [Finset.mem_image] at x_in_img
-    rw [simplex_disjoint_mem]
+    rw [simplexDisjoint_mem_iff]
     choose y y_in_u fy_eq_x using x_in_img
     revert fy_eq_x
     simp only [simplicialJoinCommMap]
@@ -1662,7 +1662,7 @@ by
     simp only [Prod.ext_iff, Prod.fst, Prod.snd] at y_one_x
     choose y_eq_x x_one using y_one_x
     rw [@comm _ Eq] at x_one
-    rw [← st_eq_u, simplex_disjoint_mem] at y_in_u
+    rw [← st_eq_u, simplexDisjoint_mem_iff] at y_in_u
     cases' y_in_u with y_in_s contra
     choose y_in_s y_zero using y_in_s
     rw [y_eq_x] at y_in_s
@@ -1674,7 +1674,7 @@ by
     simp only [Prod.ext_iff, Prod.fst, Prod.snd] at y_zero_x
     choose y_eq_x x_zero using y_zero_x
     rw [@comm _ Eq] at x_zero
-    rw [← st_eq_u, simplex_disjoint_mem] at y_in_u
+    rw [← st_eq_u, simplexDisjoint_mem_iff] at y_in_u
     cases' y_in_u with contra y_in_t
     choose y_in_s contra using contra
     contradiction
@@ -1966,9 +1966,9 @@ by
 --   use v; constructor
 --   rw [Set.mem_union]
 --   cases' v_in_Y with v_in_Y v_empty
---   left; apply simplex_if_in_subcomplex (simplex t)
+--   left; apply isSubcomplex_face_imp_face (simplex t)
 --   assumption
---   rw [← simplex_iff_subcomplex_mem]
+--   rw [← face_iff_simplex_subcomplex]
 --   assumption
 --   right; assumption
 --   assumption
@@ -1993,12 +1993,12 @@ by
 --       assumption
 --       rfl
 
---       rw [Set.mem_singleton_iff, simplex_disjoint_empty, not_and_or]
+--       rw [Set.mem_singleton_iff, simplexDisjoint_empty, not_and_or]
 --       right
 --       rw [←ne_eq, ← Finset.nonempty_iff_ne_empty, ← Finset.nonempty_coe_sort]
 --       assumption)
 --     choose s s_in_X v v_in_Y sv_eq_t using X_sub_Y
---     rw [simplex_disjoint_eq_unique] at sv_eq_t
+--     rw [simplexDisjoint_eq_unique] at sv_eq_t
 --     choose s_empty v_eq_t using sv_eq_t
 --     subst v_eq_t
 --     assumption
@@ -2012,9 +2012,9 @@ by
 --   intro s_in_X u u_in_join
 --   choose t t_in_X v v_in_Y tv_eq_u using u_in_join
 --   use t; constructor
---   apply simplex_if_in_subcomplex (simplex s)
+--   apply isSubcomplex_face_imp_face (simplex s)
 --   assumption
---   rw [← simplex_iff_subcomplex_mem]
+--   rw [← face_iff_simplex_subcomplex]
 --   assumption
 --   use v; constructor
 --   assumption
@@ -2033,7 +2033,7 @@ by
 --     rfl
 --   specialize X_sub_Y Y_mem
 --   choose t t_in_X v v_in_Y tv_eq_s using X_sub_Y
---   rw [simplex_disjoint_eq_unique] at tv_eq_s
+--   rw [simplexDisjoint_eq_unique] at tv_eq_s
 --   choose s_eq_t v_empty using tv_eq_s
 --   subst s_eq_t
 --   assumption
@@ -2116,7 +2116,7 @@ by
     rw [simplicialJoin_mem] at u_in_XY
     choose s s_in_X t t_in_Y u_eq_st using u_in_XY
     choose u_eq_st u_ne using u_eq_st
-    rw [← dim_u_k, face_dim, u_eq_st, simplex_disjoint_card]
+    rw [← dim_u_k, face_dim, u_eq_st, simplexDisjoint_card]
     have st_dim : ↑(s.card + t.card) - 1 = face_dim s + face_dim t + 1 := by simp; linarith
     rw [st_dim]
     have s_le_dim : face_dim s ≤ X.dim :=
@@ -2167,7 +2167,7 @@ by
     choose s s_in_X dim_s_n using n_dim
     choose t t_in_Y dim_t_m using m_dim
     have st_dim : ↑(s.card + t.card) - 1 = face_dim s + face_dim t + 1 := by simp; linarith
-    simp only [← dim_s_n, ← dim_t_m, ← st_dim, ← simplex_disjoint_card]
+    simp only [← dim_s_n, ← dim_t_m, ← st_dim, ← simplexDisjoint_card]
     apply Finset.le_max'
     simp only [Finset.mem_union, Finset.mem_image, Finset.mem_singleton, Set.mem_toFinset]
     left; use s ⊔ₛ t; constructor
@@ -2177,7 +2177,7 @@ by
     use t; constructor
     rw [Set.mem_union]; left; assumption
     constructor; rfl
-    rw [ne_eq, simplex_disjoint_empty, not_and_or]
+    rw [ne_eq, simplexDisjoint_empty, not_and_or]
     left
     revert s_in_X
     contrapose
@@ -2186,7 +2186,7 @@ by
     rw [s_empty]
     apply X.empty_notMem
     unfold face_dim
-    rw [simplex_disjoint_card]
+    rw [simplexDisjoint_card]
 
     choose s s_in_X dim_s_n using n_dim
     simp only [← dim_s_n, m_empty, Int.reduceNeg, neg_add_cancel_right, ge_iff_le, n, m, k]
@@ -2199,7 +2199,7 @@ by
     use ∅; constructor
     rw [Set.mem_union]; right; apply Set.mem_singleton
     constructor; rfl
-    rw [ne_eq, simplex_disjoint_empty, not_and_or]
+    rw [ne_eq, simplexDisjoint_empty, not_and_or]
     left
     revert s_in_X
     contrapose
@@ -2208,7 +2208,7 @@ by
     rw [s_empty]
     apply X.empty_notMem
     unfold face_dim
-    rw [simplex_disjoint_card, Finset.card_empty]
+    rw [simplexDisjoint_card, Finset.card_empty]
     simp only [add_zero, n, m, k]
 
     choose t t_in_Y dim_t_m using m_dim
@@ -2222,7 +2222,7 @@ by
     use t; constructor
     rw [Set.mem_union]; left; assumption
     constructor; rfl
-    rw [ne_eq, simplex_disjoint_empty, not_and_or]
+    rw [ne_eq, simplexDisjoint_empty, not_and_or]
     right
     revert t_in_Y
     contrapose
@@ -2231,7 +2231,7 @@ by
     rw [t_empty]
     apply Y.empty_notMem
     unfold face_dim
-    rw [simplex_disjoint_card, Finset.card_empty]
+    rw [simplexDisjoint_card, Finset.card_empty]
     simp only [zero_add, n, m, k]
 
     simp only [n_empty, m_empty]

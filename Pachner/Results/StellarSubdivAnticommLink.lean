@@ -104,7 +104,7 @@ theorem not_mem_link_vertices
 by
   contrapose
   simp only [Classical.not_not]
-  apply is_subcomplex_vertices
+  apply isSubcomplex_vertices
   apply link_subcomplex
 
 theorem stellar_subdiv_anticomm_link_left_ac
@@ -1032,7 +1032,7 @@ by
                 by
                   rw [vertices_setOf]
                   use u₂; constructor
-                  apply simplex_if_in_subcomplex (∂s)
+                  apply isSubcomplex_face_imp_face
                   assumption
                   apply simplexBoundary_subcomplex
                   assumption
@@ -1048,7 +1048,7 @@ by
                   by
                     rw [vertices_setOf]
                     use z₂; constructor
-                    apply simplex_if_in_subcomplex (∂s)
+                    apply isSubcomplex_face_imp_face
                     assumption
                     apply simplexBoundary_subcomplex
                     assumption
@@ -1082,7 +1082,7 @@ by
               by
                 rw [vertices_setOf, Set.mem_setOf]
                 use z₂; constructor
-                apply simplex_if_in_subcomplex (∂s)
+                apply isSubcomplex_face_imp_face
                 assumption
                 apply simplexBoundary_subcomplex
                 assumption
@@ -1104,7 +1104,7 @@ by
                 by
                   rw [vertices_setOf, Set.mem_setOf]
                   use u₂; constructor
-                  apply simplex_if_in_subcomplex (∂s)
+                  apply isSubcomplex_face_imp_face
                   assumption
                   apply simplexBoundary_subcomplex
                   assumption
@@ -1140,7 +1140,7 @@ by
             by
               rw [vertices_setOf, Set.mem_setOf]
               use u₂; constructor
-              apply simplex_if_in_subcomplex (∂s)
+              apply isSubcomplex_face_imp_face
               assumption
               apply simplexBoundary_subcomplex
               assumption
@@ -1156,7 +1156,7 @@ by
             by
               rw [vertices_setOf, Set.mem_setOf]
               use u₂; constructor
-              apply simplex_if_in_subcomplex (∂s)
+              apply isSubcomplex_face_imp_face
               assumption
               apply simplexBoundary_subcomplex
               assumption
@@ -1632,7 +1632,7 @@ by
     use u₂; constructor
     rw [Set.mem_union, Set.mem_singleton_iff]
     cases' u₂_in_bd with u₂_in_bd u₂_empty
-    · left; apply simplex_if_in_subcomplex (∂(s \ (t₁ ∪ t₂)))
+    · left; apply isSubcomplex_face_imp_face
       assumption
       simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
       apply subsimplex_boundary_subcomplex
@@ -1840,7 +1840,7 @@ by
     use u₂; constructor
     rw [Set.mem_union, Set.mem_singleton_iff]
     cases' u₂_in_bd with u₂_in_bd u₂_empty
-    · left; apply simplex_if_in_subcomplex (∂(s \ (t₁ ∪ t₂)))
+    · left; apply isSubcomplex_face_imp_face
       assumption
       simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
       apply subsimplex_boundary_subcomplex

@@ -182,19 +182,11 @@ by
     id]
   constructor
   · intro x x_in_X_comp
-    have x_in_X : x ∈ X.vertices :=
-    by
-      apply is_subcomplex_vertices X (X\St(X, s))
-      apply starComplement_subcomplex
-      assumption
+    have x_in_X : x ∈ X.vertices := isSubcomplex_vertices (starComplement_subcomplex X s) x x_in_X_comp
     specialize gf_id x_in_X
     assumption
   · intro x x_in_Y_comp
-    have x_in_Y : x ∈ Y.vertices :=
-    by
-      apply is_subcomplex_vertices Y (Y\St(Y, t))
-      apply starComplement_subcomplex
-      assumption
+    have x_in_Y : x ∈ Y.vertices := isSubcomplex_vertices (starComplement_subcomplex Y t) x x_in_Y_comp
     specialize fg_id x_in_Y
     assumption
 

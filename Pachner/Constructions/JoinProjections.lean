@@ -19,11 +19,11 @@ by
   choose s₁ s₁_in_join x₁_in_s₁ using x₁_in_lhs
   choose s₁_in_join s₁_ne using s₁_in_join
   choose u₁ u₁_in_X v₁ v₁_in_Y uv₁_eq_s₁ using s₁_in_join
-  rw [← uv₁_eq_s₁, simplex_disjoint_mem] at x₁_in_s₁
+  rw [← uv₁_eq_s₁, simplexDisjoint_mem_iff] at x₁_in_s₁
   choose s₂ s₂_in_join x₂_in_s₂ using x₂_in_rhs
   choose s₂_in_join s₂_ne using s₂_in_join
   choose u₂ u₂_in_X v₂ v₂_in_Y uv₂_eq_s₂ using s₂_in_join
-  rw [← uv₂_eq_s₂, simplex_disjoint_mem] at x₂_in_s₂
+  rw [← uv₂_eq_s₂, simplexDisjoint_mem_iff] at x₂_in_s₂
   cases' x₁_in_s₁ with x₁_in_X x₁_in_Y <;> cases' x₂_in_s₂ with x₂_in_X x₂_in_Y
 
   -- x₁, x₂ ∈ X case.
@@ -121,7 +121,7 @@ by
   choose s s_in_X t t_in_Y st_eq_v using v_in_join
   rw [← proj_v_u, Finset.mem_image] at x_in_u
   choose y y_in_v proj_y_x using x_in_u
-  rw [← st_eq_v, simplex_disjoint_mem] at y_in_v
+  rw [← st_eq_v, simplexDisjoint_mem_iff] at y_in_v
   cases' y_in_v with y_in_X y_in_Y
   left
   choose y_in_s y_zero using y_in_X
@@ -153,7 +153,7 @@ by
   use s; constructor; left; assumption
   use ∅; constructor; right; rfl
   rfl
-  rw [simplex_disjoint_empty, not_and_or]
+  rw [simplexDisjoint_empty, not_and_or]
   left; apply Finset.ne_empty_of_mem x_in_s
 
   simp only [simplexDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
@@ -182,7 +182,7 @@ by
   use ∅; constructor; right; rfl
   use t; constructor; left; assumption
   rfl
-  rw [simplex_disjoint_empty, not_and_or]
+  rw [simplexDisjoint_empty, not_and_or]
   right; apply Finset.ne_empty_of_mem x_in_t
 
   simp only [simplexDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
@@ -283,7 +283,7 @@ by
   apply Y.empty_notMem
 
   subst t_empty u_empty tu_eq_v
-  rw [simplex_disjoint_empty, not_and_or] at v_ne
+  rw [simplexDisjoint_empty, not_and_or] at v_ne
   cases v_ne <;> contradiction
 
   -- s X ∪ Y case.
@@ -294,7 +294,7 @@ by
   use t; constructor; assumption
   use u
 
-  rw [simplex_disjoint_empty, not_and_or]
+  rw [simplexDisjoint_empty, not_and_or]
   cases' t_in_X with t_in_X t_empty
   left
   revert t_in_X
@@ -314,7 +314,7 @@ by
   apply Y.empty_notMem
 
   subst t_empty u_empty s_eq_tu
-  rw [ne_eq, Finset.image_eq_empty, simplex_disjoint_empty, not_and_or] at s_ne
+  rw [ne_eq, Finset.image_eq_empty, simplexDisjoint_empty, not_and_or] at s_ne
   cases s_ne <;> contradiction
 
   symm; assumption

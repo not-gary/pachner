@@ -216,8 +216,8 @@ theorem simplicialCoe_union
     (X Y : AbstractSimplicialComplex E)
     (φ : SimplicialCoe (X ∪ Y) F)
   : φ.coe ''ˢ (X ∪ Y) =
-      φ[X; by apply is_subcomplex_vertices; apply subcomplex_simplicial_union_left].coe ''ˢ X ∪
-        φ[Y; by apply is_subcomplex_vertices; apply subcomplex_simplicial_union_right].coe ''ˢ Y :=
+      φ[X; by apply isSubcomplex_vertices; apply subcomplex_simplicial_union_left].coe ''ˢ X ∪
+        φ[Y; by apply isSubcomplex_vertices; apply subcomplex_simplicial_union_right].coe ''ˢ Y :=
 by
   exact simplicialImage_union φ.coe
 

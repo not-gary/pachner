@@ -315,8 +315,8 @@ by
   choose img_range img_inj img_surj using img_bij
   intro s₁ s₁_in_X s₂ s₂_in_X fs₁_eq_fs₂
   simp only [Finset.ext_iff] at fs₁_eq_fs₂ ⊢
-  have s₁_ss_vert : ↑s₁ ⊆ X.vertices := by apply simplex_subset_vertices X s₁ s₁_in_X
-  have s₂_ss_vert : ↑s₂ ⊆ X.vertices := by apply simplex_subset_vertices X s₂ s₂_in_X
+  have s₁_ss_vert : ↑s₁ ⊆ X.vertices := by apply simplex_subset_vertices s₁_in_X
+  have s₂_ss_vert : ↑s₂ ⊆ X.vertices := by apply simplex_subset_vertices s₂_in_X
   intro a
   specialize fs₁_eq_fs₂ (f.map a)
   cases' fs₁_eq_fs₂ with fs₁_ss_fs₂ fs₂_ss_fs₁

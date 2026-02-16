@@ -1,15 +1,14 @@
 import Pachner.Basic.AbstractSimplicialComplex
 
 section Disjoint
-variable {E : Type _}
+variable {E : Type _} {X Y : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
 def DisjointComplexes
     (X Y : AbstractSimplicialComplex E) : Prop :=
   Disjoint (X.vertices) (Y.vertices)
 
-theorem disjoint_simplices_iff_disj_vertices [DecidableEq E]
-    (X Y : AbstractSimplicialComplex E)
-    (s t : Finset E)
+theorem disjoint_simplices_iff_disjoint_vertices
+    [DecidableEq E]
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)
   : DisjointComplexes X Y → Disjoint s t :=
@@ -26,19 +25,13 @@ by
   simp only [Set.subset_empty_iff] at ⊢ XY_disj
   assumption
 
-theorem disjoint_singleton
-    (X : AbstractSimplicialComplex E)
-    (x : E)
-  : x ∉ X.vertices → DisjointComplexes X (simplex {x}) :=
-by
-  simp only [DisjointComplexes, simplex_vertices {x}]
+theorem disjoint_singleton : x ∉ X.vertices → DisjointComplexes X (simplex {x}) := by
+  simp only [DisjointComplexes, simplex_vertices]
   intro x_nin_X
   rw [Set.disjoint_iff_inter_eq_empty, Finset.coe_singleton, Set.inter_singleton_eq_empty]
   assumption
 
-theorem disjoint_complexes_disjoint_simplices
-    (X Y : AbstractSimplicialComplex E)
-    (s t : Finset E)
+theorem disjointComplexes_disjoint_simplices
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)
     (XY_disj : Disjoint (X.vertices) (Y.vertices))
@@ -104,13 +97,13 @@ by
 instance SimplexDisjoint.partialOrder : PartialOrder (Finset (E × 𝕜)) :=
   Finset.partialOrder
 
-theorem simplex_disjoint_disjoint
+theorem simplexDisjoint_disjoint
     (s t : Finset E)
-  : @Disjoint _ SimplexDisjoint.partialOrder _ (Finset.product s {(0 : 𝕜)}) (Finset.product t {(1 : 𝕜)}) :=
+  : Disjoint (s ×ˢ {(0 : 𝕜)}) (t ×ˢ {(1 : 𝕜)}) :=
 by
   rw [Finset.disjoint_left]
   intro x x_in_s0
-  rw [Finset.product_eq_sprod, Finset.mem_product] at *
+  rw [Finset.mem_product] at *
   cases' x_in_s0 with x_in_s x0
   rw [not_and_or]
   right
@@ -118,7 +111,7 @@ by
   rw [x0]
   simp
 
-theorem simplex_disjoint_mem
+theorem simplexDisjoint_mem_iff
     (s t : Finset E)
     (x : E × 𝕜)
   : x ∈ s ⊔ₛ t ↔ x.fst ∈ s ∧ x.snd = 0 ∨ x.fst ∈ t ∧ x.snd = 1 :=
@@ -143,9 +136,9 @@ by
   intro x_in_st
   iterate 2 rw [Finset.mem_product, Finset.mem_singleton]
   assumption
-  apply simplex_disjoint_disjoint
+  apply simplexDisjoint_disjoint
 
-theorem simplex_disjoint_mem_left
+theorem simplexDisjoint_mem_iff_left
     (s t : Finset E)
     (x : E)
   : (x, 0) ∈ (s ⊔ₛ t : Finset (E × 𝕜)) ↔ x ∈ s :=
@@ -170,7 +163,7 @@ by
     simp; assumption
     simp
 
-theorem simplex_disjoint_mem_right
+theorem simplexDisjoint_mem_iff_right
     (s t : Finset E)
     (x : E)
   : (x, 1) ∈ (s ⊔ₛ t : Finset (E × 𝕜)) ↔ x ∈ t :=
@@ -195,7 +188,7 @@ by
     simp; assumption
     simp
 
-theorem simplex_disjoint_subset_unique
+theorem simplexDisjoint_subset_unique
     (s t u w : Finset E)
   : s ⊔ₛ t ⊆ (u ⊔ₛ w : Finset (E × 𝕜)) ↔ s ⊆ u ∧ t ⊆ w :=
 by
@@ -204,16 +197,16 @@ by
   rw [Finset.subset_iff] at disj_sset
   constructor <;> rw [Finset.subset_iff] <;> intro x x_in_s
   have Hs_0 : (x, 0) ∈ (s ⊔ₛ t : Finset (E × 𝕜)) := by
-    rw [simplex_disjoint_mem_left]
+    rw [simplexDisjoint_mem_iff_left]
     assumption
   specialize disj_sset Hs_0
-  rw [simplex_disjoint_mem_left] at disj_sset
+  rw [simplexDisjoint_mem_iff_left] at disj_sset
   assumption
   have Ht_1 : (x, 1) ∈ (s ⊔ₛ t : Finset (E × 𝕜)) := by
-    rw [simplex_disjoint_mem_right]
+    rw [simplexDisjoint_mem_iff_right]
     assumption
   specialize disj_sset Ht_1
-  rw [simplex_disjoint_mem_right] at disj_sset
+  rw [simplexDisjoint_mem_iff_right] at disj_sset
   assumption
   intro sset
   cases' sset with s_sset_u t_sset_w
@@ -234,7 +227,7 @@ by
   assumption
   assumption
 
-theorem simplex_disjoint_subset_sep
+theorem simplexDisjoint_subset_sep
     (s : Finset (E × 𝕜))
     (t u : Finset E)
   : s ⊆ t ⊔ₛ u ↔ ∃ z w : Finset E, s = z ⊔ₛ w ∧ z ⊆ t ∧ w ⊆ u :=
@@ -254,8 +247,8 @@ by
     rw [Finset.subset_iff] at s_sset_tu
     intro x_in_s
     specialize s_sset_tu x_in_s
-    simp_rw [simplex_disjoint_mem] at s_sset_tu
-    rw [simplex_disjoint_mem]
+    simp_rw [simplexDisjoint_mem_iff] at s_sset_tu
+    rw [simplexDisjoint_mem_iff]
     simp only [z, z_prod, w, w_prod]
     iterate 2 rw [Finset.mem_biUnion]
     cases' s_sset_tu with s_sset_tu s_sset_tu
@@ -278,7 +271,7 @@ by
     rw [Finset.mem_singleton]
     assumption
     intro x_in_zw
-    rw [simplex_disjoint_mem] at x_in_zw
+    rw [simplexDisjoint_mem_iff] at x_in_zw
     cases' x_in_zw with x_in_zw x_in_zw  <;>
       · cases' x_in_zw with x_in_filter xn
         simp only [z, z_prod, w, w_prod] at x_in_filter
@@ -296,7 +289,7 @@ by
         assumption
   constructor
   apply s_eq_zw
-  rw [← @simplex_disjoint_subset_unique E 𝕜, ← s_eq_zw]
+  rw [← @simplexDisjoint_subset_unique E 𝕜, ← s_eq_zw]
   assumption
   intro s_eq_zw
   choose z w s_eq_zw using s_eq_zw
@@ -304,7 +297,7 @@ by
   rw [Finset.subset_iff]
   intro x x_in_s
   rw [s_eq_zw] at x_in_s
-  rw [simplex_disjoint_mem] at *
+  rw [simplexDisjoint_mem_iff] at *
   cases' x_in_s with x_in_s x_in_s
   left
   cases' x_in_s with x_in_t x0
@@ -321,7 +314,7 @@ by
   assumption
   assumption
 
-theorem simplex_disjoint_eq_unique
+theorem simplexDisjoint_eq_unique
     (s t u w : Finset E)
   : s ⊔ₛ t = (u ⊔ₛ w : Finset (E × 𝕜)) ↔ s = u ∧ t = w :=
 by
@@ -329,22 +322,22 @@ by
   · intro H
     repeat' rw [Finset.Subset.antisymm_iff] at *
     cases' H with st_sset_uw uw_sset_st
-    rw [simplex_disjoint_subset_unique] at *
+    rw [simplexDisjoint_subset_unique] at *
     tauto
   · intro H
     repeat' rw [Finset.Subset.antisymm_iff] at *
-    repeat' rw [simplex_disjoint_subset_unique]
+    repeat' rw [simplexDisjoint_subset_unique]
     tauto
 
-theorem simplex_disjoint_empty
+theorem simplexDisjoint_empty
     (s t : Finset E)
   : (s ⊔ₛ t : Finset (E × 𝕜)) = ∅ ↔ s = ∅ ∧ t = ∅ :=
 by
   have H : (∅ : Finset (E × 𝕜)) = (∅ : Finset E) ⊔ₛ (∅ : Finset E) := by simp
   rw [H]
-  apply simplex_disjoint_eq_unique
+  apply simplexDisjoint_eq_unique
 
-theorem simplex_disjoint_distr_union
+theorem simplexDisjoint_distr_union
     (s t u w : Finset E)
   : s ⊔ₛ t ∪ (u ⊔ₛ w : Finset (E × 𝕜)) = s ∪ u ⊔ₛ (t ∪ w) :=
 by
@@ -356,7 +349,7 @@ by
   rw [Finset.union_assoc _ (t ×ˢ {1}) (w ×ˢ {1})]
   repeat' rw [Finset.union_product]
 
-theorem simplex_disjoint_distr_inter
+theorem simplexDisjoint_distr_inter
     (s t u w : Finset E)
   : (s ⊔ₛ t : Finset (E × 𝕜)) ∩ (u ⊔ₛ w) = s ∩ u ⊔ₛ t ∩ w :=
 by
@@ -385,7 +378,7 @@ by
   repeat' rw [Finset.union_empty, Finset.empty_union]
   repeat' rw [Finset.inter_product]
 
-theorem simplex_disjoint_card
+theorem simplexDisjoint_card
     (s t : Finset E)
   : (s ⊔ₛ t : Finset (E × 𝕜)).card = s.card + t.card :=
 by

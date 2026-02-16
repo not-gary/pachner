@@ -32,10 +32,9 @@ def HasDimension
     (X : AbstractSimplicialComplex E) (n : ℕ) :=
   HasDimensionLeq X n ∧ HasDimensionGeq X n
 
-theorem dim_geq_zero_iff_nonempty
-    (s : Finset E)
-  : 0 ≤ face_dim s ↔ s ≠ ∅ :=
-by
+variable {s : Finset E} {x : E}
+
+theorem dim_geq_zero_iff_nonempty : 0 ≤ face_dim s ↔ s ≠ ∅ := by
   unfold face_dim
   rw [Ne, ← Finset.card_eq_zero]
   constructor
@@ -48,10 +47,7 @@ by
   have s_card_pos : s.card > 0 := by omega
   linarith
 
-theorem dim_neg_one_iff_empty
-    (s : Finset E)
-  : face_dim s = -1 ↔ s = ∅ :=
-by
+theorem dim_neg_one_iff_empty : face_dim s = -1 ↔ s = ∅ := by
   unfold face_dim
   rw [← Finset.card_eq_zero]
   constructor
@@ -62,10 +58,7 @@ by
   rw [s_card_zero]
   simp
 
-theorem dim_zero_iff_vertex
-    (s : Finset E)
-  : face_dim s = 0 ↔ ∃ x : E, s = {x} :=
-by
+theorem dim_zero_iff_vertex : face_dim s = 0 ↔ ∃ x : E, s = {x} := by
   unfold face_dim
   constructor
   intro s_card_minus_one
@@ -77,10 +70,7 @@ by
   rw [exists_x]
   simp
 
-theorem simplex_decomp [DecidableEq E]
-    (s : Finset E)
-  : 0 < face_dim s → ∃ x ∈ s, ∃ t : Finset E, t = s \ {x} :=
-by
+theorem simplex_decomp [DecidableEq E] : 0 < face_dim s → ∃ x ∈ s, ∃ t : Finset E, t = s \ {x} := by
   unfold face_dim
   intro s_card_pos
   have s_card_gt_one : 1 < s.card := by linarith
@@ -89,9 +79,8 @@ by
   use a; constructor; assumption
   use s \ {a}
 
-theorem simplex_decomp_dim [DecidableEq E]
-    (s : Finset E)
-    (x : E)
+theorem simplex_decomp_dim
+    [DecidableEq E]
     (x_in_s : x ∈ s)
   : 0 < face_dim s → 0 ≤ face_dim (s \ {x}) :=
 by
@@ -108,9 +97,8 @@ by
   rw [Finset.singleton_subset_iff]
   assumption
 
-theorem simplex_decomp_dim_eq [DecidableEq E]
-    (s : Finset E)
-    (x : E)
+theorem simplex_decomp_dim_eq
+    [DecidableEq E]
     (x_in_s : x ∈ s)
   : 0 < face_dim s → face_dim (s \ {x}) = face_dim s - 1 :=
 by
@@ -144,7 +132,8 @@ by
 @[simp]
 def AbstractSimplicialComplex.dim
     (X : AbstractSimplicialComplex E)
-    [Fintype X.faces] : ℤ :=
+    [Fintype X.faces]
+  : ℤ :=
   Finset.max' ((Finset.image face_dim X.faces.toFinset) ∪ {-1})
   (by
     unfold Finset.Nonempty

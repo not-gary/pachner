@@ -226,7 +226,7 @@ by
   conv_rhs => rw [← @Set.image_id F ↑t]
   apply Set.EqOn.image_eq
   simp only [Set.restrict_eq_restrict_iff, SimplicialMap.comp] at gf_id
-  have t_in_vert : ↑t ⊆ Y.vertices := by apply simplex_subset_vertices Y t t_in_Y
+  have t_in_vert : ↑t ⊆ Y.vertices := by apply simplex_subset_vertices t_in_Y
   apply Set.EqOn.mono t_in_vert
   assumption
   intro t_in_lift

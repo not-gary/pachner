@@ -129,16 +129,10 @@ by
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply]
   constructor
   · intro x x_in_star
-    have x_in_X : x ∈ X.vertices :=
-    by
-      apply is_subcomplex_vertices X St(X, s) (star_subcomplex X s)
-      assumption
+    have x_in_X : x ∈ X.vertices := isSubcomplex_vertices (star_subcomplex X s) x x_in_star
     specialize gf_id x_in_X
     assumption
   · intro x x_in_star
-    have x_in_Y : x ∈ Y.vertices :=
-    by
-      apply is_subcomplex_vertices Y St(Y, t) (star_subcomplex Y t)
-      assumption
+    have x_in_Y : x ∈ Y.vertices := isSubcomplex_vertices (star_subcomplex Y t) x x_in_star
     specialize fg_id x_in_Y
     assumption

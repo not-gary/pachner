@@ -257,19 +257,11 @@ by
     id]
   constructor
   · intro x x_in_bd
-    have x_in_s : x ∈ AbstractSimplicialComplex.vertices E (simplex s) :=
-      by
-      apply is_subcomplex_vertices _ (∂s)
-      apply simplexBoundary_subcomplex_simplex
-      assumption
+    have x_in_s : x ∈ (simplex s).vertices := isSubcomplex_vertices (simplexBoundary_subcomplex_simplex s) x x_in_bd
     specialize gf_id x_in_s
     assumption
   · intro x x_in_bd
-    have x_in_t : x ∈ AbstractSimplicialComplex.vertices F (simplex t) :=
-      by
-      apply is_subcomplex_vertices _ (∂t)
-      apply simplexBoundary_subcomplex_simplex
-      assumption
+    have x_in_t : x ∈ (simplex t).vertices := isSubcomplex_vertices (simplexBoundary_subcomplex_simplex t) x x_in_bd
     specialize fg_id x_in_t
     assumption
 

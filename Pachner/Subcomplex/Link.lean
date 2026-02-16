@@ -272,19 +272,11 @@ by
     id]
   constructor
   · intro x x_in_X_link
-    have x_in_X : x ∈ X.vertices :=
-    by
-      apply is_subcomplex_vertices X Lk(X, s)
-      apply link_subcomplex
-      assumption
+    have x_in_X : x ∈ X.vertices := isSubcomplex_vertices (link_subcomplex X s) x x_in_X_link
     specialize gf_id x_in_X
     assumption
   · intro x x_in_Y_link
-    have x_in_Y : x ∈ Y.vertices :=
-    by
-      apply is_subcomplex_vertices Y Lk(Y, t)
-      apply link_subcomplex
-      assumption
+    have x_in_Y : x ∈ Y.vertices := isSubcomplex_vertices (link_subcomplex Y t) x x_in_Y_link
     specialize fg_id x_in_Y
     assumption
 

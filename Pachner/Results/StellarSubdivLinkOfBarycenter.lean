@@ -73,7 +73,7 @@ by
       cases' x₂_in_bd with x₂_in_bd x₂_empty
 
       rw [AbstractSimplicialComplex.mem_vertices]
-      apply simplex_if_in_subcomplex
+      apply isSubcomplex_face_imp_face
       apply x₂_in_bd
       apply simplexBoundary_subcomplex
       assumption
@@ -197,7 +197,7 @@ by
     rw [vertex_iff_in_simplex]
     cases' x_in_a with x_in_a₁ x_in_a₂
     use a₁; constructor
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
 
     cases' a₁_in_link with a₁_in_link a₁_empty
     apply a₁_in_link
@@ -208,7 +208,7 @@ by
     apply link_subcomplex
     assumption
     use a₂; constructor
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
 
     cases' a₂_in_bd with a₂_in_bd a₂_empty
     apply a₂_in_bd

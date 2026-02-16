@@ -64,7 +64,7 @@ by
   revert x
   simp only [← Finset.mem_coe, ← Set.subset_def]
   apply simplex_subset_vertices
-  apply simplex_if_in_subcomplex X
+  apply isSubcomplex_face_imp_face
   exact starComplement_subcomplex_simplices X s t t_in_star_comp
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
   rfl
@@ -121,7 +121,7 @@ by
   have t₂_in_X : ↑t₂ ⊆ X.vertices :=
     by
     apply simplex_subset_vertices
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
     apply t₂_in_bd
     apply simplexBoundary_subcomplex
     assumption
@@ -172,7 +172,7 @@ by
   have t₁_in_X : ↑t₁ ⊆ X.vertices :=
     by
     apply simplex_subset_vertices
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
     apply t₁_in_link
     apply link_subcomplex
   rw [Set.subset_def] at t₁_in_X
@@ -215,7 +215,7 @@ by
   have t_in_X : ↑t ⊆ X.vertices :=
     by
     apply simplex_subset_vertices
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
     apply t_in_link
     apply link_subcomplex
   rw [Set.subset_def] at t_in_X
@@ -262,7 +262,7 @@ by
     apply Set.InjOn.invFunOn_image
     apply φ.Injective
     apply simplex_subset_vertices
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
     apply u_in_star_comp
     apply starComplement_subcomplex
   rw [inv_u]
@@ -274,7 +274,7 @@ by
   revert y
   simp only [← Finset.mem_coe, ← Set.subset_def]
   apply simplex_subset_vertices
-  apply simplex_if_in_subcomplex ((φ.coe ''ˢ X)\St(φ.coe ''ˢ X, Finset.image φ.coe s))
+  apply isSubcomplex_face_imp_face
   assumption
   apply starComplement_subcomplex
 
@@ -325,7 +325,7 @@ by
     apply Set.InjOn.invFunOn_image
     apply φ.Injective
     apply simplex_subset_vertices
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
     apply u_in_bd
     apply simplexBoundary_subcomplex
     assumption
@@ -338,7 +338,7 @@ by
   have t₂_in_X : ↑t₂ ⊆ (φ.coe ''ˢ X).vertices :=
     by
     apply simplex_subset_vertices
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
     apply t₂_in_bd
     apply simplexBoundary_subcomplex
     apply map_is_simplicial_onto_image
@@ -377,7 +377,7 @@ by
     apply Set.InjOn.invFunOn_image
     apply φ.Injective
     apply simplex_subset_vertices
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
     apply u_in_link
     apply link_subcomplex
   rw [inv_u]
@@ -390,7 +390,7 @@ by
   have t₁_in_X : ↑t₁ ⊆ (φ.coe ''ˢ X).vertices :=
     by
     apply simplex_subset_vertices
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
     apply t₁_in_link
     apply link_subcomplex
   rw [Set.subset_def] at t₁_in_X
@@ -449,7 +449,7 @@ by
     apply Set.InjOn.invFunOn_image
     apply φ.Injective
     apply simplex_subset_vertices
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
     apply u_in_link
     apply link_subcomplex
   rw [inv_u]
@@ -462,7 +462,7 @@ by
   have t₁_in_X : ↑t ⊆ (φ.coe ''ˢ X).vertices :=
     by
     apply simplex_subset_vertices
-    apply simplex_if_in_subcomplex
+    apply isSubcomplex_face_imp_face
     apply t_in_link
     apply link_subcomplex
   rw [Set.subset_def] at t₁_in_X
