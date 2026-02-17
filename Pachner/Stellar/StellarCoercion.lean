@@ -47,16 +47,16 @@ theorem stellar_coe_forward_simplicial
     (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
   : IsSimplicialMap
       σ(X, s, x; 𝕜, s_in_X, x_nin_X)
-      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply map_is_simplicial_onto_image; assumption, y_nin_coe)
+      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply isSimplicialMap_onto_image; assumption, y_nin_coe)
       (stellarCoeMap φ.coe x y) :=
 by
-  simp only [IsSimplicialMap, stellarSubdivision, simplicialUnion, Set.mem_union]
+  simp only [IsSimplicialMap, stellarSubdivision, SimplicialUnion, Set.mem_union]
   intro t t_in_subdiv
   cases' t_in_subdiv with t_in_star_comp t_in_join
 
   left
   rw [starComplement_coe_image X s s_in_X φ, stellar_coe_simplex_image]
-  apply map_is_simplicial_onto_image
+  apply isSimplicialMap_onto_image
   assumption
   revert x_nin_X
   contrapose
@@ -112,7 +112,7 @@ by
 
   left
   rw [simplexBoundary_coe_image, stellar_coe_simplex_image]
-  apply map_is_simplicial_onto_image
+  apply isSimplicialMap_onto_image
   assumption
 
   revert x_nin_X
@@ -164,7 +164,7 @@ by
 
   left
   rw [link_coe_image, stellar_coe_simplex_image]
-  apply map_is_simplicial_onto_image
+  apply isSimplicialMap_onto_image
   assumption
   revert x_nin_X
   contrapose
@@ -207,7 +207,7 @@ by
 
   left
   rw [link_coe_image, stellar_coe_simplex_image]
-  apply map_is_simplicial_onto_image
+  apply isSimplicialMap_onto_image
   assumption
   revert x_nin_X
   contrapose
@@ -242,11 +242,11 @@ theorem stellar_coe_inverse_simplicial
     (x_nin_X : x ∉ X.vertices)
     (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
   : IsSimplicialMap
-      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply map_is_simplicial_onto_image; assumption, y_nin_coe)
+      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply isSimplicialMap_onto_image; assumption, y_nin_coe)
       σ(X, s, x; 𝕜, s_in_X, x_nin_X)
       (stellarCoeMap (φ⁻ᶜ.map) y x) :=
 by
-  simp only [IsSimplicialMap, stellarSubdivision, simplicialUnion, Set.mem_union]
+  simp only [IsSimplicialMap, stellarSubdivision, SimplicialUnion, Set.mem_union]
   intro t t_in_subdiv
   cases' t_in_subdiv with t_in_star_comp t_in_join
 
@@ -254,7 +254,7 @@ by
   rw [stellar_coe_simplex_image]
   rw [starComplement_coe_image, simplicialImage_is_lift_image, Set.mem_image] at t_in_star_comp
   choose u u_in_star_comp φu_t using t_in_star_comp
-  simp only [simplicialMapLift] at φu_t
+  simp only [SimplicialMapLift] at φu_t
   rw [← φu_t]
   have inv_u : Finset.image (φ⁻ᶜ.map) (Finset.image φ.coe u) = u :=
     by
@@ -317,7 +317,7 @@ by
   rw [stellar_coe_simplex_image]
   rw [simplexBoundary_coe_image, simplicialImage_is_lift_image, Set.mem_image] at t₂_in_bd
   choose u u_in_bd φu_t₂ using t₂_in_bd
-  simp only [simplicialMapLift] at φu_t₂
+  simp only [SimplicialMapLift] at φu_t₂
   rw [← φu_t₂]
   have inv_u : Finset.image (φ⁻ᶜ.map) (Finset.image φ.coe u) = u :=
     by
@@ -341,7 +341,7 @@ by
     apply isSubcomplex_face_imp_face
     apply t₂_in_bd
     apply simplexBoundary_subcomplex
-    apply map_is_simplicial_onto_image
+    apply isSimplicialMap_onto_image
     assumption
   rw [Set.subset_def] at t₂_in_X
   specialize t₂_in_X y
@@ -369,7 +369,7 @@ by
 
   left
   choose u u_in_link φu_t₁ using t₁_in_link
-  simp only [simplicialMapLift] at φu_t₁
+  simp only [SimplicialMapLift] at φu_t₁
   rw [← φu_t₁]
   have inv_u : Finset.image (φ⁻ᶜ.map) (Finset.image φ.coe u) = u :=
     by
@@ -441,7 +441,7 @@ by
   rw [stellar_coe_simplex_image]
   rw [link_coe_image, simplicialImage_is_lift_image, Set.mem_image] at t_in_link
   choose u u_in_link φu_t using t_in_link
-  simp only [simplicialMapLift] at φu_t
+  simp only [SimplicialMapLift] at φu_t
   rw [← φu_t]
   have inv_u : Finset.image (φ⁻ᶜ.map) (Finset.image φ.coe u) = u :=
     by
@@ -489,7 +489,7 @@ def stellarCoeForward
     (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
   : SimplicialMap
       σ(X, s, x; 𝕜, s_in_X, x_nin_X)
-      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply map_is_simplicial_onto_image; assumption, y_nin_coe) :=
+      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply isSimplicialMap_onto_image; assumption, y_nin_coe) :=
   SimplicialMap.mk (stellarCoeMap φ.coe x y)
     (stellar_coe_forward_simplicial X φ s x y s_in_X x_nin_X y_nin_coe)
 
@@ -503,7 +503,7 @@ noncomputable def stellarCoeInverse
     (x_nin_X : x ∉ X.vertices)
     (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
   : SimplicialMap
-      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply map_is_simplicial_onto_image; assumption, y_nin_coe)
+      σ(φ.coe ''ˢ X, Finset.image φ.coe s, y; 𝕜, by apply isSimplicialMap_onto_image; assumption, y_nin_coe)
       σ(X, s, x; 𝕜, s_in_X, x_nin_X) :=
   SimplicialMap.mk (stellarCoeMap (φ⁻ᶜ.map) y x)
     (stellar_coe_inverse_simplicial X φ s x y s_in_X x_nin_X y_nin_coe)
@@ -515,7 +515,7 @@ theorem stellar_coe_vertices
     (x : E)
     (y : F)
     (x_nin_X : x ∉ X.vertices)
-  : (simplicialImage (stellarCoeMap φ.coe x y) X).vertices = (φ.coe ''ˢ X).vertices :=
+  : (SimplicialImage (stellarCoeMap φ.coe x y) X).vertices = (φ.coe ''ˢ X).vertices :=
 by
   simp only [simplicialImage_vertices, Set.ext_iff, Set.mem_image]
   intro t
@@ -539,14 +539,14 @@ theorem stellar_coe_image
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
-  : σ(simplicialImage (stellarCoeMap φ.coe x y) X, Finset.image (stellarCoeMap φ.coe x y) s,
-        (stellarCoeMap φ.coe x y) x; 𝕜, by apply map_is_simplicial_onto_image; assumption,
+  : σ(SimplicialImage (stellarCoeMap φ.coe x y) X, Finset.image (stellarCoeMap φ.coe x y) s,
+        (stellarCoeMap φ.coe x y) x; 𝕜, by apply isSimplicialMap_onto_image; assumption,
         by
           simp only [stellarCoeMap, ↓reduceIte]
           rw [stellar_coe_vertices X φ s x y] <;> assumption)
-      ≅ σ(simplicialImage φ.coe X, Finset.image φ.coe s, y; 𝕜,
+      ≅ σ(SimplicialImage φ.coe X, Finset.image φ.coe s, y; 𝕜,
           by
-            apply map_is_simplicial_onto_image
+            apply isSimplicialMap_onto_image
             assumption,
           y_nin_coe) :=
 by
@@ -638,7 +638,7 @@ by
       rw [← φa_b] at φb_eq_x
       have inv_a : φ⁻ᶜ.map (φ.coe a) = a :=
         by
-        simp only [simplicialCoeInv]
+        simp only [SimplicialCoeInv]
         apply Set.InjOn.leftInvOn_invFunOn
         apply φ.Injective
         assumption
@@ -647,7 +647,7 @@ by
       contradiction
       assumption
     simp only [stellarCoeMap, b_ne_y, φb_ne_x, if_false]
-    simp only [simplicialCoeInv]
+    simp only [SimplicialCoeInv]
     apply Function.invFunOn_eq
     simp only [simplicialImage_vertices, Set.mem_image] at b_in_X
     assumption

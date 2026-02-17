@@ -19,7 +19,7 @@ theorem star_boundary_is_join_left
       ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
   intro t t_in_inter
-  simp only [AbstractSimplicialComplex.instHasInter, simplicialInter, Set.mem_inter_iff] at t_in_inter
+  simp only [AbstractSimplicialComplex.instHasInter, SimplicialInter, Set.mem_inter_iff] at t_in_inter
   choose t_in_star_comp t_in_join using t_in_inter
   simp only [join_proj_mem] at t_in_join
   choose t' t'_in_join t₁ t₁_in_link t_decomp t_ne using t_in_join
@@ -84,7 +84,7 @@ by
   intro t t_in_join
   rw [join_proj_mem] at t_in_join
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_join
-  simp only [AbstractSimplicialComplex.instHasInter, simplicialInter, Set.mem_inter_iff]
+  simp only [AbstractSimplicialComplex.instHasInter, SimplicialInter, Set.mem_inter_iff]
   constructor
   simp only [starComplement, Set.mem_sep_iff]
   simp only [link, Set.mem_union, Set.mem_singleton_iff, Set.mem_sep_iff] at t₁_in_link

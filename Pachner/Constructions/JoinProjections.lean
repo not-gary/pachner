@@ -111,7 +111,7 @@ theorem join_proj_vertices_mem
     (H : Disjoint X.vertices Y.vertices)
   : x ∈ ((π₁[𝕜] H).coe ''ˢ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜))).vertices ↔ x ∈ X.vertices ∨ x ∈ Y.vertices :=
 by
-  simp only [vertices_setOf, simplicialImage, simplicialJoin, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf, joinFst]
+  simp only [vertices_setOf, SimplicialImage, simplicialJoin, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf, joinFst]
   constructor
   -- x ∈ X ⋆ Y case.
   intro x_in_join
@@ -153,10 +153,10 @@ by
   use s; constructor; left; assumption
   use ∅; constructor; right; rfl
   rfl
-  rw [simplexDisjoint_empty, not_and_or]
+  rw [Set.notMem_singleton_iff, ne_eq, simplexDisjoint_empty, not_and_or]
   left; apply Finset.ne_empty_of_mem x_in_s
 
-  simp only [simplexDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
+  simp only [SimplexDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
     Finset.union_empty]
   simp only [Finset.ext_iff, Finset.mem_image]
   intro a
@@ -182,10 +182,10 @@ by
   use ∅; constructor; right; rfl
   use t; constructor; left; assumption
   rfl
-  rw [simplexDisjoint_empty, not_and_or]
+  rw [Set.notMem_singleton_iff, ne_eq, simplexDisjoint_empty, not_and_or]
   right; apply Finset.ne_empty_of_mem x_in_t
 
-  simp only [simplexDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
+  simp only [SimplexDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
     Finset.empty_union]
   simp only [Finset.ext_iff, Finset.mem_image]
   intro a
@@ -203,11 +203,11 @@ by
   simp only [Prod.fst]
   assumption
 
-theorem simplexDisjointUnion_prod_fst
+theorem SimplexDisjointUnion_prod_fst
     (s t : Finset E)
   : Finset.image Prod.fst (s ⊔ₛ t : Finset (E × 𝕜)) = s ∪ t :=
 by
-  simp only [simplexDisjointUnion, Finset.image_union, Finset.ext_iff, Finset.mem_image,
+  simp only [SimplexDisjointUnion, Finset.image_union, Finset.ext_iff, Finset.mem_image,
     Finset.mem_union]
   intro x
   constructor
@@ -248,7 +248,7 @@ theorem join_proj_mem
     (H : Disjoint X.vertices Y.vertices)
   : s ∈ ((π₁[𝕜] H).coe ''ˢ (X ⋆ Y)).faces ↔ ∃ t ∈ X.faces ∪ {∅}, ∃ u ∈ Y.faces ∪ {∅}, s = t ∪ u ∧ s ≠ ∅ :=
 by
-  simp only [simplicialImage, simplicialJoin, joinFst, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf]
+  simp only [SimplicialImage, simplicialJoin, joinFst, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf]
   constructor
 
   -- s ∈ X ⋆ Y case.
@@ -256,7 +256,8 @@ by
   choose v v_in_join proj_v_s using s_in_join
   choose v_in_join v_ne using v_in_join
   choose t t_in_X u u_in_Y tu_eq_v using v_in_join
-  rw [← tu_eq_v, simplexDisjointUnion_prod_fst] at proj_v_s
+  simp only at proj_v_s
+  rw [← tu_eq_v, SimplexDisjointUnion_prod_fst] at proj_v_s
   use t; constructor; assumption
   use u; constructor; assumption
   constructor
@@ -283,18 +284,18 @@ by
   apply Y.empty_notMem
 
   subst t_empty u_empty tu_eq_v
-  rw [simplexDisjoint_empty, not_and_or] at v_ne
+  rw [Set.notMem_singleton_iff, ne_eq, simplexDisjoint_empty, not_and_or] at v_ne
   cases v_ne <;> contradiction
 
   -- s X ∪ Y case.
   intro x_decomp
   choose t t_in_X u u_in_Y s_eq_tu s_ne using x_decomp
-  rw [← @simplexDisjointUnion_prod_fst E 𝕜] at s_eq_tu
+  rw [← @SimplexDisjointUnion_prod_fst E 𝕜] at s_eq_tu
   use t ⊔ₛ u; constructor; constructor
   use t; constructor; assumption
   use u
 
-  rw [simplexDisjoint_empty, not_and_or]
+  rw [Set.notMem_singleton_iff, ne_eq, simplexDisjoint_empty, not_and_or]
   cases' t_in_X with t_in_X t_empty
   left
   revert t_in_X

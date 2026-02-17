@@ -11,6 +11,8 @@ set_option autoImplicit false
 section SimplicialMap
 
 variable [DecidableEq F] [DecidableEq G]
+variable {X Y : AbstractSimplicialComplex E} {Z : AbstractSimplicialComplex F}
+variable {f : E → F}
 
 /- Simplicial maps are maps between the underlying base types
    that map simplices to simplices.
@@ -43,32 +45,31 @@ by
   assumption
 
 def SimplicialMap.restrict
-    {X Y : AbstractSimplicialComplex E}
-    {Z : AbstractSimplicialComplex F}
     (f : SimplicialMap X Z)
     (Y_sub_X : Y ⊆ X)
   : SimplicialMap Y Z :=
     SimplicialMap.mk f.map (simplicialMap_restrict_is_simplicial X Y Z f Y_sub_X)
 
-def simplicialMapLift
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
-    (f : SimplicialMap X Y)
+def SimplicialMapLift
+    (f : SimplicialMap X Z)
   : Finset E → Finset F :=
     fun s : Finset E => Finset.image f.map s
 
-def simplicialImage
+def SimplicialImage
     (f : E → F)
     (X : AbstractSimplicialComplex E)
   : AbstractSimplicialComplex F :=
     AbstractSimplicialComplex.mk
-      {(Finset.image f s) | s ∈ X.faces}
+      ((Finset.image f) '' X.faces)--{(Finset.image f s) | s ∈ X.faces}
       (by
-        simp only [Set.mem_setOf_eq, Finset.image_eq_empty, exists_eq_right]
-        apply X.empty_notMem)
+        simp only [Set.mem_image, X.empty_notMem]
+        simp only [Finset.image_eq_empty, not_exists, not_and, ← ne_eq]
+        intro s
+        exact face_nonempty
+        )
       (by
         intros s t s_in_img t_sset_s t_ne
-        simp only [Set.mem_setOf_eq] at ⊢ s_in_img
+        simp only [Set.mem_image] at ⊢ s_in_img
         choose u Hu u_img using s_in_img
         rw [← u_img, ← Finset.coe_subset, Finset.coe_image, Finset.subset_set_image_iff] at t_sset_s
         choose v v_sset_u v_img using t_sset_s
@@ -81,15 +82,10 @@ def simplicialImage
         rw [← Finset.nonempty_iff_ne_empty]
         assumption
         assumption)
-infixl:80 " ''ˢ " => simplicialImage
+infixl:80 " ''ˢ " => SimplicialImage
 
-theorem simplicialImage_congr
-    {X : AbstractSimplicialComplex E}
-    (f g : E → F)
-  : Set.EqOn f g X.vertices
-      → (f ''ˢ X) = (g ''ˢ X) :=
-by
-  simp only [AbstractSimplicialComplex.ext_iff, Set.ext_iff, simplicialImage, Set.mem_setOf]
+theorem simplicialImage_congr (f g : E → F) : Set.EqOn f g X.vertices → (f ''ˢ X) = (g ''ˢ X) := by
+  simp only [AbstractSimplicialComplex.ext_iff, Set.ext_iff, SimplicialImage, Set.mem_setOf]
   intro f_eq_g t
   constructor
   · intro s_in_fX
@@ -113,48 +109,41 @@ by
     assumption
 
 theorem simplicialImage_comp
-    {X : AbstractSimplicialComplex E}
     (f : E → F)
     (g : F → G)
   : (g ∘ f) ''ˢ X = g ''ˢ (f ''ˢ X) :=
 by
-  simp only [AbstractSimplicialComplex.ext_iff, simplicialImage, Set.ext_iff]
+  simp only [AbstractSimplicialComplex.ext_iff, SimplicialImage, Set.ext_iff]
   intro z
   simp only [Set.mem_setOf, ← Finset.image_image]
   constructor
   · intro H
     choose s s_in_X z_eq_gfs using H
     use Finset.image f s
-    exact ⟨by use s; , by exact z_eq_gfs⟩ --TODO: weird syntax?
+    exact ⟨by use s; , z_eq_gfs⟩ --TODO: weird syntax?
   · intro H
     choose s s_in_f gs_eq_z using H
     choose t t_in_X ft_eq_s using s_in_f
     use t
     simp only [ft_eq_s, gs_eq_z, eq_self, and_true, t_in_X]
 
-theorem map_is_simplicial_onto_image
+theorem isSimplicialMap_onto_image
     (X : AbstractSimplicialComplex E)
     (f : E → F)
   : IsSimplicialMap X (f ''ˢ X) f :=
 by
   unfold IsSimplicialMap
   intro s s_in_X
-  simp only [simplicialImage, Set.mem_setOf]
+  simp only [SimplicialImage, Set.mem_setOf]
   use s
 
 def SimplicialMap.ontoImage
-    {X : AbstractSimplicialComplex E}
-    {Z : AbstractSimplicialComplex F}
     (f : SimplicialMap X Z)
   : SimplicialMap X (f.map ''ˢ X) :=
-    SimplicialMap.mk f.map (map_is_simplicial_onto_image X f.map)
+    SimplicialMap.mk f.map (isSimplicialMap_onto_image X f.map)
 
-theorem simplicialImage_vertices
-    (X : AbstractSimplicialComplex E)
-    (f : E → F)
-  : (f ''ˢ X).vertices = f '' X.vertices :=
-by
-  simp only [vertices_setOf, simplicialImage, Set.image, Set.ext_iff, Set.mem_setOf]
+theorem simplicialImage_vertices : (f ''ˢ X).vertices = f '' X.vertices := by
+  simp only [vertices_setOf, SimplicialImage, Set.image, Set.ext_iff, Set.mem_setOf]
   intro y
   constructor
   intro y_in_vert_img
@@ -175,25 +164,15 @@ by
   assumption
 
 notation "⟨" f ", " X "⟩" =>
-  SimplicialMap.mk f (map_is_simplicial_onto_image X f)
+  SimplicialMap.mk f (isSimplicialMap_onto_image X f)
 
-theorem simplicialImage_is_lift_image
-    (X : AbstractSimplicialComplex E)
-    (f : E → F)
-  : (f ''ˢ X).faces = simplicialMapLift ⟨f, X⟩ '' X.faces :=
-by
-  simp only [simplicialImage, simplicialMapLift, Set.ext_iff, Set.mem_setOf, Set.mem_image,
+theorem simplicialImage_is_lift_image : (f ''ˢ X).faces = SimplicialMapLift ⟨f, X⟩ '' X.faces := by
+  simp only [SimplicialImage, SimplicialMapLift, Set.ext_iff, Set.mem_setOf, Set.mem_image,
     forall_true_iff]
 
-theorem simplicialImage_union [DecidableEq E]
-    {X Y : AbstractSimplicialComplex E}
-    (f : E → F)
-  : (f ''ˢ (X ∪ Y)) =
-      (f ''ˢ X) ∪ (f ''ˢ Y) :=
-by
-  simp only [AbstractSimplicialComplex.ext_iff, AbstractSimplicialComplex.instHasUnion, simplicialUnion,
-  simplicialImage_is_lift_image, Set.image_union]
-  rfl
+theorem simplicialImage_union [DecidableEq E] : (f ''ˢ (X ∪ Y)) = (f ''ˢ X) ∪ (f ''ˢ Y) := by
+  simp only [AbstractSimplicialComplex.ext_iff, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
+  simplicialImage_is_lift_image, SimplicialMapLift, Set.image_union]
 
 end SimplicialMap
 
@@ -203,40 +182,23 @@ end SimplicialMap
 section vertices
 
 variable [DecidableEq E] [DecidableEq F]
-
-/- In order to prove that simplicial maps
-   map vertices to vertices, we first show:
-   One can go back and forth between vertices
-   and singletons that are simplices.
--/
-theorem vertex_singleton_iff
-    {X : AbstractSimplicialComplex E}
-    {x : E}
-  : x ∈ X.vertices ↔ {x} ∈ X.faces :=
-by
-  simp only [AbstractSimplicialComplex.vertices, Set.mem_setOf]
+variable {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F} {x : E}
+variable {f : SimplicialMap X Y}
 
 -- Simplicial maps map vertices to vertices.
 theorem simplicialMap_on_vertices
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
     (f : SimplicialMap X Y)
-    (x : E)
     (x_in_X : x ∈ X.vertices)
   : f.map x ∈ Y.vertices :=
 by
-  rw [vertex_singleton_iff, ← Finset.image_singleton]
+  rw [AbstractSimplicialComplex.mem_vertices, ← Finset.image_singleton]
   apply f.is_simplicial
-  simp only [← vertex_singleton_iff, x_in_X]
+  simp only [← AbstractSimplicialComplex.mem_vertices, x_in_X]
 
-theorem simplicial_lift_bij_implies_vertices_bij
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-    (f : SimplicialMap X Y)
-  : Set.BijOn (simplicialMapLift f) X.faces Y.faces
-      → Set.BijOn f.map X.vertices Y.vertices :=
+theorem simplicialMapLift_bij_imp_vertices_bij
+  : Set.BijOn (SimplicialMapLift f) X.faces Y.faces → Set.BijOn f.map X.vertices Y.vertices :=
 by
-  simp only [Set.BijOn, Set.MapsTo, Set.InjOn, Set.SurjOn, simplicialMapLift, vertices_setOf]
+  simp only [Set.BijOn, Set.MapsTo, Set.InjOn, Set.SurjOn, SimplicialMapLift, vertices_setOf]
   intro lift_bij
   choose lift_range lift_inj lift_surj using lift_bij
   constructor
@@ -271,14 +233,10 @@ by
   use s
   assumption
 
-theorem vertices_bij_implies_simplicial_lift_mapsTo
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-    (f : SimplicialMap X Y)
-  : Set.BijOn f.map X.vertices Y.vertices
-      → Set.MapsTo (simplicialMapLift f) X.faces Y.faces :=
+theorem vertices_bij_imp_simplicialMapLift_mapsTo
+  : Set.BijOn f.map X.vertices Y.vertices → Set.MapsTo (SimplicialMapLift f) X.faces Y.faces :=
 by
-  simp only [Set.BijOn, Set.MapsTo, Set.InjOn, Set.SurjOn, simplicialMapLift, vertices_setOf]
+  simp only [Set.BijOn, Set.MapsTo, Set.InjOn, Set.SurjOn, SimplicialMapLift, vertices_setOf]
   intro img_bij
   choose img_range img_inj img_surj using img_bij
   intro s s_in_X
@@ -303,14 +261,10 @@ by
   apply f.is_simplicial
   assumption
 
-theorem vertices_bij_implies_simplicial_lift_inj
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-    (f : SimplicialMap X Y)
-  : Set.BijOn f.map X.vertices Y.vertices
-      → Set.InjOn (simplicialMapLift f) X.faces :=
+theorem vertices_bij_imp_simplicialMapLift_inj
+  : Set.BijOn f.map X.vertices Y.vertices → Set.InjOn (SimplicialMapLift f) X.faces :=
 by
-  simp only [Set.BijOn, Set.MapsTo, Set.InjOn, Set.SurjOn, simplicialMapLift, vertices_setOf]
+  simp only [Set.BijOn, Set.MapsTo, Set.InjOn, Set.SurjOn, SimplicialMapLift, vertices_setOf]
   intro img_bij
   choose img_range img_inj img_surj using img_bij
   intro s₁ s₁_in_X s₂ s₂_in_X fs₁_eq_fs₂
@@ -354,12 +308,11 @@ end vertices
 section Dimension
 
 variable [DecidableEq F]
+variable {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F}
 
 -- The dimension of simplices does not increase
 -- under simplicial maps.
 theorem simplicialMap_dim_mono
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
     (f : SimplicialMap X Y)
     (s : Finset E)
   : face_dim (Finset.image f.map s) ≤ face_dim s :=
@@ -371,12 +324,13 @@ by
 
 end Dimension
 
+variable {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F}
+
 /-
 # Examples
 -/
 -- The identity map is simplicial.
 theorem id_isSimplicialMap [DecidableEq E]
-    (X : AbstractSimplicialComplex E)
   : IsSimplicialMap X X id :=
 by
   simp only [IsSimplicialMap, Finset.image_id, imp_self, implies_true]
@@ -384,18 +338,16 @@ by
 def idSimplicialMap [DecidableEq E]
     (X : AbstractSimplicialComplex E)
   : SimplicialMap X X :=
-    SimplicialMap.mk id (id_isSimplicialMap X)
+    SimplicialMap.mk id (id_isSimplicialMap)
 
 -- Constant maps are simplicial
 theorem const_is_simplicial [DecidableEq F]
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
     (y_0 : F)
     (y0_vertex : y_0 ∈ Y.vertices)
   : IsSimplicialMap X Y (fun _ : E => y_0) :=
 by
   intro s s_in_X
-  rw [Finset.image_const, ← vertex_singleton_iff]
+  rw [Finset.image_const, ← AbstractSimplicialComplex.mem_vertices]
   exact y0_vertex
   rw [Finset.nonempty_iff_ne_empty]
   exact face_nonempty s_in_X
@@ -406,10 +358,10 @@ def constSimplicialMap [DecidableEq F]
     (y_0 : F)
     (y0_vertex : y_0 ∈ Y.vertices)
   : SimplicialMap X Y :=
-    SimplicialMap.mk (fun _ : E => y_0) (const_is_simplicial X Y y_0 y0_vertex)
+    SimplicialMap.mk (fun _ : E => y_0) (const_is_simplicial y_0 y0_vertex)
 
 -- Compositions of simplicial maps are simplicial
-theorem is_simplicial_comp [DecidableEq F] [DecidableEq G]
+theorem isSimplicial_comp [DecidableEq F] [DecidableEq G]
     {X : AbstractSimplicialComplex E}
     {Y : AbstractSimplicialComplex F}
     {Z : AbstractSimplicialComplex G}
@@ -436,4 +388,4 @@ def SimplicialMap.comp [DecidableEq F] [DecidableEq G]
     (f : SimplicialMap X Y)
     (g : SimplicialMap Y Z)
   : SimplicialMap X Z :=
-    SimplicialMap.mk (g.map ∘ f.map) (is_simplicial_comp f.map f.is_simplicial g.map g.is_simplicial)
+    SimplicialMap.mk (g.map ∘ f.map) (isSimplicial_comp f.map f.is_simplicial g.map g.is_simplicial)

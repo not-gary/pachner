@@ -103,7 +103,7 @@ by
     rw [← y_eq_x]
     assumption
 
-    apply iso_is_injective_vertices
+    apply simplicialIso_injective_vertices
     assumption
     rw [vertex_iff_in_simplex]
     use u
@@ -167,8 +167,8 @@ by
     intro x_nin_u y_eq_x
     rw [← y_eq_x]
     assumption
-    apply iso_is_injective_vertices
-    apply iso_inv_is_iso f <;> assumption
+    apply simplicialIso_injective_vertices
+    apply simplicialIso_inverse_is_simplicialIso f <;> assumption
     rw [vertex_iff_in_simplex]
     use u
     rw [vertex_iff_in_simplex]
@@ -196,8 +196,7 @@ theorem starComplement_coe_image_left
     {φ : SimplicialCoe X F}
   : (starComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) ⊆ (φ.coe ''ˢ X\St(X, s)) :=
 by
-  simp only [starComplement, simplicialImage, Set.subset_def]
-  simp only [Set.mem_sep_iff, Set.mem_setOf]
+  simp only [starComplement, SimplicialImage, Set.subset_def]
   intro t t_in_star_comp
   choose t_in_φX φs_nss_t using t_in_star_comp
   choose u u_in_X φu_t using t_in_φX
@@ -219,8 +218,7 @@ theorem starComplement_coe_image_right
     (s_in_X : s ∈ X.faces)
   : (φ.coe ''ˢ X\St(X, s)) ⊆ (starComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) :=
 by
-  simp only [starComplement, simplicialImage, Set.subset_def]
-  simp only [Set.mem_sep_iff, Set.mem_setOf]
+  simp only [starComplement, SimplicialImage, Set.subset_def]
   intro t t_in_img
   choose u u_in_star_comp φu_t using t_in_img
   choose u_in_X s_nss_u using u_in_star_comp

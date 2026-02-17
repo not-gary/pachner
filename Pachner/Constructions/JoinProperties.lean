@@ -17,7 +17,7 @@ theorem join_distr_union_left
     (X Y Z : AbstractSimplicialComplex E)
   : (X ⋆ (Y ∪ Z)) = (X ⋆ Y ∪ X ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  simp only [AbstractSimplicialComplex.ext_iff, simplicialJoin, simplicialUnion,
+  simp only [AbstractSimplicialComplex.ext_iff, simplicialJoin, SimplicialUnion,
     AbstractSimplicialComplex.instHasUnion, Set.ext_iff]
   intro x
   constructor
@@ -76,7 +76,7 @@ theorem simplicialJoin_distr_union_right
   : ((Y ∪ Z) ⋆ X) = (Y ⋆ X ∪ (Z ⋆ X : AbstractSimplicialComplex (E × 𝕜))) :=
 by
   simp only [AbstractSimplicialComplex.ext_iff, simplicialJoin,
-    AbstractSimplicialComplex.instHasUnion, simplicialUnion, Set.ext_iff, Set.mem_union,
+    AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.ext_iff, Set.mem_union,
     Set.mem_diff, Set.mem_setOf]
   intro u
   constructor
@@ -130,7 +130,7 @@ theorem join_distr_inter_left
     (X Y Z : AbstractSimplicialComplex E)
   : (X ⋆ (Y ∩ Z) : AbstractSimplicialComplex (E × 𝕜)) = (X ⋆ Y ∩ (X ⋆ Z) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  simp only [AbstractSimplicialComplex.ext_iff, simplicialJoin, simplicialInter,
+  simp only [AbstractSimplicialComplex.ext_iff, simplicialJoin, SimplicialInter,
     AbstractSimplicialComplex.instHasInter, Set.ext_iff]
   intro x
   constructor

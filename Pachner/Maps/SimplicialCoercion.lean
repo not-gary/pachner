@@ -7,6 +7,7 @@ section Coercion
 
 variable {E F G : Type _}
 variable [DecidableEq E] [F_dec : DecidableEq F] [DecidableEq G]
+variable {X Y : AbstractSimplicialComplex E}
 
 -- Define as coercion on types that lifts to simplicial map.
 structure SimplicialCoe
@@ -17,10 +18,9 @@ structure SimplicialCoe
     Injective : Set.InjOn coe (X.vertices)
 
 def SimplicialCoe.simplicialMap
-    {X : AbstractSimplicialComplex E}
     (φ : SimplicialCoe X F)
   : SimplicialMap X (φ.coe ''ˢ X) :=
-    SimplicialMap.mk φ.coe (map_is_simplicial_onto_image X φ.coe)
+    SimplicialMap.mk φ.coe (isSimplicialMap_onto_image X φ.coe)
 
 instance SimplicialCoe.Fintype
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
@@ -30,14 +30,12 @@ by
   rw [simplicialImage_is_lift_image]
   apply Set.fintypeImage
 
-theorem simplicialCoe_inv_is_simplicial [Nonempty E]
-    {X : AbstractSimplicialComplex E}
+theorem simplicialCoe_inv_isSimplicialMap [Nonempty E]
     (φ : SimplicialCoe X F)
   : IsSimplicialMap (φ.coe ''ˢ X) X (Function.invFunOn φ.coe X.vertices) :=
 by
-  simp only [IsSimplicialMap, simplicialImage]
+  simp only [IsSimplicialMap, SimplicialImage]
   intro t t_in_coe
-  simp only [Set.mem_setOf] at t_in_coe
   choose s s_in_X coe_s_t using t_in_coe
   rw [← coe_s_t]
   have inv_id : Finset.image (Function.invFunOn φ.coe X.vertices) (Finset.image φ.coe s) = s :=
@@ -50,18 +48,17 @@ by
   rw [inv_id]
   assumption
 
-noncomputable def simplicialCoeInv [Nonempty E]
+noncomputable def SimplicialCoeInv [Nonempty E]
     {X : AbstractSimplicialComplex E}
     (φ : SimplicialCoe X F)
   : SimplicialMap (φ.coe ''ˢ X) X :=
-    SimplicialMap.mk (Function.invFunOn φ.coe X.vertices) (simplicialCoe_inv_is_simplicial φ)
+    SimplicialMap.mk (Function.invFunOn φ.coe X.vertices) (simplicialCoe_inv_isSimplicialMap φ)
 
-notation φ "⁻ᶜ" => simplicialCoeInv φ
+notation φ "⁻ᶜ" => SimplicialCoeInv φ
 
-theorem coe_inv_isInverseSimplicialIso [Nonempty E]
-    {X : AbstractSimplicialComplex E}
+theorem simplicialCoe_inverse_isInverseSimplicialIso [Nonempty E]
     (φ : SimplicialCoe X F)
-  : IsInverseSimplicialIso (SimplicialMap.mk φ.coe (map_is_simplicial_onto_image X φ.coe)) (φ⁻ᶜ) :=
+  : IsInverseSimplicialIso (SimplicialMap.mk φ.coe (isSimplicialMap_onto_image X φ.coe)) (φ⁻ᶜ) :=
 by
   simp only [IsInverseSimplicialIso, SimplicialMap.comp, Set.restrict_eq_restrict_iff]
   constructor
@@ -74,18 +71,16 @@ by
   choose x x_in_X coe_x_y using y_in_coe
   use x
 
-theorem coe_is_iso [Nonempty E]
-    (X : AbstractSimplicialComplex E)
+theorem simplicialCoe_is_simplicialIso [Nonempty E]
     (φ : SimplicialCoe X F)
   : IsSimplicialIso
-      (@SimplicialMap.mk E F _ X (φ.coe ''ˢ X) φ.coe (by apply map_is_simplicial_onto_image)) :=
+      (@SimplicialMap.mk _ _ _ X (φ.coe ''ˢ X) φ.coe (by apply isSimplicialMap_onto_image)) :=
 by
   unfold IsSimplicialIso
-  use @simplicialCoeInv _ _ _ _ _ X φ
-  apply coe_inv_isInverseSimplicialIso
+  use SimplicialCoeInv φ
+  apply simplicialCoe_inverse_isInverseSimplicialIso
 
-theorem simplicialCoeInv_inj [Nonempty E]
-    {X : AbstractSimplicialComplex E}
+theorem simplicialCoeInv_injective [Nonempty E]
     (φ : SimplicialCoe X F)
   : Set.InjOn (φ⁻ᶜ).map (φ.coe ''ˢ X).vertices :=
 by
@@ -107,36 +102,33 @@ by
   rw [← φy₁_eq_φy₂, φx₁_y₁] at φx₂_y₂
   assumption
 
-theorem SimplicialCoe.iso_onto_image [Nonempty E]
-    {X : AbstractSimplicialComplex E}
+theorem SimplicialCoe.simplicialIso_onto_image [Nonempty E]
     (φ : SimplicialCoe X F)
   : X ≅ φ.coe ''ˢ X :=
 by
   unfold IsSimpliciallyIso
   use φ.simplicialMap
-  apply coe_is_iso
+  apply simplicialCoe_is_simplicialIso
 
-theorem coe_preserves_iso [Nonempty E]
-    (X Y : AbstractSimplicialComplex E)
+theorem simplicialCoe_preserves_simplicialIso [Nonempty E]
     (φ : SimplicialCoe X F)
     (ψ : SimplicialCoe Y F)
   : (X ≅ Y) → (φ.coe ''ˢ X ≅ ψ.coe ''ˢ Y) :=
 by
   intro X_iso_Y
   calc φ.coe ''ˢ X
-    _ ≅ X := by rw [simplicial_iso_symm]; exact φ.iso_onto_image
+    _ ≅ X := by rw [simplicialIso_symm]; exact φ.simplicialIso_onto_image
     _ ≅ Y := X_iso_Y
-    _ ≅ ψ.coe ''ˢ Y := ψ.iso_onto_image
+    _ ≅ ψ.coe ''ˢ Y := ψ.simplicialIso_onto_image
 
-theorem coe_comp_is_injective
-    {X : AbstractSimplicialComplex E}
+theorem simplicialCoe_comp_injective
     (φ : SimplicialCoe X F)
     (ψ : SimplicialCoe (φ.coe ''ˢ X) G)
   : Set.InjOn (ψ.coe ∘ φ.coe) X.vertices :=
 by
   simp only [Set.InjOn.comp ψ.Injective φ.Injective, simplicialImage_vertices, Set.mapsTo_image]
 
-theorem coe_comp_image
+theorem simplicialCoe_comp_image
     (X : AbstractSimplicialComplex E)
     (φ : SimplicialCoe X F)
     (ψ : SimplicialCoe (φ.coe ''ˢ X) G)
@@ -146,15 +138,13 @@ by
 
 @[simp]
 def SimplicialCoe.comp
-    {X : AbstractSimplicialComplex E}
     (φ : SimplicialCoe X F)
     (ψ : SimplicialCoe (φ.coe ''ˢ X) G)
   : SimplicialCoe X G :=
-    SimplicialCoe.mk (ψ.coe ∘ φ.coe) (coe_comp_is_injective φ ψ)
+    SimplicialCoe.mk (ψ.coe ∘ φ.coe) (simplicialCoe_comp_injective φ ψ)
 
 -- Restriction of coe is coe.
-theorem coe_restrict_is_injective
-    (X Y : AbstractSimplicialComplex E)
+theorem simplicialCoe_restrict_is_injective
     (φ : SimplicialCoe X F)
     (Y_subcomp_X : Y.vertices ⊆ X.vertices)
   : Set.InjOn φ.coe Y.vertices :=
@@ -164,12 +154,11 @@ by
 
 @[simp]
 def SimplicialCoe.restrict
-    {X : AbstractSimplicialComplex E}
     (φ : SimplicialCoe X F)
     (Y : AbstractSimplicialComplex E)
     (Y_subcomp_X : Y.vertices ⊆ X.vertices)
   : SimplicialCoe Y F :=
-    SimplicialCoe.mk φ.coe (coe_restrict_is_injective X Y φ Y_subcomp_X)
+    SimplicialCoe.mk φ.coe (simplicialCoe_restrict_is_injective φ Y_subcomp_X)
 
 notation coe "[" K "; " H "]" => SimplicialCoe.restrict coe K H
 
@@ -186,13 +175,13 @@ def SimplicialMap.coe
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
   : SimplicialCoe X F :=
-    SimplicialCoe.mk f.map (iso_is_injective_vertices f f_iso)
+    SimplicialCoe.mk f.map (simplicialIso_injective_vertices f f_iso)
 
 -- Coercion on images.
 --  g[Y] = X → φ[X]
 --  ↑     ↗ φ ∘ g
 --  Y
-def simplicialCoeOnImage
+def SimplicialCoeOnImage
     {X : AbstractSimplicialComplex E}
     {Y : AbstractSimplicialComplex F}
     (f : SimplicialMap X Y)
@@ -205,45 +194,40 @@ def simplicialCoeOnImage
       apply (f.coe f_iso).Injective
       unfold Set.MapsTo
       intro x x_in_X
-      simp only [AbstractSimplicialComplex.mem_vertices, simplicial_iso_implies_lift_bij X Y f f_iso,
-        simplicialMapLift, Set.image, Set.mem_setOf]
+      simp only [AbstractSimplicialComplex.mem_vertices, simplicialIso_imp_simplicialMapLift_bijective f f_iso,
+        SimplicialMapLift, Set.image, Set.mem_setOf]
       rw [AbstractSimplicialComplex.vertices, Set.mem_setOf] at x_in_X
       rw [← Finset.image_singleton]
       apply f.is_simplicial
       assumption)
 
 theorem simplicialCoe_union
-    (X Y : AbstractSimplicialComplex E)
     (φ : SimplicialCoe (X ∪ Y) F)
   : φ.coe ''ˢ (X ∪ Y) =
-      φ[X; by apply isSubcomplex_vertices; apply subcomplex_simplicial_union_left].coe ''ˢ X ∪
-        φ[Y; by apply isSubcomplex_vertices; apply subcomplex_simplicial_union_right].coe ''ˢ Y :=
+      φ[X; by apply isSubcomplex_vertices; apply simplicialUnion_subcomplex_left].coe ''ˢ X ∪
+        φ[Y; by apply isSubcomplex_vertices; apply simplicialUnion_subcomplex_right].coe ''ˢ Y :=
 by
-  exact simplicialImage_union φ.coe
+  exact simplicialImage_union
 
 theorem simplicialCoe_injective_vertices
-    {X : AbstractSimplicialComplex E}
     (φ : SimplicialCoe X F)
   : Set.InjOn φ.coe X.vertices :=
 by
   exact φ.Injective
 
 theorem simplicialCoe_surjective_vertices
-    {X : AbstractSimplicialComplex E}
     (φ : SimplicialCoe X F)
   : Set.SurjOn φ.coe X.vertices (φ.coe ''ˢ X).vertices :=
 by
   simp only [Set.SurjOn, simplicialImage_vertices, subset_refl]
 
 theorem simplicialCoe_mapsTo_vertices
-    {X : AbstractSimplicialComplex E}
     (φ : SimplicialCoe X F)
   : Set.MapsTo φ.coe X.vertices (φ.coe ''ˢ X).vertices :=
 by
   simp only [simplicialImage_vertices, Set.mapsTo_image]
 
 theorem simplicialCoe_bijective_vertices
-    {X : AbstractSimplicialComplex E}
     (φ : SimplicialCoe X F)
   : Set.BijOn φ.coe X.vertices (φ.coe ''ˢ X).vertices :=
 by

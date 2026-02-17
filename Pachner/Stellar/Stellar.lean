@@ -157,7 +157,7 @@ by
   intro t_in_star_bd
   rw [join_proj_mem] at t_in_star_bd
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_star_bd
-  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, simplicialUnion, Set.mem_union, join_proj_mem]
+  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union, join_proj_mem]
   right
   use t₂
   cases' t₁_in_link with t₁_in_link t₁_empty

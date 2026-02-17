@@ -65,7 +65,7 @@ theorem link_coe_image_left
     (s_in_X : s ∈ X.faces)
   : Lk(φ.coe ''ˢ X, Finset.image φ.coe s) ⊆ (φ.coe ''ˢ Lk(X, s)) :=
 by
-  simp only [link, simplicialImage, Set.subset_def]
+  simp only [link, SimplicialImage, AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def]
   simp only [Set.mem_sep_iff, Set.mem_setOf]
   intro t t_in_link
   choose t_in_φX st_in_φX st_disj using t_in_link
@@ -138,7 +138,7 @@ theorem link_coe_image_right
   :
     (φ.coe ''ˢ Lk(X, s)) ⊆ Lk(φ.coe ''ˢ X, Finset.image φ.coe s) :=
 by
-  simp only [link, simplicialImage, Set.subset_def]
+  simp only [link, SimplicialImage, AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def]
   simp only [Set.mem_sep_iff, Set.mem_setOf]
   intro t t_in_img
   choose u u_in_link φu_t using t_in_img
@@ -212,7 +212,7 @@ by
     rw [← Finset.image_inter_of_injOn, Finset.image_eq_empty]
     assumption
     rw [← Finset.coe_union]
-    apply iso_is_injective_simplices f f_iso (s ∪ u)
+    apply simplicialIso_injective_simplices f f_iso (s ∪ u)
     assumption
   let f_link := SimplicialMap.mk f.map f_simp
   let f_iso' := f_iso
@@ -260,8 +260,8 @@ by
     rw [← Finset.image_inter_of_injOn, Finset.image_eq_empty]
     assumption
     rw [← Finset.coe_union]
-    apply iso_is_injective_simplices g
-    apply iso_inv_is_iso f <;> assumption
+    apply simplicialIso_injective_simplices g
+    apply simplicialIso_inverse_is_simplicialIso f <;> assumption
     assumption
   let g_link := SimplicialMap.mk g.map g_simp
   use f_link
@@ -286,7 +286,7 @@ theorem link_fact_inter
   : Lk(X ∩ Y, s) = Lk(X, s) ∩ Lk(Y, s) :=
 by
   simp only [AbstractSimplicialComplex.ext_iff, link, AbstractSimplicialComplex.instHasInter,
-    simplicialInter, Set.ext_iff, Set.mem_inter_iff, Set.mem_sep_iff, and_assoc]
+    SimplicialInter, Set.ext_iff, Set.mem_inter_iff, Set.mem_sep_iff, and_assoc]
   intro t
   constructor
   · intro t_in_link
@@ -303,7 +303,7 @@ theorem link_fact_union_left
     (s_nin_Y : s ∉ Y.faces)
   : Lk(X ∪ Y, s) = Lk(X, s) :=
 by
-  simp only [AbstractSimplicialComplex.ext_iff, link, simplicialUnion, Set.ext_iff,
+  simp only [AbstractSimplicialComplex.ext_iff, link, SimplicialUnion, Set.ext_iff,
     Set.mem_sep_iff, Set.mem_union]
   intro t
   constructor
@@ -342,7 +342,7 @@ theorem link_fact_union_right
     (s_in_Y : s ∈ Y.faces)
   : Lk(X ∪ Y, s) = Lk(Y, s) :=
 by
-  rw [simplicial_union_comm]
+  rw [simplicialUnion_comm]
   exact link_fact_union_left Y X s s_in_Y s_nin_X
 
 theorem link_fact_union
@@ -350,7 +350,7 @@ theorem link_fact_union
     (s : Finset E)
   : Lk(X ∪ Y, s) = Lk(X, s) ∪ Lk(Y, s) :=
 by
-  simp only [AbstractSimplicialComplex.ext_iff, link, simplicialUnion, Set.ext_iff,
+  simp only [AbstractSimplicialComplex.ext_iff, link, SimplicialUnion, Set.ext_iff,
     Set.mem_sep_iff, Set.mem_union]
   intro t
   constructor

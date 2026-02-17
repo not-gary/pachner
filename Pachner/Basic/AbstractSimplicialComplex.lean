@@ -216,7 +216,7 @@ by
   intro s
   rw [not_and]
   intro s_empty
-  rw [faces_bot] at s_empty
+  rw [AbstractSimplicialComplex.faces_bot] at s_empty
   contradiction
 
 theorem vertices_congr : X.faces = Y.faces → X.vertices = Y.vertices := by

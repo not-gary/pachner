@@ -40,7 +40,7 @@ noncomputable instance StellarMove.Subdiv.fintype
   : Fintype Y.faces :=
 by
   choose s s_in_X s_ne x x_nin_X X_subdiv_Y using X_subdiv_Y
-  rw [simplicial_iso_symm] at X_subdiv_Y
+  rw [simplicialIso_symm] at X_subdiv_Y
   apply
     @IsSimpliciallyIso.Fintype _ _ _ _ σ(X, s, x; 𝕜, s_in_X, x_nin_X)
       (@stellarSubdivision.fintype _ 𝕜 _ _ _ _ _ X X_fin s x s_in_X x_nin_X) Y X_subdiv_Y
@@ -80,16 +80,16 @@ by
   simp only [StellarMove] at X_move_Y
   cases' X_move_Y with Y_subdiv_X X_move_Y
   choose t t_in_Y t_ne y y_nin_Y Y_subdiv_X using Y_subdiv_X
-  rw [simplicial_iso_preserves_dim X σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) Y_subdiv_X]
+  rw [simplicialIso_preserves_dim Y_subdiv_X]
   symm
   rw [@stellar_subdiv_preserves_dim _ 𝕜 _ _ _ _ _ Y  _ t y t_in_Y y_nin_Y]
   rotate_left
   cases' X_move_Y with X_subdiv_Y X_iso_Y
   choose s s_in_X s_ne x x_nin_X X_subdiv_Y using X_subdiv_Y
-  rw [simplicial_iso_preserves_dim Y σ(X, s, x; 𝕜, s_in_X, x_nin_X) X_subdiv_Y]
+  rw [simplicialIso_preserves_dim X_subdiv_Y]
   rw [@stellar_subdiv_preserves_dim _ 𝕜 _ _ _ _ _ X X_fin s x s_in_X x_nin_X]
   rotate_left
-  rw [simplicial_iso_preserves_dim X Y X_iso_Y]
+  rw [simplicialIso_preserves_dim X_iso_Y]
   all_goals
     unfold AbstractSimplicialComplex.dim
     apply le_antisymm <;>
@@ -202,7 +202,7 @@ by
             choose t Ht Ht_ne y Hy K_subdiv_L using L_move_K
             use t; use Ht; use Ht_ne; use y; use Hy
           · right; right
-            rw [simplicial_iso_symm]
+            rw [simplicialIso_symm]
             assumption
       · intro K_move_L
         cases' K_move_L with L_move_K K_move_L
@@ -214,7 +214,7 @@ by
             choose t Ht Ht_ne y Hy L_subdiv_K using K_move_L
             use t; use Ht; use Ht_ne; use y; use Hy
           · right; right
-            rw [simplicial_iso_symm]
+            rw [simplicialIso_symm]
             assumption
 
 @[trans]
@@ -293,7 +293,7 @@ theorem barycenter_injective_image
     {X : AbstractSimplicialComplex E}
     {x : E}
     {f : E → F}
-  : x ∉ X.vertices → Function.Injective f → f x ∉ (simplicialImage f X).vertices :=
+  : x ∉ X.vertices → Function.Injective f → f x ∉ (SimplicialImage f X).vertices :=
 by
   intro x_nin_X f_inj
   by_contra fx_in_X
@@ -316,24 +316,24 @@ theorem stellar_subdiv_injective_image_simplices_left
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
     (f_inj : Function.Injective f)
-  : (simplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces ⊆
-      σ(simplicialImage f X, Finset.image f s, f x; 𝕜,
+  : (SimplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces ⊆
+      σ(SimplicialImage f X, Finset.image f s, f x; 𝕜,
         by
-          apply map_is_simplicial_onto_image
+          apply isSimplicialMap_onto_image
           assumption,
         barycenter_injective_image x_nin_X f_inj).faces :=
 by
   rw [Set.subset_def]
   intro t t_in_img
-  simp only [simplicialImage, Set.mem_setOf] at t_in_img
-  simp only [stellarSubdivision, simplicialUnion, Set.mem_union] at t_in_img ⊢
+  simp only [SimplicialImage, Set.mem_setOf] at t_in_img
+  simp only [stellarSubdivision, SimplicialUnion, Set.mem_union] at t_in_img ⊢
   choose u u_in_subdiv fu_t using t_in_img
   cases' u_in_subdiv with u_in_star_comp u_in_join
   left
   simp only [starComplement, Set.mem_sep_iff] at u_in_star_comp ⊢
   choose u_in_X s_nss_u using u_in_star_comp
   constructor
-  simp only [simplicialImage, Set.mem_setOf]
+  simp only [SimplicialImage, Set.mem_setOf]
   use u
   rw [← fu_t]
   revert s_nss_u
@@ -436,12 +436,12 @@ by
   choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
 
   left; constructor
-  apply map_is_simplicial_onto_image
+  apply isSimplicialMap_onto_image
   assumption
 
   constructor
   rw [← Finset.image_union]
-  apply map_is_simplicial_onto_image
+  apply isSimplicialMap_onto_image
   assumption
   rw [← Finset.image_inter s u₁ f_inj, Finset.image_eq_empty]
   assumption
@@ -468,7 +468,7 @@ by
   use Finset.image f u; constructor; left
   simp only [link, Set.mem_setOf] at u₁_in_link ⊢
   choose u_in_X su_in_X su_disj using u₁_in_link
-  simp only [simplicialImage, Set.mem_setOf]
+  simp only [SimplicialImage, Set.mem_setOf]
 
   constructor; use u
   constructor; use s ∪ u
@@ -496,16 +496,16 @@ theorem stellar_subdiv_injective_image_simplices_right_ac
   :
     ∀ t : Finset F,
       (∃ t₁ t₂ t₃ : Finset F,
-          t₁ ∈ Lk(simplicialImage f X, Finset.image f s).faces ∪ {∅} ∧
+          t₁ ∈ Lk(SimplicialImage f X, Finset.image f s).faces ∪ {∅} ∧
             t₂ ⊆ Finset.image f s ∧ ¬t₂ = Finset.image f s ∧ ¬t₂ = ∅ ∧
             t₃ = ∅ ∧ t = t₃ ∪ t₂ ∪ t₁) →
-        t ∈ (simplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces :=
+        t ∈ (SimplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces :=
 by
   intro t t_decomp
   choose t₁ t₂ t₃ t₁_in_link t₂_ss_fs t₂_ne_fs t₂_ne t₃_empty t_decomp using t_decomp
-  simp only [simplicialImage, Set.mem_setOf]
-  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, simplicialUnion, Set.mem_union]
-  simp only [link, Set.mem_union, Set.mem_sep_iff, simplicialImage, Set.mem_setOf] at t₁_in_link
+  simp only [SimplicialImage, Set.mem_setOf]
+  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union]
+  simp only [link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
 
   cases' t₁_in_link with t₁_in_link t₁_empty
   choose t₁_in_fX fst₁_in_fX fst₁_disj using t₁_in_link
@@ -780,16 +780,16 @@ theorem stellar_subdiv_injective_image_simplices_right_ad
     (f_inj : Function.Injective f)
   : ∀ t : Finset F,
       (∃ t₁ t₂ t₃ : Finset F,
-          t₁ ∈ Lk(simplicialImage f X, Finset.image f s).faces ∪ {∅} ∧
+          t₁ ∈ Lk(SimplicialImage f X, Finset.image f s).faces ∪ {∅} ∧
             t₂ ⊆ Finset.image f s ∧ ¬t₂ = Finset.image f s ∧ ¬t₂ = ∅ ∧
             t₃ = {f x} ∧ t = t₃ ∪ t₂ ∪ t₁) →
-        t ∈ (simplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces :=
+        t ∈ (SimplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces :=
 by
   intro t t_decomp
   choose t₁ t₂ t₃ t₁_in_link t₂_ss_fs t₂_ne_fs t₂_ne t₃_eq_fx t_decomp using t_decomp
-  simp only [simplicialImage, Set.mem_setOf]
-  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, simplicialUnion, Set.mem_union]
-  simp only [link, Set.mem_union, Set.mem_sep_iff, simplicialImage, Set.mem_setOf] at t₁_in_link
+  simp only [SimplicialImage, Set.mem_setOf]
+  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union]
+  simp only [link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
   cases' t₁_in_link with t₁_in_link t₁_empty
 
   choose t₁_in_fX fst₁_in_fX fst₁_disj using t₁_in_link
@@ -1062,15 +1062,15 @@ theorem stellar_subdiv_injective_image_simplices_right_bc
     (f_inj : Function.Injective f)
   : ∀ t : Finset F,
       (∃ t₁ t₂ t₃ : Finset F,
-          t₁ ∈ Lk(simplicialImage f X, Finset.image f s).faces ∧
+          t₁ ∈ Lk(SimplicialImage f X, Finset.image f s).faces ∧
             t₂ = ∅ ∧ t₃ = ∅ ∧ t = t₃ ∪ t₂ ∪ t₁) →
-        t ∈ (simplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces :=
+        t ∈ (SimplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces :=
 by
   intro t t_decomp
   choose t₁ t₂ t₃ t₁_in_link t₂_empty t₃_empty t_decomp using t_decomp
-  simp only [simplicialImage, Set.mem_setOf]
-  simp only [stellarSubdivision, simplicialUnion, Set.mem_union]
-  simp only [link, Set.mem_union, Set.mem_sep_iff, simplicialImage, Set.mem_setOf] at t₁_in_link
+  simp only [SimplicialImage, Set.mem_setOf]
+  simp only [stellarSubdivision, SimplicialUnion, Set.mem_union]
+  simp only [link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
 
   choose t₁_in_fX fst₁_in_fX fst₁_disj using t₁_in_link
   choose u₁ u₁_in_X fu₁_t₁ using t₁_in_fX
@@ -1128,15 +1128,15 @@ theorem stellar_subdiv_injective_image_simplices_right_bd
     (f_inj : Function.Injective f)
   : ∀ t : Finset F,
       (∃ t₁ t₂ t₃ : Finset F,
-          t₁ ∈ Lk(simplicialImage f X, Finset.image f s).faces ∪ {∅} ∧
+          t₁ ∈ Lk(SimplicialImage f X, Finset.image f s).faces ∪ {∅} ∧
             t₂ = ∅ ∧ t₃ = {f x} ∧ t = t₃ ∪ t₂ ∪ t₁) →
-        t ∈ (simplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces :=
+        t ∈ (SimplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces :=
 by
   intro t t_decomp
   choose t₁ t₂ t₃ t₁_in_link t₂_empty t₃_eq_fx t_decomp using t_decomp
-  simp only [simplicialImage, Set.mem_setOf]
-  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, simplicialUnion, Set.mem_union]
-  simp only [link, Set.mem_union, Set.mem_sep_iff, simplicialImage, Set.mem_setOf] at t₁_in_link
+  simp only [SimplicialImage, Set.mem_setOf]
+  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union]
+  simp only [link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
   cases' t₁_in_link with t₁_in_link t₁_empty
 
   choose t₁_in_fX fst₁_in_fX fst₁_disj using t₁_in_link
@@ -1234,18 +1234,18 @@ theorem stellar_subdiv_injective_image_simplices_right
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
     (f_inj : Function.Injective f)
-  : σ(simplicialImage f X, Finset.image f s, f x; 𝕜,
+  : σ(SimplicialImage f X, Finset.image f s, f x; 𝕜,
         by
-          apply map_is_simplicial_onto_image
+          apply isSimplicialMap_onto_image
           assumption,
         barycenter_injective_image x_nin_X f_inj).faces ⊆
-      (simplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces :=
+      (SimplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces :=
 by
   rw [Set.subset_def]
   intro t t_in_subdiv
-  simp only [stellarSubdivision, simplicialUnion, Set.mem_union] at t_in_subdiv
+  simp only [stellarSubdivision, SimplicialUnion, Set.mem_union] at t_in_subdiv
   cases' t_in_subdiv with t_in_star_comp t_in_join
-  simp only [starComplement, Set.mem_sep_iff, simplicialImage, Set.mem_setOf] at t_in_star_comp
+  simp only [starComplement, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t_in_star_comp
   choose t_in_fX fs_nss_t using t_in_star_comp
   choose u u_in_X fu_t using t_in_fX
   use u; constructor; left
@@ -1362,10 +1362,10 @@ theorem stellar_subdiv_injective_image
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
     (f_inj : Function.Injective f)
-  : (simplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)) =
-      σ(simplicialImage f X, Finset.image f s, f x; 𝕜,
+  : (SimplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)) =
+      σ(SimplicialImage f X, Finset.image f s, f x; 𝕜,
           by
-            apply map_is_simplicial_onto_image
+            apply isSimplicialMap_onto_image
             assumption,
           barycenter_injective_image x_nin_X f_inj) :=
 by
@@ -1396,15 +1396,15 @@ by
   have τ_inj_X : Set.InjOn τ X.vertices := by apply Set.injOn_of_injective τ_inj
   let τX := SimplicialCoe.mk τ τ_inj_X
   use τσ.coe ''ˢ σ(X, s, x; 𝕜, s_in_X, x_nin_X); constructor
-  apply simplicial_iso_trans _ σ(X, s, x; 𝕜, s_in_X, x_nin_X)
+  apply simplicialIso_trans σ(X, s, x; 𝕜, s_in_X, x_nin_X)
   assumption
-  apply τσ.iso_onto_image
+  apply τσ.simplicialIso_onto_image
   have τX_iso_Z : Z ≅ τX.coe ''ˢ X :=
   by
-    apply simplicial_iso_trans _ X
-    rw [simplicial_iso_symm]
+    apply simplicialIso_trans X
+    rw [simplicialIso_symm]
     assumption
-    apply τX.iso_onto_image
+    apply τX.simplicialIso_onto_image
   apply @Relation.ReflTransGen.tail _ _ _ (τX.coe ''ˢ X)
   apply Relation.ReflTransGen.single
   right; right
@@ -1413,7 +1413,7 @@ by
   use Finset.image τX.coe s
   have τs_in_img : Finset.image τX.coe s ∈ (τX.coe ''ˢ X).faces :=
   by
-    apply map_is_simplicial_onto_image X τX.coe
+    apply isSimplicialMap_onto_image X τX.coe
     assumption
   use τs_in_img
   have τs_ne : Nonempty (Finset.image τX.coe s) :=
@@ -1452,7 +1452,7 @@ by
   have Z_iso_subdiv : Z ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) :=
   by
     calc Z
-      _ ≅ X := by rw [simplicial_iso_symm]; exact X_iso_Z
+      _ ≅ X := by rw [simplicialIso_symm]; exact X_iso_Z
       _ ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) := Y_subdiv_X
   let Z_iso_subdiv' := Z_iso_subdiv
   unfold IsSimpliciallyIso at Z_iso_subdiv'
@@ -1465,22 +1465,22 @@ by
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply,
     id] at gf_inv'
   choose gf_id fg_id using gf_inv'
-  have g_iso : IsSimplicialIso g := by apply iso_inv_is_iso f g f_iso gf_inv
+  have g_iso : IsSimplicialIso g := by apply simplicialIso_inverse_is_simplicialIso f g f_iso gf_inv
   by_cases t_singleton : t.card = 1
   rw [Finset.card_eq_one] at t_singleton
   choose a t_eq_a using t_singleton
   subst t_eq_a
   rw [stellar_subdiv_of_singleton_vertices] at fg_id
   use Z; constructor
-  apply simplicial_iso_trans Y σ(Y, {a}, y; 𝕜, t_in_Y, y_nin_Y)
-  rw [simplicial_iso_symm]
+  apply simplicialIso_trans σ(Y, {a}, y; 𝕜, t_in_Y, y_nin_Y)
+  rw [simplicialIso_symm]
   apply stellar_subdiv_of_singleton
-  rw [simplicial_iso_symm]
+  rw [simplicialIso_symm]
   assumption
   apply Relation.ReflTransGen.single
   unfold StellarMove
   right; right
-  apply simplicial_iso_refl
+  apply simplicialIso_refl
   have t_nonsingleton : t.card > 1 :=
   by
     rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty, ne_eq, ← Finset.card_eq_zero] at t_ne
@@ -1490,7 +1490,7 @@ by
     apply @Set.InjOn.mono _ _ Y.vertices (Y.vertices ∪ {y})
     apply Set.subset_union_left
     rw [← @stellar_subdiv_vertices _ 𝕜 _ _ _ _ _ Y t _ y t_in_Y y_nin_Y t_nonsingleton]
-    apply iso_is_injective_vertices g g_iso
+    apply simplicialIso_injective_vertices g g_iso
   let g_coe : SimplicialCoe Y F := SimplicialCoe.mk g.map g_inj
   have gy_nin_gY : g.map y ∉ (g_coe.coe ''ˢ Y).vertices :=
   by
@@ -1499,7 +1499,7 @@ by
     have contra : y ∈ Y.vertices :=
     by
       apply Set.InjOn.mem_of_mem_image
-      apply iso_is_injective_vertices g g_iso
+      apply simplicialIso_injective_vertices g g_iso
       rw [stellar_subdiv_vertices Y t y t_in_Y y_nin_Y t_nonsingleton]
       apply Set.subset_union_left
       apply barycenter_vertex_stellar_subdiv
@@ -1511,10 +1511,10 @@ by
   by
     rw [← @stellar_subdiv_vertices _ 𝕜 _ _ _ _ _ Y t _ y t_in_Y y_nin_Y t_nonsingleton]
     apply
-      iso_is_injective_vertices φ (stellar_coe_iso Y g_coe t y (g.map y) t_in_Y y_nin_Y gy_nin_gY)
-  have φy_nin_φY : φ.map y ∉ (simplicialImage φ.map Y).vertices :=
+      simplicialIso_injective_vertices φ (stellar_coe_iso Y g_coe t y (g.map y) t_in_Y y_nin_Y gy_nin_gY)
+  have φy_nin_φY : φ.map y ∉ (SimplicialImage φ.map Y).vertices :=
     by
-    by_cases φy_in_Y : φ.map y ∈ (simplicialImage φ.map Y).vertices
+    by_cases φy_in_Y : φ.map y ∈ (SimplicialImage φ.map Y).vertices
     rw [simplicialImage_vertices] at φy_in_Y
     have contra : y ∈ Y.vertices :=
     by
@@ -1526,16 +1526,16 @@ by
       assumption
     contradiction
     assumption
-  use simplicialImage φ.map Y; constructor
+  use SimplicialImage φ.map Y; constructor
   have φY_inj : Set.InjOn φ.map Y.vertices :=
   by
     apply @Set.InjOn.mono _ _ _ (Y.vertices ∪ {y})
     apply Set.subset_union_left
     assumption
   let φY := SimplicialCoe.mk φ.map φY_inj
-  apply simplicial_iso_trans _ (φY.coe ''ˢ Y)
-  apply φY.iso_onto_image
-  apply simplicial_iso_preserves_equiv
+  apply simplicialIso_trans (φY.coe ''ˢ Y)
+  apply φY.simplicialIso_onto_image
+  apply simplicialIso_preserves_equiv
   rw [simplicialImage_congr φY.coe φ.map]
 
   rotate_left
@@ -1544,9 +1544,9 @@ by
   unfold StellarMove
   left
   use Finset.image φ.map t
-  have φt_in_φY : Finset.image φ.map t ∈ (simplicialImage φ.map Y).faces :=
+  have φt_in_φY : Finset.image φ.map t ∈ (SimplicialImage φ.map Y).faces :=
   by
-    apply map_is_simplicial_onto_image Y φ.map
+    apply isSimplicialMap_onto_image Y φ.map
     assumption
   use φt_in_φY
   have φt_ne : Nonempty ↥(Finset.image φ.map t) :=
@@ -1556,16 +1556,16 @@ by
   use φt_ne
   use φ.map y
   use φy_nin_φY
-  apply simplicial_iso_trans Z σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y)
+  apply simplicialIso_trans σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y)
   assumption
   apply
-    simplicial_iso_trans _
-      σ(simplicialImage g_coe.coe Y, Finset.image g_coe.coe t, g.map y; 𝕜, by
-        apply map_is_simplicial_onto_image; assumption, gy_nin_gY)
+    simplicialIso_trans
+      σ(SimplicialImage g_coe.coe Y, Finset.image g_coe.coe t, g.map y; 𝕜, by
+        apply isSimplicialMap_onto_image; assumption, gy_nin_gY)
   unfold IsSimpliciallyIso
   use φ
   apply stellar_coe_iso
-  rw [simplicial_iso_symm]
+  rw [simplicialIso_symm]
   apply stellar_coe_image <;> assumption
 
   simp only [Set.EqOn, implies_true, φY]
@@ -1588,8 +1588,8 @@ by
   apply
     @stellar_subdiv_exists_iso _ _ _ _ _ _ _ _ _ _ X Y Z s s_ne x s_in_X x_nin_X f f_inj X_iso_Z X_subdiv_Y
   use Z; constructor
-  apply simplicial_iso_trans Y X
-  rw [simplicial_iso_symm]
+  apply simplicialIso_trans X
+  rw [simplicialIso_symm]
   assumption
   assumption
   rfl
@@ -1638,8 +1638,8 @@ by
   apply @Relation.ReflTransGen.tail _ _ _ L
   assumption
   right; right
-  apply simplicial_iso_trans _ Y
-  rw [simplicial_iso_symm]
+  apply simplicialIso_trans Y
+  rw [simplicialIso_symm]
   assumption
   assumption
 
@@ -1652,9 +1652,9 @@ theorem stellarEquiv_iso
 by
   intro X_iso_Z Y_iso_W X_eq_Y
   induction' X_eq_Y with K Y X_eq_K K_move_Y H_ind
-  rw [simplicial_iso_symm] at X_iso_Z
+  rw [simplicialIso_symm] at X_iso_Z
   apply stellarEquiv_preserves_iso
-  apply simplicial_iso_trans Z X <;> assumption
+  apply simplicialIso_trans X <;> assumption
   have K_iso_L : ∃ L : AbstractSimplicialComplex F, (K ≅ L) ∧ Z ≅ₛₜ[𝕜] L :=
   by
     apply stellarEquiv_exists_iso

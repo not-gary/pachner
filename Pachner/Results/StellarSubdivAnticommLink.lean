@@ -124,7 +124,7 @@ theorem stellar_subdiv_anticomm_link_left_ac
                 not_mem_link_vertices x_nin_X).faces :=
 by
   intro u u_in_star_comp tu_in_star_comp tu_disj
-  simp only [link, stellarSubdivision, starComplement, simplicialUnion] at u_in_star_comp tu_in_star_comp ⊢
+  simp only [link, stellarSubdivision, starComplement, SimplicialUnion] at u_in_star_comp tu_in_star_comp ⊢
   simp only [Set.mem_union, Set.mem_sep_iff] at u_in_star_comp tu_in_star_comp ⊢
   choose u_in_X s_nss_u using u_in_star_comp
   choose tu_in_X s_nss_tu using tu_in_star_comp
@@ -339,7 +339,7 @@ theorem stellar_subdiv_anticomm_link_left_ad
 by
   intro u u_in_star_comp tu_in_join tu_disj
   simp only [link, stellarSubdivision, starComplement, AbstractSimplicialComplex.instHasUnion,
-    simplicialUnion] at u_in_star_comp tu_in_join ⊢
+    SimplicialUnion] at u_in_star_comp tu_in_join ⊢
   simp only [Set.mem_union, Set.mem_setOf] at u_in_star_comp ⊢
   choose u_in_X s_nss_u using u_in_star_comp
 
@@ -592,7 +592,7 @@ theorem stellar_subdiv_anticomm_link_left_bc
                   not_mem_link_vertices x_nin_X).faces :=
 by
   intro u u_in_join tu_in_star_comp tu_disj
-  simp only [stellarSubdivision, starComplement, AbstractSimplicialComplex.instHasUnion, simplicialUnion] at u_in_join tu_in_star_comp ⊢
+  simp only [stellarSubdivision, starComplement, AbstractSimplicialComplex.instHasUnion, SimplicialUnion] at u_in_join tu_in_star_comp ⊢
   simp only [Set.mem_union, Set.mem_setOf] at tu_in_star_comp ⊢
   choose tu_in_X s_nss_tu using tu_in_star_comp
 
@@ -808,7 +808,7 @@ by
   choose t'_decomp u_decomp tu_in_join tu_in_link tu_ne using tu_decomp
   simp only [Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf] at t₁_in_link u₁_in_link tu_in_link
 
-  simp only [stellarSubdivision, starComplement, AbstractSimplicialComplex.instHasUnion, simplicialUnion,
+  simp only [stellarSubdivision, starComplement, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
     Set.mem_union, Set.mem_setOf, Set.mem_singleton_iff, join_proj_mem]
   simp only [link, Set.mem_setOf] at t₁_in_link u₁_in_link tu_in_link ⊢
 
@@ -1393,7 +1393,7 @@ theorem stellar_subdiv_anticomm_link_left
           @star_boundary_mem_link _ _ _ _ _ _ _ X s t s_ne s_in_X t_in_star_bd,
           not_mem_link_vertices x_nin_X) :=
 by
-  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, simplicialUnion]
+  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion]
   intro u u_in_link
   simp only [link, Set.mem_sep_iff] at u_in_link
   choose u_in_subdiv tu_in_subdiv tu_disj using u_in_link
@@ -1419,7 +1419,7 @@ theorem stellar_subdiv_anticomm_link_right_e
         u ∈ Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces :=
 by
   intro u u_in_star_comp
-  simp only [link, starComplement, stellarSubdivision, simplicialUnion] at u_in_star_comp ⊢
+  simp only [link, starComplement, stellarSubdivision, SimplicialUnion] at u_in_star_comp ⊢
   simp only [Set.mem_union, Set.mem_sep_iff] at u_in_star_comp ⊢
   choose u_in_link st_nss_u using u_in_star_comp
   choose u_in_X tu_in_X tu_disj using u_in_link
@@ -1501,7 +1501,7 @@ theorem stellar_subdiv_anticomm_link_right_f
         u ∈ Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces :=
 by
   intro u u_in_join
-  simp only [link, starComplement, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, simplicialUnion] at u_in_join ⊢
+  simp only [link, starComplement, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion] at u_in_join ⊢
   simp only [Set.mem_union, Set.mem_sep_iff, Set.mem_setOf_eq]
   rw [join_proj_mem] at u_in_join
   choose u'₂ u'₂_in_join u₁ u₁_in_link u_decomp u_ne using u_in_join
@@ -2014,7 +2014,7 @@ theorem stellar_subdiv_anticomm_link_right
         not_mem_link_vertices x_nin_X) ⊆
       Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) :=
 by
-  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, simplicialUnion]
+  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion]
   intro u u_in_subdiv
   simp only [Set.mem_union] at u_in_subdiv
   cases' u_in_subdiv with u_in_star_comp u_in_join

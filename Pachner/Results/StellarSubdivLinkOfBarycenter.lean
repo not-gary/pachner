@@ -17,7 +17,7 @@ by
   intro a a_in_link
   simp only [link, Set.mem_sep_iff] at a_in_link
   choose a_in_subdiv xa_in_subdiv xa_disj using a_in_link
-  simp only [stellarSubdivision, simplicialUnion, Set.mem_union] at xa_in_subdiv
+  simp only [stellarSubdivision, SimplicialUnion, Set.mem_union] at xa_in_subdiv
   cases' xa_in_subdiv with xa_in_star_comp xa_in_join
   simp only [starComplement, Set.mem_sep_iff] at xa_in_star_comp
   choose xa_in_X s_nss_xa using xa_in_star_comp
@@ -153,7 +153,7 @@ by
   rw [join_proj_mem] at a_in_img
   choose a₁ a₁_in_link a₂ a₂_in_bd a_decomp a_ne using a_in_img
   rw [Set.mem_union, Set.mem_singleton_iff] at a₁_in_link a₂_in_bd
-  simp only [link, Set.mem_sep_iff, stellarSubdivision, simplicialUnion, Set.mem_union]
+  simp only [link, Set.mem_sep_iff, stellarSubdivision, SimplicialUnion, Set.mem_union]
   constructor; right
   simp only [join_proj_mem, Set.mem_union, Set.mem_singleton_iff]
   use ∅ ∪ a₂; constructor

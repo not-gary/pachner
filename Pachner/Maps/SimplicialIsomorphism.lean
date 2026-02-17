@@ -7,23 +7,20 @@ section Isomorphism
 
 variable {E F G : Type _}
 variable [DecidableEq E] [DecidableEq F] [DecidableEq G]
+variable {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F} {Z : AbstractSimplicialComplex G}
 
 -- A simplicial map is a simplicial isomorphism
 -- if it admits an inverse simplicial map.
 
 @[simp]
 def IsInverseSimplicialIso
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
     (f : SimplicialMap X Y)
     (g : SimplicialMap Y X)
   : Prop :=
     (X.vertices).restrict (SimplicialMap.comp f g).map = (X.vertices).restrict id ∧
     (Y.vertices).restrict (SimplicialMap.comp g f).map = (Y.vertices).restrict id
 
-theorem IsInverseSimplicialIso_symm
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
+theorem isInverseSimplicialIso_symm
     (f : SimplicialMap X Y)
     (g : SimplicialMap Y X)
   : IsInverseSimplicialIso f g ↔ IsInverseSimplicialIso g f :=
@@ -37,27 +34,18 @@ by
     constructor <;> assumption
 
 @[simp]
-def IsSimplicialIso
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
-    (f : SimplicialMap X Y)
-  : Prop :=
+def IsSimplicialIso (f : SimplicialMap X Y) : Prop :=
     ∃ g : SimplicialMap Y X, IsInverseSimplicialIso f g
 
 --:= set.bij_on (simplicial_map_lift f) X.simplices Y.simplices
 -- For example, the identity map is a simplicial isomorphism
 -- because it is its own inverse
-theorem id_isSimplicialIso
-    (X : AbstractSimplicialComplex E)
-  : IsSimplicialIso (idSimplicialMap X) :=
-by
+theorem id_isSimplicialIso : IsSimplicialIso (idSimplicialMap X) := by
   use idSimplicialMap X
   simp only [IsInverseSimplicialIso, Set.restrict_id, and_self]
   tauto
 
-theorem iso_inv_is_iso
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
+theorem simplicialIso_inverse_is_simplicialIso
     (f : SimplicialMap X Y)
     (g : SimplicialMap Y X)
   : IsSimplicialIso f → IsInverseSimplicialIso f g → IsSimplicialIso g :=
@@ -70,10 +58,7 @@ by
   assumption
 
 -- The composition of two isomorphisms gives an isomorphism.
-theorem iso_comp_is_iso
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
-    {Z : AbstractSimplicialComplex G}
+theorem simplicialIso.comp
     (f : SimplicialMap X Y)
     (g : SimplicialMap Y Z)
   : IsSimplicialIso f → IsSimplicialIso g → IsSimplicialIso (SimplicialMap.comp f g) :=
@@ -91,20 +76,18 @@ by
   constructor
   intro x x_vert
   specialize f_inv_left x_vert
-  specialize g_inv_left (simplicialMap_on_vertices X Y f x x_vert)
+  specialize g_inv_left (simplicialMap_on_vertices f x_vert)
   rw [Function.comp_assoc, ← Function.comp_assoc g_inv.map, Function.comp_apply, Function.comp_apply, g_inv_left]
   simp
   assumption
   intro z z_vert
   specialize g_inv_right z_vert
-  specialize f_inv_right (simplicialMap_on_vertices Z Y g_inv z z_vert)
+  specialize f_inv_right (simplicialMap_on_vertices g_inv z_vert)
   rw [Function.comp_assoc, ← Function.comp_assoc f.map, Function.comp_apply, Function.comp_apply, f_inv_right]
   simp
   assumption
 
-theorem iso_is_injective_vertices
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
+theorem simplicialIso_injective_vertices
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
   : Set.InjOn f.map (X.vertices) :=
@@ -129,9 +112,7 @@ by
   symm
   assumption
 
-theorem iso_is_injective_simplices
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
+theorem simplicialIso_injective_simplices
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
   : ∀ s ∈ X.faces, Set.InjOn f.map ↑s :=
@@ -165,9 +146,7 @@ by
   rw [gfx₁_eq_x₁, gfx₂_eq_x₂] at gfx₁_eq_gfx₂
   assumption
 
-theorem iso_is_surjective_vertices
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex E}
+theorem simplicialIso_surjective_vertices
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
   : Set.SurjOn f.map (X.vertices) (Y.vertices) :=
@@ -201,13 +180,11 @@ def IsSimpliciallyIso
 
 infixr:50 " ≅ " => IsSimpliciallyIso
 
-theorem simplicial_iso_implies_lift_bij
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
+theorem simplicialIso_imp_simplicialMapLift_bijective
     (f : SimplicialMap X Y)
-  : IsSimplicialIso f → Y.faces = simplicialMapLift f '' X.faces :=
+    (f_iso : IsSimplicialIso f)
+  : Y.faces = SimplicialMapLift f '' X.faces :=
 by
-  intro f_iso
   unfold IsSimplicialIso at f_iso
   choose g g_inv_f using f_iso
   unfold IsInverseSimplicialIso at g_inv_f
@@ -216,7 +193,7 @@ by
   intro t
   constructor
   intro t_in_Y
-  simp only [simplicialMapLift, Set.mem_image]
+  simp only [SimplicialMapLift, Set.mem_image]
   use Finset.image g.map t
   constructor
   apply g.is_simplicial
@@ -230,19 +207,17 @@ by
   apply Set.EqOn.mono t_in_vert
   assumption
   intro t_in_lift
-  simp only [simplicialMapLift, Set.mem_image] at t_in_lift
+  simp only [SimplicialMapLift, Set.mem_image] at t_in_lift
   choose s s_in_X fs_eq_t using t_in_lift
   subst fs_eq_t
   apply f.is_simplicial
   assumption
 
-theorem simplicial_iso_vertices
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
+theorem simplicialIso_vertices
     (f : SimplicialMap X Y)
-  : IsSimplicialIso f → Y.vertices = f.map '' X.vertices :=
+    (f_iso : IsSimplicialIso f)
+  : Y.vertices = f.map '' X.vertices :=
 by
-  intro f_iso
   unfold IsSimplicialIso at f_iso
   choose g gf_inv using f_iso
   unfold IsInverseSimplicialIso at gf_inv
@@ -278,26 +253,23 @@ noncomputable instance IsSimpliciallyIso.Fintype
 by
   unfold IsSimpliciallyIso at X_iso_Y
   choose f f_iso using X_iso_Y
-  rw [simplicial_iso_implies_lift_bij X Y f f_iso]
+  rw [simplicialIso_imp_simplicialMapLift_bijective f f_iso]
   apply Set.fintypeImage
 
-theorem simplicial_iso_preserves_simplex_dim
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
+theorem simplicialIso_preserves_face_dim
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f) :
     ∀ s ∈ X.faces, face_dim s = face_dim (Finset.image f.map s) :=
-  by
+by
   intro s s_in_X
   unfold face_dim
   apply congr_arg fun z : ℤ => z - 1
   symm
   rw [Nat.cast_inj, Finset.card_image_iff]
-  apply iso_is_injective_simplices f f_iso s s_in_X
+  apply simplicialIso_injective_simplices f f_iso s s_in_X
 
-theorem simplicial_iso_preserves_dim
-    (X : AbstractSimplicialComplex E) [X_fin : Fintype X.faces]
-    (Y : AbstractSimplicialComplex F)
+theorem simplicialIso_preserves_dim
+    [Fintype X.faces]
     (X_iso_Y : X ≅ Y) :
     X.dim = @Y.dim _ (IsSimpliciallyIso.Fintype X Y X_iso_Y) :=
 by
@@ -320,7 +292,7 @@ by
   rw [Set.mem_toFinset] at s_in_X
   rw [← s_dim_n]
   apply Finset.le_max'
-  rw [simplicial_iso_preserves_simplex_dim f f_iso s s_in_X, Finset.mem_union, Finset.mem_image]
+  rw [simplicialIso_preserves_face_dim f f_iso s s_in_X, Finset.mem_union, Finset.mem_image]
   left
   use Finset.image f.map s
   constructor
@@ -345,9 +317,9 @@ by
   let f_iso' := f_iso
   unfold IsSimplicialIso at f_iso'
   choose g gf_inv using f_iso'
-  have g_iso : IsSimplicialIso g := by apply iso_inv_is_iso f g f_iso gf_inv
+  have g_iso : IsSimplicialIso g := by apply simplicialIso_inverse_is_simplicialIso f g f_iso gf_inv
   apply Finset.le_max'
-  rw [simplicial_iso_preserves_simplex_dim g g_iso t t_in_Y, Finset.mem_union, Finset.mem_image]
+  rw [simplicialIso_preserves_face_dim g g_iso t t_in_Y, Finset.mem_union, Finset.mem_image]
   left
   use Finset.image g.map t
   constructor
@@ -363,69 +335,58 @@ by
 
 -- Being simplicially isomorphic is an equivalence relation.
 @[refl]
-theorem simplicial_iso_refl
-    (X : AbstractSimplicialComplex E)
-  : X ≅ X :=
-by
+theorem simplicialIso_refl : X ≅ X := by
   unfold IsSimpliciallyIso
   use idSimplicialMap X
   apply id_isSimplicialIso
 
 @[symm]
-theorem simplicial_iso_symm
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-  : (X ≅ Y) ↔ (Y ≅ X) :=
-by
+theorem simplicialIso_symm : (X ≅ Y) ↔ (Y ≅ X) := by
   unfold IsSimpliciallyIso
   constructor <;> unfold IsSimplicialIso
   · intro X_iso_Y
     choose f g f_inv_g using X_iso_Y
     use g; use f
-    rw [IsInverseSimplicialIso_symm]
+    rw [isInverseSimplicialIso_symm]
     assumption
   · intro Y_iso_X
     choose f g f_inv_g using Y_iso_X
     use g; use f
-    rw [IsInverseSimplicialIso_symm]
+    rw [isInverseSimplicialIso_symm]
     assumption
 
 @[trans]
-theorem simplicial_iso_trans
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-    (Z : AbstractSimplicialComplex G)
-  : (X ≅ Y) → Y ≅ Z → X ≅ Z :=
-by
+theorem simplicialIso_trans (Y : AbstractSimplicialComplex F) : (X ≅ Y) → Y ≅ Z → X ≅ Z := by
   intro X_iso_Y Y_iso_Z
   unfold IsSimpliciallyIso at *
   choose f f_iso using X_iso_Y
   choose g g_iso using Y_iso_Z
   use f.comp g
-  apply iso_comp_is_iso <;> assumption
+  apply simplicialIso.comp <;> assumption
 
 instance IsSimpliciallyIso.Trans
   : Trans (@IsSimpliciallyIso E F _ _) (@IsSimpliciallyIso F G _ _) (@IsSimpliciallyIso E G _ _) where
-    trans := simplicial_iso_trans _ _ _
+    trans := simplicialIso_trans _
 
-theorem simplicial_iso_preserves_equiv
-    (X Y : AbstractSimplicialComplex E)
+theorem simplicialIso_preserves_equiv
+    {X Y : AbstractSimplicialComplex E}
   : X.faces = Y.faces → X ≅ Y :=
 by
   intro H
   have X_eq_Y : X = Y := by rw [AbstractSimplicialComplex.ext_iff, H]
   rw [X_eq_Y]
 
-theorem simplicial_iso_preserves_subcomplex_image
-    (X Y Z : AbstractSimplicialComplex E)
+theorem simplicialIso_subcomplex_image
+    {X Y : AbstractSimplicialComplex E}
+    {Z : AbstractSimplicialComplex F}
     (f : SimplicialMap Y Z)
     (f_iso : IsSimplicialIso f)
   : X ⊆ Y → f.map ''ˢ X ⊆ Z :=
 by
   intro X_sub_Y
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex] at X_sub_Y ⊢
-  rw [simplicial_iso_implies_lift_bij Y Z f f_iso]
-  simp only [simplicialMapLift, Set.image]
+  rw [simplicialIso_imp_simplicialMapLift_bijective f f_iso]
+  simp only [SimplicialMapLift, Set.image]
   simp only [Set.subset_def] at X_sub_Y ⊢
   intro t t_in_fX
   simp only [Set.mem_setOf] at t_in_fX ⊢

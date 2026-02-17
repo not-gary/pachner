@@ -16,23 +16,6 @@ by
   simp only [Classical.not_not, simplicialJoin_vertices_mem_left]
   exact Set.mem_of_eq_of_mem rfl
 
-theorem mem_join
-    {X Y : AbstractSimplicialComplex E}
-    {s t : Finset E}
-    (s_in_X : s ∈ X.faces)
-    (t_in_Y : t ∈ Y.faces ∪ {∅})
-  : s ⊔ₛ t ∈ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).faces :=
-by
-  cases' t_in_Y with t_in_Y t_empty
-  · rw [simplicialJoin_mem]
-    use s; constructor; left; assumption
-    use t; constructor; left; assumption
-    constructor; rfl
-    rw [ne_eq, simplexDisjoint_empty, not_and_or]
-    left; exact face_nonempty s_in_X
-  · subst t_empty
-    exact simplicialJoin_incl_left s_in_X
-
 theorem stellar_join_distr_join_left
     {X Y : AbstractSimplicialComplex E}
     {s : Finset E} [s_ne : Nonempty s]
@@ -77,7 +60,7 @@ by
   contradiction
 
   rw [u₃_eq_x]
-  simp only [simplexDisjointUnion, Finset.product_singleton, Finset.map_singleton,
+  simp only [SimplexDisjointUnion, Finset.product_singleton, Finset.map_singleton,
     Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
 
   cases' u₃_in_barycenter with u₃_empty u₃_eq_x
@@ -118,7 +101,7 @@ by
   exact mem_join su₁_in_X (Set.mem_union_left {∅} v_in_Y)
 
   rw [simplexDisjoint_distr_inter, Finset.empty_inter, su₁_disj]
-  simp only [simplexDisjointUnion, Finset.product_singleton, Finset.map_empty, Finset.empty_union]
+  simp only [SimplexDisjointUnion, Finset.product_singleton, Finset.map_empty, Finset.empty_union]
 
   left
   subst u₁_empty
@@ -563,7 +546,7 @@ by
       by
         simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
-        simp only [simplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+        simp only [SimplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
 
       rw [← t₂_lift, ← t₃_lift] at t_decomp
@@ -685,7 +668,7 @@ by
       by
         simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
-        simp only [simplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+        simp only [SimplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
 
       rw [← t₂_lift, ← t₃_lift] at t_decomp
@@ -766,7 +749,7 @@ by
       by
         simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
-        simp only [simplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+        simp only [SimplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
 
       rw [← t₃_lift] at t_decomp
@@ -807,7 +790,7 @@ by
       by
         simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
-        simp only [simplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+        simp only [SimplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
 
       rw [← t₃_lift] at t_decomp
@@ -1279,13 +1262,11 @@ theorem stellar_subdiv_distr_join_right
         barycenter_join_right y_nin_Y) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
   apply
-    @simplicial_iso_trans (E × 𝕜) (E × 𝕜) _ _ _ _ (X ⋆ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y))
+    @simplicialIso_trans (E × 𝕜) (E × 𝕜) _ _ _ _ (X ⋆ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y)) _
       (σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) ⋆ X)
   apply simplicialJoin_comm
   apply
-    simplicial_iso_trans (σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) ⋆ X)
-      (σ(Y ⋆ X, t ⊔ₛ ∅, (y, 0); 𝕜,
-        simplicialJoin_incl_left t_in_Y,
+    simplicialIso_trans (σ(Y ⋆ X, t ⊔ₛ ∅, (y, 0); 𝕜, simplicialJoin_incl_left t_in_Y,
         barycenter_join_left y_nin_Y) : AbstractSimplicialComplex (E × 𝕜))
   rw [stellar_subdiv_distr_join_left]
   let f : SimplicialMap (Y ⋆ X) (X ⋆ Y) :=

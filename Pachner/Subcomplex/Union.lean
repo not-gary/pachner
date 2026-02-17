@@ -7,7 +7,7 @@ variable {E : Type _}
 
 
 @[simp]
-def simplicialUnion
+def SimplicialUnion
     (X Y : AbstractSimplicialComplex E)
   : AbstractSimplicialComplex E :=
     AbstractSimplicialComplex.mk
@@ -28,96 +28,58 @@ def simplicialUnion
 
 @[reducible]
 instance AbstractSimplicialComplex.instHasUnion : Union (AbstractSimplicialComplex E) :=
-  ⟨simplicialUnion⟩
+  ⟨SimplicialUnion⟩
 
-instance simplicialUnion.Fintype [DecidableEq E]
+instance SimplicialUnion.Fintype [DecidableEq E]
     (X Y : AbstractSimplicialComplex E)
     [Fintype X.faces] [Fintype Y.faces]
   : Fintype (X ∪ Y).faces :=
 by
-  simp only [AbstractSimplicialComplex.instHasUnion, simplicialUnion, AbstractSimplicialComplex.mk.injEq]
+  simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion]
   apply Set.fintypeUnion
 
-instance simplicialUnion.Finite
+instance SimplicialUnion.Finite
     (X Y : AbstractSimplicialComplex E)
     [Finite X.faces] [Finite Y.faces]
   : Finite (X ∪ Y).faces :=
 by
-  simp only [AbstractSimplicialComplex.instHasUnion, simplicialUnion, AbstractSimplicialComplex.mk.injEq]
+  simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion]
   rw [Set.finite_coe_iff, Set.finite_union, ← Set.finite_coe_iff]
   constructor <;> assumption
 
-theorem simplicial_union_assoc
-    (X Y Z : AbstractSimplicialComplex E)
-  : X ∪ Y ∪ Z = X ∪ (Y ∪ Z) :=
-by
-  simp only [AbstractSimplicialComplex.instHasUnion, simplicialUnion, AbstractSimplicialComplex.mk.injEq]
-  rw [Set.union_assoc]
+variable {X Y Z : AbstractSimplicialComplex E}
 
-theorem simplicial_union_comm
-    (X Y : AbstractSimplicialComplex E)
-  : X ∪ Y = Y ∪ X :=
-by
-  simp only [AbstractSimplicialComplex.instHasUnion, simplicialUnion, AbstractSimplicialComplex.mk.injEq]
-  rw [Set.union_comm]
+theorem simplicialUnion_assoc : X ∪ Y ∪ Z = X ∪ (Y ∪ Z) := by
+  simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.union_assoc]
 
-theorem simplicial_union_simplices
-    (X Y : AbstractSimplicialComplex E)
-  : (X ∪ Y) = X ∪ Y :=
-by
-  simp only [AbstractSimplicialComplex.instHasUnion, simplicialUnion]
+theorem simplicialUnion_comm : X ∪ Y = Y ∪ X := by
+  simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.union_comm]
 
-theorem simplicial_union_eq_left_iff_subcomplex [DecidableEq E]
-    (X Y : AbstractSimplicialComplex E)
-  : (X ∪ Y).faces = X.faces ↔ Y ⊆ X :=
-  by
-  simp only [AbstractSimplicialComplex.instHasUnion, simplicialUnion, AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
-  apply Set.union_eq_left
+theorem simplicialUnion_eq_left_iff_subcomplex [DecidableEq E] : (X ∪ Y) = X ↔ Y ⊆ X := by
+  simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion, AbstractSimplicialComplex.ext_iff,
+    AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.union_eq_left]
 
-theorem simplicial_union_eq_right_iff_subcomplex [DecidableEq E]
-    (X Y : AbstractSimplicialComplex E)
-  : (X ∪ Y).faces = Y.faces ↔ X ⊆ Y :=
-by
-  simp only [AbstractSimplicialComplex.instHasUnion, simplicialUnion, AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
-  apply Set.union_eq_right
+theorem simplicialUnion_eq_right_iff_subcomplex [DecidableEq E] : (X ∪ Y) = Y ↔ X ⊆ Y := by
+  simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion, AbstractSimplicialComplex.ext_iff,
+    AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.union_eq_right]
 
-theorem subcomplex_simplicial_union_left_simplices [DecidableEq E]
-    (X Y : AbstractSimplicialComplex E)
-  : ∀ s : Finset E, s ∈ X.faces → s ∈ (X ∪ Y).faces :=
-by
-  apply Set.subset_union_left
+theorem simplicialUnion_subcomplex_left [DecidableEq E] : X ⊆ X ∪ Y := by
+  simp only [AbstractSimplicialComplex.instHasUnion, AbstractSimplicialComplex.instHasSubset,
+    IsSubcomplex, SimplicialUnion, Set.subset_union_left]
 
-theorem subcomplex_simplicial_union_left [DecidableEq E]
-    {X Y : AbstractSimplicialComplex E}
-  : X ⊆ X ∪ Y :=
-by
-  simp only [AbstractSimplicialComplex.instHasUnion, AbstractSimplicialComplex.instHasSubset, IsSubcomplex, simplicialUnion]
-  apply Set.subset_union_left
-
-theorem subcomplex_simplicial_union_right_simplices [DecidableEq E]
-    (X Y : AbstractSimplicialComplex E)
-  : ∀ s : Finset E, s ∈ Y.faces → s ∈ (X ∪ Y).faces :=
-by
-  apply Set.subset_union_right
-
-theorem subcomplex_simplicial_union_right [DecidableEq E]
-    {X Y : AbstractSimplicialComplex E}
-  : Y ⊆ X ∪ Y :=
-by
-  simp only [AbstractSimplicialComplex.instHasUnion, AbstractSimplicialComplex.instHasSubset, IsSubcomplex, simplicialUnion]
-  apply Set.subset_union_right
+theorem simplicialUnion_subcomplex_right [DecidableEq E] : Y ⊆ X ∪ Y := by
+  simp only [AbstractSimplicialComplex.instHasUnion, AbstractSimplicialComplex.instHasSubset,
+    IsSubcomplex, SimplicialUnion, Set.subset_union_right]
 
 
 end SimplicialUnion
 
 
 section SimplicialUnion.Dimension
-variable {E : Type _}
-variable [DecidableEq E]
+variable {E : Type _} [DecidableEq E] {X Y : AbstractSimplicialComplex E}
 
 
 theorem simplicial_union_dim
-    (X Y : AbstractSimplicialComplex E)
     [Fintype X.faces] [Fintype Y.faces]
   : (X ∪ Y).dim = max (X.dim) (Y.dim) :=
 by
@@ -125,7 +87,7 @@ by
   apply le_antisymm
   · apply Finset.max'_le
     intro y y_in_img
-    simp only [Finset.mem_image, simplicialUnion, Set.mem_union, Finset.mem_union, Set.mem_toFinset] at y_in_img
+    simp only [Finset.mem_image, SimplicialUnion, Set.mem_union, Finset.mem_union, Set.mem_toFinset] at y_in_img
     cases' y_in_img with y_in_img y_empty
     choose s s_in_union dim_s_y using y_in_img
     rw [le_max_iff]
@@ -163,7 +125,7 @@ by
     apply Finset.le_max'
     rw [Finset.mem_union]
     left
-    simp only [Finset.mem_image, simplicialUnion, Set.mem_union, Set.mem_toFinset]
+    simp only [Finset.mem_image, SimplicialUnion, Set.mem_union, Set.mem_toFinset]
     use s; constructor
     left; assumption
     assumption
@@ -177,7 +139,7 @@ by
     cases' y_in_img with y_in_img y_empty
     choose s s_in_Y dim_s_y using y_in_img
     apply Finset.le_max'
-    simp only [Finset.mem_union, Finset.mem_image, simplicialUnion, Set.mem_union, Set.mem_toFinset]
+    simp only [Finset.mem_union, Finset.mem_image, SimplicialUnion, Set.mem_union, Set.mem_toFinset]
     left
     use s; constructor
     right; assumption

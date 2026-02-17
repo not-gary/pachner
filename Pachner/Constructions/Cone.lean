@@ -142,7 +142,7 @@ by
   rw [Set.mem_singleton_iff, Finset.image_eq_empty]
   assumption
   constructor
-  simp only [u_eq_st, s_eq_x, simplexDisjointUnion, Finset.image_union, coneIsoMap, Finset.ext_iff]
+  simp only [u_eq_st, s_eq_x, SimplexDisjointUnion, Finset.image_union, coneIsoMap, Finset.ext_iff]
   intro v
   simp only [Finset.mem_union, Finset.mem_image, Finset.mem_product, Finset.mem_singleton]
   constructor
@@ -219,7 +219,7 @@ by
   right
   rw [Set.mem_singleton_iff, Finset.image_eq_empty]
   assumption
-  simp only [u_eq_st, s_empty, simplexDisjointUnion, Finset.image_union, coneIsoMap, Finset.ext_iff]
+  simp only [u_eq_st, s_empty, SimplexDisjointUnion, Finset.image_union, coneIsoMap, Finset.ext_iff]
   constructor
   intro v
   simp only [Finset.mem_union, Finset.mem_image, Finset.mem_product, Finset.mem_singleton]
@@ -276,7 +276,7 @@ by
   rw [Classical.not_not]
   intro t_empty
   rw [t_empty] at u_eq_st
-  unfold simplexDisjointUnion at u_eq_st
+  unfold SimplexDisjointUnion at u_eq_st
   simp at u_eq_st
   simp [u_eq_st]
 

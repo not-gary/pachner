@@ -53,10 +53,10 @@ variable {E 𝕜 : Type _}
 variable [DecidableEq E] [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
 
 @[simp]
-def simplexDisjointUnion (s t : Finset E) : Finset (E × 𝕜) :=
+def SimplexDisjointUnion (s t : Finset E) : Finset (E × 𝕜) :=
   s ×ˢ {0} ∪ t ×ˢ {1}
 
-infixl:65 " ⊔ₛ " => simplexDisjointUnion
+infixl:65 " ⊔ₛ " => SimplexDisjointUnion
 
 instance SimplexDisjoint.nonempty
     (s t : Finset E)
@@ -64,7 +64,7 @@ instance SimplexDisjoint.nonempty
     Nonempty (s ⊔ₛ t : Finset (E × 𝕜)) :=
 by
   iterate 2 rw [Finset.nonempty_coe_sort, ← Finset.coe_nonempty] at *
-  unfold simplexDisjointUnion
+  unfold SimplexDisjointUnion
   rw [Finset.coe_union, Set.union_nonempty]
   cases' H with Hs Ht
   left
@@ -116,7 +116,7 @@ theorem simplexDisjoint_mem_iff
     (x : E × 𝕜)
   : x ∈ s ⊔ₛ t ↔ x.fst ∈ s ∧ x.snd = 0 ∨ x.fst ∈ t ∧ x.snd = 1 :=
 by
-  simp only [simplexDisjointUnion]
+  simp only [SimplexDisjointUnion]
   rw [← Finset.disjUnion_eq_union, Finset.mem_disjUnion]
   constructor
   intro x_in_prod
@@ -143,7 +143,7 @@ theorem simplexDisjoint_mem_iff_left
     (x : E)
   : (x, 0) ∈ (s ⊔ₛ t : Finset (E × 𝕜)) ↔ x ∈ s :=
 by
-  unfold simplexDisjointUnion
+  unfold SimplexDisjointUnion
   constructor
   · intro x0_in_st
     rw [Finset.mem_union] at x0_in_st
@@ -168,7 +168,7 @@ theorem simplexDisjoint_mem_iff_right
     (x : E)
   : (x, 1) ∈ (s ⊔ₛ t : Finset (E × 𝕜)) ↔ x ∈ t :=
 by
-  unfold simplexDisjointUnion
+  unfold SimplexDisjointUnion
   constructor
   · intro x1_in_st
     rw [Finset.mem_union] at x1_in_st
@@ -212,7 +212,7 @@ by
   cases' sset with s_sset_u t_sset_w
   rw [Finset.subset_iff] at *
   intro x x_in_st
-  simp only [simplexDisjointUnion, Finset.mem_union, Finset.mem_product] at *
+  simp only [SimplexDisjointUnion, Finset.mem_union, Finset.mem_product] at *
   cases' x_in_st with x_in_st x_in_st
   left
   cases' x_in_st with x_in_s x0
@@ -341,7 +341,7 @@ theorem simplexDisjoint_distr_union
     (s t u w : Finset E)
   : s ⊔ₛ t ∪ (u ⊔ₛ w : Finset (E × 𝕜)) = s ∪ u ⊔ₛ (t ∪ w) :=
 by
-  unfold simplexDisjointUnion
+  unfold SimplexDisjointUnion
   rw [← Finset.union_assoc]
   rw [Finset.union_assoc _ (t ×ˢ {1}) (u ×ˢ {0})]
   rw [Finset.union_comm (t ×ˢ {1}) (u ×ˢ {0})]
@@ -353,7 +353,7 @@ theorem simplexDisjoint_distr_inter
     (s t u w : Finset E)
   : (s ⊔ₛ t : Finset (E × 𝕜)) ∩ (u ⊔ₛ w) = s ∩ u ⊔ₛ t ∩ w :=
 by
-  unfold simplexDisjointUnion
+  unfold SimplexDisjointUnion
   repeat' rw [Finset.inter_union_distrib_left]
   repeat' rw [Finset.union_inter_distrib_right]
   have H_tu_empty :
@@ -382,7 +382,7 @@ theorem simplexDisjoint_card
     (s t : Finset E)
   : (s ⊔ₛ t : Finset (E × 𝕜)).card = s.card + t.card :=
 by
-  simp only [simplexDisjointUnion]
+  simp only [SimplexDisjointUnion]
   set s₀ : Finset (E × 𝕜) := s ×ˢ {0}
   set t₁ : Finset (E × 𝕜) := t ×ˢ {1}
   have card_disj : (s₀ ∪ t₁).card = s₀.card + t₁.card :=
