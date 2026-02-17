@@ -56,12 +56,12 @@ theorem vertices_eq : X.vertices = ⋃ k ∈ X.faces, (k : Set E) := by
 def facets (K : AbstractSimplicialComplex E) : Set (Finset E) :=
   { s ∈ K.faces | ∀ ⦃t⦄, t ∈ K.faces → s ⊆ t → s = t }
 
-theorem mem_facets_iff : s ∈ X.facets ↔ s ∈ X.faces ∧ ∀ t ∈ X.faces, s ⊆ t → s = t :=
+theorem mem_facets : s ∈ X.facets ↔ s ∈ X.faces ∧ ∀ t ∈ X.faces, s ⊆ t → s = t :=
   Set.mem_sep_iff
 
-theorem facets_subset_faces : X.facets ⊆ X.faces := fun _ hs => hs.1
+theorem facets_subset : X.facets ⊆ X.faces := fun _ hs => hs.1
 
-theorem notMem_facet_iff_subface (s_in_X : s ∈ X.faces) : s ∉ X.facets ↔ ∃ t, t ∈ X.faces ∧ s ⊂ t := by
+theorem not_facet_iff_subface (s_in_X : s ∈ X.faces) : s ∉ X.facets ↔ ∃ t, t ∈ X.faces ∧ s ⊂ t := by
   refine ⟨fun hs' : ¬(_ ∧ _) => ?_, ?_⟩
   · push_neg at hs'
     obtain ⟨t, ht⟩ := hs' s_in_X
@@ -95,12 +95,12 @@ instance : OrderBot (AbstractSimplicialComplex E) :=
 instance : Inhabited (AbstractSimplicialComplex E) :=
   ⟨⊥⟩
 
-theorem faces_bot_eq_empty : (⊥ : AbstractSimplicialComplex E).faces = ∅ := rfl
+theorem faces_bot : (⊥ : AbstractSimplicialComplex E).faces = ∅ := rfl
 
-theorem facets_bot_eq_empty : (⊥ : AbstractSimplicialComplex E).facets = ∅ :=
+theorem facets_bot : (⊥ : AbstractSimplicialComplex E).facets = ∅ :=
 by
   apply Set.eq_empty_of_subset_empty
-  apply facets_subset_faces
+  apply facets_subset
 
 end AbstractSimplicialComplex
 
@@ -216,7 +216,7 @@ by
   intro s
   rw [not_and]
   intro s_empty
-  rw [AbstractSimplicialComplex.faces_bot_eq_empty] at s_empty
+  rw [faces_bot] at s_empty
   contradiction
 
 theorem vertices_congr : X.faces = Y.faces → X.vertices = Y.vertices := by
