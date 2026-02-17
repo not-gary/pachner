@@ -91,7 +91,7 @@ by
   cases' v_in_Y with v_in_Y v_empty <;>
   cases' u₁_in_link with u₁_in_link u₁_empty
 
-  simp only [link, Set.mem_sep_iff] at u₁_in_link ⊢
+  simp only [Link, Set.mem_sep_iff] at u₁_in_link ⊢
   choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
   left; constructor
   exact mem_join u₁_in_X (Set.mem_union_left {∅} v_in_Y)
@@ -126,7 +126,7 @@ by
   constructor <;> rfl
 
   use u₂ ⊔ₛ ∅; constructor; left
-  simp only [simplexBoundary, Set.mem_diff, Set.mem_insert_iff, Finset.mem_coe, Finset.mem_powerset, not_or, Set.mem_singleton_iff] at u₂_in_bd ⊢
+  simp only [SimplexBoundary, Set.mem_diff, Set.mem_insert_iff, Finset.mem_coe, Finset.mem_powerset, not_or, Set.mem_singleton_iff] at u₂_in_bd ⊢
   choose u₂_ss_s u₂_ne_s u₂_ne using u₂_in_bd
   constructor
   rw [simplexDisjoint_subset_unique]
@@ -143,7 +143,7 @@ by
 
   use u₁ ⊔ₛ v; constructor
   cases' u₁_in_link with u₁_in_link u₁_empty
-  simp only [link, Set.mem_sep_iff] at u₁_in_link ⊢
+  simp only [Link, Set.mem_sep_iff] at u₁_in_link ⊢
   choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
   left; constructor
 
@@ -204,7 +204,7 @@ by
   left; exact face_nonempty u₃_in_barycenter
 
   use u₁ ⊔ₛ v; constructor
-  simp only [link, Set.mem_sep_iff, Set.mem_singleton_iff] at u₁_in_link ⊢
+  simp only [Link, Set.mem_sep_iff, Set.mem_singleton_iff] at u₁_in_link ⊢
   cases' u₁_in_link with u₁_in_link u₁_empty <;>
   cases' v_in_Y with v_in_Y v_empty
 
@@ -271,7 +271,7 @@ by
   constructor <;> rfl
 
   use u ⊔ₛ v; constructor; left
-  simp only [link, Set.mem_sep_iff] at u₁_in_link ⊢
+  simp only [Link, Set.mem_sep_iff] at u₁_in_link ⊢
   choose u_in_X su_in_X su_disj using u₁_in_link
 
   constructor
@@ -294,7 +294,7 @@ by
   constructor <;> rfl
 
   use u ⊔ₛ ∅; constructor; left
-  simp only [link, Set.mem_sep_iff] at u₁_in_link ⊢
+  simp only [Link, Set.mem_sep_iff] at u₁_in_link ⊢
   choose u_in_X su_in_X su_disj using u₁_in_link
   constructor
   exact simplicialJoin_incl_left u_in_X
@@ -323,7 +323,7 @@ by
   constructor <;> rfl
 
   use ∅ ⊔ₛ v; constructor; left
-  simp only [link, Set.mem_sep_iff]
+  simp only [Link, Set.mem_sep_iff]
   constructor
   exact simplicialJoin_incl_right v_in_Y
   constructor
@@ -395,7 +395,7 @@ by
       choose t₂_ss_s t₂_ne using t₂_in_bd
       choose a a_nin_t₂ at₂_ss_s using t₂_ss_s
 
-      simp only [link, Set.mem_sep_iff] at t₁_in_link
+      simp only [Link, Set.mem_sep_iff] at t₁_in_link
       choose t₁_in_XY st₁_in_XY st₁_disj using t₁_in_link
       rw [simplicialJoin_mem] at t₁_in_XY
       choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
@@ -482,7 +482,7 @@ by
 
       cases' u₁_in_X with u₁_in_X u₁_empty
       · use u₁; constructor; left
-        simp only [link, Set.mem_sep_iff]
+        simp only [Link, Set.mem_sep_iff]
         constructor; assumption
         constructor
 
@@ -680,7 +680,7 @@ by
       cases' t₃_in_barycenter with t₃_empty t₃_in_barycenter
       contradiction
 
-      simp only [link, Set.mem_sep_iff] at t₁_in_link
+      simp only [Link, Set.mem_sep_iff] at t₁_in_link
       choose t₁_in_XY st₁_in_XY st₁_disj using t₁_in_link
       rw [simplicialJoin_mem] at t₁_in_XY
       choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
@@ -713,7 +713,7 @@ by
 
       cases' u₁_in_X with u₁_in_X u₁_empty
       · use u₁; constructor; left
-        simp only [link, Set.mem_sep_iff]
+        simp only [Link, Set.mem_sep_iff]
         constructor; assumption
         constructor
 
@@ -800,7 +800,7 @@ by
       choose t₂_ss_s t₂_ne using t₂_in_bd
       choose a a_nin_t₂ at₂_ss_s using t₂_ss_s
 
-      simp only [link, Set.mem_sep_iff] at t₁_in_link
+      simp only [Link, Set.mem_sep_iff] at t₁_in_link
       choose t₁_in_XY st₁_in_XY st₁_disj using t₁_in_link
       rw [simplicialJoin_mem] at t₁_in_XY
       choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
@@ -881,7 +881,7 @@ by
 
       cases' u₁_in_X with u₁_in_X u₁_empty
       · use u₁; constructor; left
-        simp only [link, Set.mem_sep_iff]
+        simp only [Link, Set.mem_sep_iff]
         constructor; assumption
         constructor
 
@@ -1055,7 +1055,7 @@ by
       rw [Finset.empty_union, Finset.union_empty] at t_decomp ⊢
       assumption
     · subst t₂_empty t₃_empty
-      simp only [link, Set.mem_sep_iff] at t₁_in_link
+      simp only [Link, Set.mem_sep_iff] at t₁_in_link
       choose t₁_in_XY st₁_in_XY st₁_disj using t₁_in_link
       rw [simplicialJoin_mem] at t₁_in_XY
       choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
@@ -1076,7 +1076,7 @@ by
 
       cases' u₁_in_X with u₁_in_X u₁_empty
       · use u₁; constructor; left
-        simp only [link, Set.mem_sep_iff]
+        simp only [Link, Set.mem_sep_iff]
         constructor; assumption
         constructor
 
@@ -1115,7 +1115,7 @@ by
       contradiction
   · subst t'_empty
     cases' t₁_in_link with t₁_in_link t₁_empty
-    · simp only [link, Set.mem_sep_iff] at t₁_in_link
+    · simp only [Link, Set.mem_sep_iff] at t₁_in_link
       choose t₁_in_XY st₁_in_XY st₁_disj using t₁_in_link
       simp only [simplicialJoin_mem, Set.mem_union, Set.mem_singleton_iff] at t₁_in_XY
       choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
@@ -1125,7 +1125,7 @@ by
       · use u₁; constructor; left
         use ∅; constructor; right; rfl
         use u₁; constructor; left
-        simp only [link, Set.mem_sep_iff]
+        simp only [Link, Set.mem_sep_iff]
         constructor; assumption
         constructor
 
@@ -1160,7 +1160,7 @@ by
         use u₁; constructor; left
         use ∅; constructor; right; rfl
         use u₁; constructor; left
-        simp only [link, Set.mem_sep_iff]
+        simp only [Link, Set.mem_sep_iff]
         constructor; assumption
         constructor
 

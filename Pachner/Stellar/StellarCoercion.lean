@@ -55,7 +55,7 @@ by
   cases' t_in_subdiv with t_in_star_comp t_in_join
 
   left
-  rw [starComplement_coe_image X s s_in_X φ, stellar_coe_simplex_image]
+  rw [starComplement_simplicialCoe_image X s s_in_X φ, stellar_coe_simplex_image]
   apply isSimplicialMap_onto_image
   assumption
   revert x_nin_X
@@ -65,7 +65,7 @@ by
   simp only [← Finset.mem_coe, ← Set.subset_def]
   apply simplex_subset_vertices
   apply isSubcomplex_face_imp_face
-  exact starComplement_subcomplex_simplices X s t t_in_star_comp
+  exact starComplement_subcomplex_simplices s t t_in_star_comp
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
   rfl
 
@@ -111,7 +111,7 @@ by
   constructor
 
   left
-  rw [simplexBoundary_coe_image, stellar_coe_simplex_image]
+  rw [simplexBoundary_simplicialCoe_image, stellar_coe_simplex_image]
   apply isSimplicialMap_onto_image
   assumption
 
@@ -252,7 +252,7 @@ by
 
   left
   rw [stellar_coe_simplex_image]
-  rw [starComplement_coe_image, simplicialImage_is_lift_image, Set.mem_image] at t_in_star_comp
+  rw [starComplement_simplicialCoe_image, simplicialImage_is_lift_image, Set.mem_image] at t_in_star_comp
   choose u u_in_star_comp φu_t using t_in_star_comp
   simp only [SimplicialMapLift] at φu_t
   rw [← φu_t]
@@ -315,7 +315,7 @@ by
 
   left
   rw [stellar_coe_simplex_image]
-  rw [simplexBoundary_coe_image, simplicialImage_is_lift_image, Set.mem_image] at t₂_in_bd
+  rw [simplexBoundary_simplicialCoe_image, simplicialImage_is_lift_image, Set.mem_image] at t₂_in_bd
   choose u u_in_bd φu_t₂ using t₂_in_bd
   simp only [SimplicialMapLift] at φu_t₂
   rw [← φu_t₂]

@@ -18,9 +18,9 @@ theorem stellar_subdiv_link_of_starComplement_left
           Lk(X, t) :=
 by
   intro t_nin_join
-  simp only [starComplement, Set.mem_sep_iff] at t_in_star_comp
+  simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
   choose t_in_X s_nss_t using t_in_star_comp
-  simp only [Set.subset_def, link, stellarSubdivision, SimplicialUnion, starComplement,
+  simp only [Set.subset_def, Link, stellarSubdivision, SimplicialUnion, StarComplement,
     Set.mem_union, Set.mem_sep_iff]
   intro u u_in_link
   choose u_in_subdiv ut_in_subdiv ut_disj using u_in_link
@@ -90,11 +90,11 @@ by
     rw [Set.mem_union] at tu_in_link u₁_in_link
     cases' tu_in_link with tu_in_link tu_empty
 
-    simp only [link, Set.mem_sep_iff] at tu_in_link
+    simp only [Link, Set.mem_sep_iff] at tu_in_link
     choose tu_in_X stu_in_X stu_disj using tu_in_link
     constructor
     cases' u₁_in_link with u_in_link u_empty
-    simp only [link, Set.mem_sep_iff] at u_in_link
+    simp only [Link, Set.mem_sep_iff] at u_in_link
     choose u_in_X su_in_X su_disj using u_in_link
     assumption
 
@@ -120,16 +120,16 @@ theorem stellar_subdiv_link_of_starComplement_right
           Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) :=
 by
   intro t_nin_join
-  simp only [starComplement, Set.mem_sep_iff] at t_in_star_comp
+  simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
   choose t_in_X s_nss_t using t_in_star_comp
-  simp only [Set.subset_def, link, stellarSubdivision, SimplicialUnion, starComplement,
+  simp only [Set.subset_def, Link, stellarSubdivision, SimplicialUnion, StarComplement,
     Set.mem_union, Set.mem_sep_iff]
   intro u u_in_link
   choose u_in_X tu_in_X tu_disj using u_in_link
   by_cases s_ss_u : s ⊆ u
   · have t_in_link : t ∈ Lk(X, s).faces :=
     by
-      simp only [link, Set.mem_sep_iff]
+      simp only [Link, Set.mem_sep_iff]
       constructor; assumption
       constructor
       apply @X.down_closed (t ∪ u)
@@ -178,7 +178,7 @@ by
   rw [Set.mem_union, ts_ne]
   right; apply Set.mem_singleton
 
-  simp only [link, Set.mem_union, Set.mem_sep_iff]
+  simp only [Link, Set.mem_union, Set.mem_sep_iff]
   left; constructor
   apply @X.down_closed t
   assumption

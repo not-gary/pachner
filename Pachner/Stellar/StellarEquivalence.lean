@@ -330,7 +330,7 @@ by
   choose u u_in_subdiv fu_t using t_in_img
   cases' u_in_subdiv with u_in_star_comp u_in_join
   left
-  simp only [starComplement, Set.mem_sep_iff] at u_in_star_comp ⊢
+  simp only [StarComplement, Set.mem_sep_iff] at u_in_star_comp ⊢
   choose u_in_X s_nss_u using u_in_star_comp
   constructor
   simp only [SimplicialImage, Set.mem_setOf]
@@ -378,7 +378,7 @@ by
   simp only [Finset.singleton_ne_empty, not_false_eq_true]
 
   use Finset.image f u₂; constructor
-  simp only [simplexBoundary, Set.mem_union, Set.mem_insert_iff, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
+  simp only [SimplexBoundary, Set.mem_union, Set.mem_insert_iff, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
     Set.mem_singleton_iff] at u₂_in_bd ⊢
   cases' u₂_in_bd with u₂_in_bd u₂_empty
   left
@@ -430,7 +430,7 @@ by
 
   rw [Finset.image_union]
   use Finset.image f u₁; constructor
-  simp only [link, Set.mem_sep_iff] at u₁_in_link ⊢
+  simp only [Link, Set.mem_sep_iff] at u₁_in_link ⊢
 
   cases' u₁_in_link with u₁_in_link u₁_empty
   choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
@@ -466,7 +466,7 @@ by
 
   cases' u₁_in_link with u₁_in_link u₁_empty
   use Finset.image f u; constructor; left
-  simp only [link, Set.mem_setOf] at u₁_in_link ⊢
+  simp only [Link, Set.mem_setOf] at u₁_in_link ⊢
   choose u_in_X su_in_X su_disj using u₁_in_link
   simp only [SimplicialImage, Set.mem_setOf]
 
@@ -505,7 +505,7 @@ by
   choose t₁ t₂ t₃ t₁_in_link t₂_ss_fs t₂_ne_fs t₂_ne t₃_empty t_decomp using t_decomp
   simp only [SimplicialImage, Set.mem_setOf]
   simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union]
-  simp only [link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
+  simp only [Link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
 
   cases' t₁_in_link with t₁_in_link t₁_empty
   choose t₁_in_fX fst₁_in_fX fst₁_disj using t₁_in_link
@@ -558,7 +558,7 @@ by
   left; use ∅; constructor
   right; apply Set.mem_singleton
   use u₂; constructor
-  simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Set.mem_insert_iff, Finset.mem_powerset, not_or]
   left; constructor
   rw [Finset.subset_iff] at t₂_ss_fs ⊢
@@ -632,7 +632,7 @@ by
   assumption
 
   use u₁; constructor
-  simp only [link, Set.mem_sep_iff, Set.mem_union]
+  simp only [Link, Set.mem_sep_iff, Set.mem_union]
   left; constructor; assumption
   constructor
   have v_su₁ : v = s ∪ u₁ :=
@@ -789,7 +789,7 @@ by
   choose t₁ t₂ t₃ t₁_in_link t₂_ss_fs t₂_ne_fs t₂_ne t₃_eq_fx t_decomp using t_decomp
   simp only [SimplicialImage, Set.mem_setOf]
   simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union]
-  simp only [link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
+  simp only [Link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
   cases' t₁_in_link with t₁_in_link t₁_empty
 
   choose t₁_in_fX fst₁_in_fX fst₁_disj using t₁_in_link
@@ -812,7 +812,7 @@ by
   apply Finset.singleton_ne_empty
 
   use u₂; constructor
-  simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Set.mem_insert_iff, not_or, Finset.mem_powerset]
 
   by_cases u₂_empty : u₂ = ∅
@@ -882,7 +882,7 @@ by
   left; apply Finset.singleton_ne_empty
 
   use u₁; constructor
-  simp only [link, Set.mem_union, Set.mem_sep_iff]
+  simp only [Link, Set.mem_union, Set.mem_sep_iff]
   left; constructor; assumption
   constructor
   have v_su₁ : v = s ∪ u₁ :=
@@ -1070,7 +1070,7 @@ by
   choose t₁ t₂ t₃ t₁_in_link t₂_empty t₃_empty t_decomp using t_decomp
   simp only [SimplicialImage, Set.mem_setOf]
   simp only [stellarSubdivision, SimplicialUnion, Set.mem_union]
-  simp only [link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
+  simp only [Link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
 
   choose t₁_in_fX fst₁_in_fX fst₁_disj using t₁_in_link
   choose u₁ u₁_in_X fu₁_t₁ using t₁_in_fX
@@ -1084,7 +1084,7 @@ by
   right; rw [Finset.empty_union]; apply Set.mem_singleton
 
   use u₁; constructor
-  simp only [link, Set.mem_union, Set.mem_sep_iff]
+  simp only [Link, Set.mem_union, Set.mem_sep_iff]
   left; constructor; assumption
   constructor
   have v_su₁ : v = s ∪ u₁ :=
@@ -1136,7 +1136,7 @@ by
   choose t₁ t₂ t₃ t₁_in_link t₂_empty t₃_eq_fx t_decomp using t_decomp
   simp only [SimplicialImage, Set.mem_setOf]
   simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union]
-  simp only [link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
+  simp only [Link, Set.mem_union, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t₁_in_link
   cases' t₁_in_link with t₁_in_link t₁_empty
 
   choose t₁_in_fX fst₁_in_fX fst₁_disj using t₁_in_link
@@ -1163,7 +1163,7 @@ by
   apply Finset.singleton_ne_empty
 
   use u₁; constructor
-  simp only [link, Set.mem_union, Set.mem_sep_iff]
+  simp only [Link, Set.mem_union, Set.mem_sep_iff]
   left; constructor; assumption
   constructor
   have v_su₁ : v = s ∪ u₁ :=
@@ -1245,11 +1245,11 @@ by
   intro t t_in_subdiv
   simp only [stellarSubdivision, SimplicialUnion, Set.mem_union] at t_in_subdiv
   cases' t_in_subdiv with t_in_star_comp t_in_join
-  simp only [starComplement, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t_in_star_comp
+  simp only [StarComplement, Set.mem_sep_iff, SimplicialImage, Set.mem_setOf] at t_in_star_comp
   choose t_in_fX fs_nss_t using t_in_star_comp
   choose u u_in_X fu_t using t_in_fX
   use u; constructor; left
-  simp only [starComplement, Set.mem_sep_iff]
+  simp only [StarComplement, Set.mem_sep_iff]
   constructor; assumption
   revert fs_nss_t
   contrapose
@@ -1264,7 +1264,7 @@ by
 
   choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp t'_ne using t'_in_join
   subst t'_decomp
-  simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset] at t₂_in_bd
   simp only [simplex, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
     Finset.subset_singleton_iff, Set.mem_singleton_iff] at t₃_in_barycenter

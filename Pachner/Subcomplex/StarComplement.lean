@@ -2,10 +2,11 @@ import Pachner.Maps.SimplicialCoercion
 
 variable {E F : Type _}
 variable [DecidableEq E] [DecidableEq F]
+variable {X : AbstractSimplicialComplex E}
 
 -- Complement of the star of a complex wrt a simplex.
 @[simp]
-def starComplement
+def StarComplement
     (X : AbstractSimplicialComplex E)
     (s : Finset E)
   : AbstractSimplicialComplex E :=
@@ -29,14 +30,14 @@ def starComplement
       apply Finset.mem_of_subset
       assumption)
 
-notation X "\\St(" X ", " s ")" => starComplement X s
+notation X "\\St(" X ", " s ")" => StarComplement X s
 
-instance starComplement.fintype
+instance StarComplement.fintype
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
     (s : Finset E)
   : Fintype (X\St(X, s)).faces :=
 by
-  simp only [starComplement]
+  simp only [StarComplement]
   have H_dec : DecidablePred fun t : Finset E => ¬s ⊆ t :=
   by
     unfold DecidablePred
@@ -46,32 +47,27 @@ by
   apply @Set.fintypeSep _ _ _ _ H_dec
 
 theorem starComplement_subcomplex_simplices
-    (X : AbstractSimplicialComplex E)
     (s t : Finset E)
   : t ∈ X\St(X, s).faces → t ∈ X.faces :=
 by
-  simp only [starComplement, Set.mem_sep_iff]
+  simp only [StarComplement, Set.mem_sep_iff]
   intro t_in_star_comp
   choose t_in_X s_nss_t using t_in_star_comp
   assumption
 
-theorem starComplement_subcomplex
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
-  : X\St(X, s) ⊆ X :=
-by
+theorem starComplement_subcomplex (s : Finset E) : X\St(X, s) ⊆ X := by
   simp only [IsSubcomplex, AbstractSimplicialComplex.instHasSubset, Set.subset_def]
   intro t
   apply starComplement_subcomplex_simplices
 
-theorem starComplement_iso
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-    (s : Finset E)
-    (t : Finset F)
-    (f : SimplicialMap X Y)
+theorem starComplement_simplicialIso
+    {X : AbstractSimplicialComplex E}
+    {Y : AbstractSimplicialComplex F}
+    {s : Finset E}
+    {t : Finset F}
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)
+    (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
   : Finset.image f.map s = t → X\St(X, s) ≅ Y\St(Y, t) :=
 by
@@ -79,7 +75,7 @@ by
   unfold IsSimpliciallyIso
   have f_simp : IsSimplicialMap (X\St(X, s)) (Y\St(Y, t)) f.map :=
   by
-    simp only [IsSimplicialMap, starComplement, Set.mem_sep_iff]
+    simp only [IsSimplicialMap, StarComplement, Set.mem_sep_iff]
     intro u u_in_X_comp
     choose u_in_X s_nss_u using u_in_X_comp
     constructor
@@ -144,7 +140,7 @@ by
     assumption
   have g_simp : IsSimplicialMap (Y\St(Y, t)) (X\St(X, s)) g.map :=
   by
-    simp only [IsSimplicialMap, starComplement, Set.mem_sep_iff]
+    simp only [IsSimplicialMap, StarComplement, Set.mem_sep_iff]
     intro u u_in_Y_comp
     choose u_in_X t_nss_u using u_in_Y_comp
     constructor
@@ -172,7 +168,7 @@ by
     rw [vertex_iff_in_simplex]
     use u
     rw [vertex_iff_in_simplex]
-    use t; constructor <;> assumption
+    use t; constructor; assumption
   let g_comp := SimplicialMap.mk g.map g_simp
   use f_comp
   unfold IsSimplicialIso
@@ -182,21 +178,20 @@ by
     id]
   constructor
   · intro x x_in_X_comp
-    have x_in_X : x ∈ X.vertices := isSubcomplex_vertices (starComplement_subcomplex X s) x x_in_X_comp
+    have x_in_X : x ∈ X.vertices := isSubcomplex_vertices (starComplement_subcomplex s) x x_in_X_comp
     specialize gf_id x_in_X
     assumption
   · intro x x_in_Y_comp
-    have x_in_Y : x ∈ Y.vertices := isSubcomplex_vertices (starComplement_subcomplex Y t) x x_in_Y_comp
+    have x_in_Y : x ∈ Y.vertices := isSubcomplex_vertices (starComplement_subcomplex t) x x_in_Y_comp
     specialize fg_id x_in_Y
     assumption
 
-theorem starComplement_coe_image_left
-    {X : AbstractSimplicialComplex E}
+theorem starComplement_simplicialCoe_image_left
     {s : Finset E}
     {φ : SimplicialCoe X F}
-  : (starComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) ⊆ (φ.coe ''ˢ X\St(X, s)) :=
+  : (StarComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) ⊆ (φ.coe ''ˢ X\St(X, s)) :=
 by
-  simp only [starComplement, SimplicialImage, Set.subset_def]
+  simp only [StarComplement, SimplicialImage, Set.subset_def]
   intro t t_in_star_comp
   choose t_in_φX φs_nss_t using t_in_star_comp
   choose u u_in_X φu_t using t_in_φX
@@ -211,14 +206,13 @@ by
   assumption
   assumption
 
-theorem starComplement_coe_image_right
-    {X : AbstractSimplicialComplex E}
+theorem starComplement_simplicialCoe_image_right
     {s : Finset E}
     {φ : SimplicialCoe X F}
     (s_in_X : s ∈ X.faces)
-  : (φ.coe ''ˢ X\St(X, s)) ⊆ (starComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) :=
+  : (φ.coe ''ˢ X\St(X, s)) ⊆ (StarComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) :=
 by
-  simp only [starComplement, SimplicialImage, Set.subset_def]
+  simp only [StarComplement, SimplicialImage, Set.subset_def]
   intro t t_in_img
   choose u u_in_star_comp φu_t using t_in_img
   choose u_in_X s_nss_u using u_in_star_comp
@@ -243,12 +237,12 @@ by
   use s
 
 -- TODO: werid assymetry in ..._left and ..._right with hypothesis s_in_X
-theorem starComplement_coe_image
+theorem starComplement_simplicialCoe_image
     (X : AbstractSimplicialComplex E)
     (s : Finset E)
     (s_in_X : s ∈ X.faces)
     (φ : SimplicialCoe X F)
-  : (starComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) = (φ.coe ''ˢ (X\St(X, s))) :=
+  : (StarComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) = (φ.coe ''ˢ (X\St(X, s))) :=
 by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
-  exact ⟨starComplement_coe_image_left, starComplement_coe_image_right s_in_X⟩
+  exact ⟨starComplement_simplicialCoe_image_left, starComplement_simplicialCoe_image_right s_in_X⟩

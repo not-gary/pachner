@@ -80,7 +80,7 @@ by
   cases' t₁_in_link with t₁_in_link t₁_empty
 
   choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
-  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
+  rw [Set.mem_union, Set.mem_singleton_iff, SimplexBoundary_mem_iff_subset] at t₂_in_bd
   rw [Finset.nonempty_coe_sort, Finset.sdiff_nonempty]
   simp only [Finset.subset_iff, Classical.not_forall]
   rw [Finset.ssubset_iff] at t₂_in_bd
@@ -109,7 +109,7 @@ by
 
   rw [t₁_empty, Finset.empty_union] at t_decomp
   subst t_decomp
-  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
+  rw [Set.mem_union, Set.mem_singleton_iff, SimplexBoundary_mem_iff_subset] at t₂_in_bd
   cases' t₂_in_bd with t_in_bd t_empty
 
   rw [Finset.nonempty_coe_sort, Finset.sdiff_nonempty]

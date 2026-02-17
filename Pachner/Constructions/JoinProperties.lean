@@ -200,7 +200,7 @@ theorem join_distl_star
     (s_in_X : s ∈ X.faces)
   : (St(X, s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) = (St(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  simp only [simplicialJoin, _root_.star, AbstractSimplicialComplex.ext_iff, Set.ext_iff]
+  simp only [simplicialJoin, StarNeighborhood, AbstractSimplicialComplex.ext_iff, Set.ext_iff]
   intro x
   repeat' rw [Set.mem_setOf, Set.mem_diff, Set.mem_singleton_iff]
   constructor
@@ -308,10 +308,10 @@ theorem join_distr_starComplement
     {s : Finset E}
     [Nonempty s]
     (s_in_X : s ∈ X.faces)
-  : (starComplement X s) ⋆ Y =
-      (starComplement (X ⋆ Y) (s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
+  : (StarComplement X s) ⋆ Y =
+      (StarComplement (X ⋆ Y) (s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  simp only [simplicialJoin, starComplement, AbstractSimplicialComplex.ext_iff, Set.ext_iff]
+  simp only [simplicialJoin, StarComplement, AbstractSimplicialComplex.ext_iff, Set.ext_iff]
   intro x
   repeat' rw [Set.mem_setOf, Set.mem_diff, Set.mem_singleton_iff]
   constructor
@@ -376,17 +376,17 @@ theorem join_distl_starComplement
     (s : Finset E)
     [Nonempty s]
     (s_in_X : s ∈ X.faces)
-  : (Y ⋆ (starComplement X s) : AbstractSimplicialComplex (E × 𝕜)) ≅
-      (starComplement (X ⋆ Y) (s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
+  : (Y ⋆ (StarComplement X s) : AbstractSimplicialComplex (E × 𝕜)) ≅
+      (StarComplement (X ⋆ Y) (s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  calc Y ⋆ (starComplement X s)
-    _ ≅ (starComplement X s) ⋆ Y := simplicialJoin_comm
-    _ = starComplement (X ⋆ Y) (s ⊔ₛ ∅) := join_distr_starComplement s_in_X
+  calc Y ⋆ (StarComplement X s)
+    _ ≅ (StarComplement X s) ⋆ Y := simplicialJoin_comm
+    _ = StarComplement (X ⋆ Y) (s ⊔ₛ ∅) := join_distr_starComplement s_in_X
 
 end StarComplement
 
 
--- Distributive properties of join over link
+-- Distributive properties of join over Link
 section Link
 
 variable {E : Type _}
@@ -404,7 +404,7 @@ theorem join_fact_link
   : (Lk(X ⋆ Y, s ⊔ₛ t) : AbstractSimplicialComplex (E × 𝕜))
       = (Lk(X, s) ⋆ Lk(Y, t) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  simp only [link, simplicialJoin, AbstractSimplicialComplex.ext_iff, Set.ext_iff]
+  simp only [Link, simplicialJoin, AbstractSimplicialComplex.ext_iff, Set.ext_iff]
   intro x
   repeat' rw [Set.mem_setOf, Set.mem_diff, Set.mem_singleton_iff]
   constructor
@@ -537,6 +537,6 @@ theorem join_distl_link
     (s_in_X : s ∈ X.faces)
   : (Lk(X, s) ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) = (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
-  rw [join_fact_link X Y s ∅ s_in_X (by right; rfl), link_ident]
+  rw [join_fact_link X Y s ∅ s_in_X (by right; rfl), link_empty_eq_self]
 
 end Link

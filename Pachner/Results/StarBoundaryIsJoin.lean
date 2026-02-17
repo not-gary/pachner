@@ -29,7 +29,7 @@ by
 
   choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp t'_ne using t'_in_join
   subst t'_decomp
-  simp only [starComplement, Set.mem_sep_iff] at t_in_star_comp
+  simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
   choose t_in_X s_nss_t using t_in_star_comp
   have t₃_empty : t₃ = ∅ :=
   by
@@ -86,8 +86,8 @@ by
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_join
   simp only [AbstractSimplicialComplex.instHasInter, SimplicialInter, Set.mem_inter_iff]
   constructor
-  simp only [starComplement, Set.mem_sep_iff]
-  simp only [link, Set.mem_union, Set.mem_singleton_iff, Set.mem_sep_iff] at t₁_in_link
+  simp only [StarComplement, Set.mem_sep_iff]
+  simp only [Link, Set.mem_union, Set.mem_singleton_iff, Set.mem_sep_iff] at t₁_in_link
   cases' t₁_in_link with t₁_in_link t₁_empty
 
   choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link

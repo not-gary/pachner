@@ -457,7 +457,7 @@ by
   apply @Set.notMem_subset _ _ _ (X.vertices)
   rw [Set.subset_def]
   intro z
-  apply simplexBoundary_subcomplex_vert X s z s_in_X
+  apply simplexBoundary_subcomplex_vertices s_in_X
   simp only [AbstractSimplicialComplex.vertices, simplex] at y_in_barycenter
   simp only [Finset.coe_powerset, Finset.coe_singleton, Set.mem_diff, Set.mem_preimage,
     Set.mem_powerset_iff, Set.subset_singleton_iff, Set.mem_singleton_iff, forall_eq,
@@ -478,7 +478,7 @@ by
   rw [Set.disjoint_left]
   intro y y_in_join
   rw [join_proj_vertices_mem] at y_in_join
-  simp only [AbstractSimplicialComplex.vertices_eq, link, Set.mem_iUnion, not_exists]
+  simp only [AbstractSimplicialComplex.vertices_eq, Link, Set.mem_iUnion, not_exists]
   intro u u_in_link
   simp only [Set.mem_sep_iff] at u_in_link
   rcases u_in_link with ⟨u_in_X, su_in_X, su_empty⟩
@@ -502,7 +502,7 @@ by
   apply x_nin_X
 
   -- y ∈ ∂s
-  simp only [AbstractSimplicialComplex.vertices_eq, simplexBoundary, Set.mem_iUnion] at y_in_bd
+  simp only [AbstractSimplicialComplex.vertices_eq, SimplexBoundary, Set.mem_iUnion] at y_in_bd
   choose t Ht y_in_t using y_in_bd
   rw [Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_iff] at Ht
   choose t_sset_s t_ne using Ht
@@ -528,10 +528,10 @@ by
   intro x
   simp only [Set.mem_inter_iff, not_and, vertex_iff_in_simplex, not_exists]
   intro t_in_link u u_in_bd
-  simp only [link, Set.mem_sep_iff] at t_in_link
+  simp only [Link, Set.mem_sep_iff] at t_in_link
   choose t t_in_link x_in_t using t_in_link
   choose t_in_X st_in_X st_disj using t_in_link
-  simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset] at u_in_bd
+  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset] at u_in_bd
   cases' u_in_bd with u_ss_s u_empty
   simp at u_empty
   choose u_ne_s u_nonempty using u_empty
@@ -560,7 +560,7 @@ by
   intro y
   simp only [Set.mem_inter_iff, not_and, vertex_iff_in_simplex, not_exists]
   intro t_in_link u u_in_barycenter
-  simp only [link, Set.mem_sep_iff] at t_in_link
+  simp only [Link, Set.mem_sep_iff] at t_in_link
   choose t t_in_link y_in_t using t_in_link
   choose t_in_X st_in_X st_disj using t_in_link
   simp only [simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u_in_barycenter

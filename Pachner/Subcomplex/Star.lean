@@ -2,10 +2,11 @@ import Pachner.Maps.SimplicialIsomorphism
 
 variable {E F : Type _}
 variable [DecidableEq E] [DecidableEq F]
+variable {X : AbstractSimplicialComplex E} {s t : Finset E}
 
 -- Star of a complex wrt a simplex.
 @[simp]
-def star
+def StarNeighborhood -- Note: the name "Star" is already taken by a certain Typeclass in mathlib
     (X : AbstractSimplicialComplex E)
     (s : Finset E)
   : AbstractSimplicialComplex E :=
@@ -24,15 +25,15 @@ def star
         intro
         assumption)
 
-notation "St(" X ", " s ")" => star X s
+notation "St(" X ", " s ")" => StarNeighborhood X s
 
-instance star.fintype
+instance StarNeighborhood.fintype
     (X : AbstractSimplicialComplex E)
     [Fintype X.faces]
     (s : Finset E)
-  : Fintype (star X s).faces :=
+  : Fintype (St(X, s)).faces :=
 by
-  unfold _root_.star
+  unfold StarNeighborhood
   have H_dec : DecidablePred fun a : Finset E => s ∪ a ∈ X.faces :=
     by
     unfold DecidablePred
@@ -40,40 +41,31 @@ by
     apply Set.decidableMemOfFintype
   apply Set.fintypeSep
 
-theorem star_subcomplex_simplices
-    {X : AbstractSimplicialComplex E}
-    {s t : Finset E}
-  : t ∈ St(X, s).faces → t ∈ X.faces :=
-by
+theorem star_subcomplex_simplices : t ∈ St(X, s).faces → t ∈ X.faces := by
   intro t_in_star
-  simp only [_root_.star, Set.mem_sep_iff] at t_in_star
+  simp only [StarNeighborhood, Set.mem_sep_iff] at t_in_star
   choose t_in_X st_in_X using t_in_star
   assumption
 
-theorem star_subcomplex
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
-  : St(X, s) ⊆ X :=
-by
+theorem star_subcomplex : St(X, s) ⊆ X := by
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def]
   intro t
   exact star_subcomplex_simplices
 
 theorem star_iso
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-    (s : Finset E)
-    (t : Finset F)
-    (f : SimplicialMap X Y)
+    {Y : AbstractSimplicialComplex F}
+    {t : Finset F}
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)
-    (f_iso : IsSimplicialIso f) : Finset.image f.map s = t → St(X, s) ≅ St(Y, t) :=
+    (f : SimplicialMap X Y)
+    (f_iso : IsSimplicialIso f)
+  : Finset.image f.map s = t → St(X, s) ≅ St(Y, t) :=
 by
   intro fs_eq_t
   unfold IsSimpliciallyIso
   have f_simp : IsSimplicialMap St(X, s) St(Y, t) f.map :=
   by
-    simp only [IsSimplicialMap, _root_.star, Set.mem_sep_iff]
+    simp only [IsSimplicialMap, StarNeighborhood, Set.mem_sep_iff]
     intro u u_in_X_star
     choose u_in_X su_in_X using u_in_X_star
     constructor
@@ -112,7 +104,7 @@ by
     assumption
   have g_simp : IsSimplicialMap St(Y, t) St(X, s) g.map :=
   by
-    simp only [IsSimplicialMap, _root_.star, Set.mem_sep_iff]
+    simp only [IsSimplicialMap, StarNeighborhood, Set.mem_sep_iff]
     intro u u_in_Y_star
     choose u_in_Y tu_in_Y using u_in_Y_star
     constructor
@@ -129,10 +121,10 @@ by
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply]
   constructor
   · intro x x_in_star
-    have x_in_X : x ∈ X.vertices := isSubcomplex_vertices (star_subcomplex X s) x x_in_star
+    have x_in_X : x ∈ X.vertices := isSubcomplex_vertices star_subcomplex x x_in_star
     specialize gf_id x_in_X
     assumption
   · intro x x_in_star
-    have x_in_Y : x ∈ Y.vertices := isSubcomplex_vertices (star_subcomplex Y t) x x_in_star
+    have x_in_Y : x ∈ Y.vertices := isSubcomplex_vertices star_subcomplex x x_in_star
     specialize fg_id x_in_Y
     assumption

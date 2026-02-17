@@ -15,11 +15,11 @@ theorem stellar_subdiv_link_of_barycenter_left
       ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
   intro a a_in_link
-  simp only [link, Set.mem_sep_iff] at a_in_link
+  simp only [Link, Set.mem_sep_iff] at a_in_link
   choose a_in_subdiv xa_in_subdiv xa_disj using a_in_link
   simp only [stellarSubdivision, SimplicialUnion, Set.mem_union] at xa_in_subdiv
   cases' xa_in_subdiv with xa_in_star_comp xa_in_join
-  simp only [starComplement, Set.mem_sep_iff] at xa_in_star_comp
+  simp only [StarComplement, Set.mem_sep_iff] at xa_in_star_comp
   choose xa_in_X s_nss_xa using xa_in_star_comp
   have contra : x ∈ X.vertices :=
   by
@@ -50,7 +50,7 @@ by
     assumption
     have contra : x ∈ X.vertices :=
     by
-      simp only [x₁_eq_x, link, Set.mem_union, Set.mem_singleton_iff, Set.mem_sep_iff] at x₁_in_link
+      simp only [x₁_eq_x, Link, Set.mem_union, Set.mem_singleton_iff, Set.mem_sep_iff] at x₁_in_link
       cases' x₁_in_link with x₁_in_link x₁_empty
       choose x_in_X sx_in_X sx_disj using x₁_in_link
       rw [AbstractSimplicialComplex.mem_vertices]
@@ -153,7 +153,7 @@ by
   rw [join_proj_mem] at a_in_img
   choose a₁ a₁_in_link a₂ a₂_in_bd a_decomp a_ne using a_in_img
   rw [Set.mem_union, Set.mem_singleton_iff] at a₁_in_link a₂_in_bd
-  simp only [link, Set.mem_sep_iff, stellarSubdivision, SimplicialUnion, Set.mem_union]
+  simp only [Link, Set.mem_sep_iff, stellarSubdivision, SimplicialUnion, Set.mem_union]
   constructor; right
   simp only [join_proj_mem, Set.mem_union, Set.mem_singleton_iff]
   use ∅ ∪ a₂; constructor

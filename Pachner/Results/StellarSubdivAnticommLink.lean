@@ -15,7 +15,7 @@ by
   intro t_in_star_bd
   rw [join_proj_mem] at t_in_star_bd
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_star_bd
-  simp only [link, Set.mem_sep_iff, Set.mem_union, Set.mem_singleton_iff] at t₁_in_link ⊢
+  simp only [Link, Set.mem_sep_iff, Set.mem_union, Set.mem_singleton_iff] at t₁_in_link ⊢
   cases' t₁_in_link with t₁_in_link t₁_empty
 
   choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
@@ -45,7 +45,7 @@ by
 
   constructor
   rw [Finset.union_sdiff_self_eq_union, t_decomp, Finset.union_assoc]
-  simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset] at t₂_in_bd
   cases' t₂_in_bd with t₂_in_bd t₂_empty
   choose t₂_ss_s t₂_ne_s using t₂_in_bd
@@ -83,7 +83,7 @@ by
 
   constructor
   rw [Finset.union_sdiff_self_eq_union, t_decomp, Finset.union_assoc]
-  simp only [simplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset] at t₂_in_bd
   cases' t₂_in_bd with t₂_in_bd t₂_empty
   choose t₂_ss_s t₂_ne_s using t₂_in_bd
@@ -115,8 +115,8 @@ theorem stellar_subdiv_anticomm_link_left_ac
     (x_nin_X : x ∉ X.vertices)
     (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
   : ∀ u : Finset E,
-      u ∈ (starComplement X s).faces →
-        t ∪ u ∈ (starComplement X s).faces →
+      u ∈ (StarComplement X s).faces →
+        t ∪ u ∈ (StarComplement X s).faces →
           t ∩ u = ∅ →
             u ∈
               σ(Lk(X, t), s \ t, x; 𝕜,
@@ -124,7 +124,7 @@ theorem stellar_subdiv_anticomm_link_left_ac
                 not_mem_link_vertices x_nin_X).faces :=
 by
   intro u u_in_star_comp tu_in_star_comp tu_disj
-  simp only [link, stellarSubdivision, starComplement, SimplicialUnion] at u_in_star_comp tu_in_star_comp ⊢
+  simp only [Link, stellarSubdivision, StarComplement, SimplicialUnion] at u_in_star_comp tu_in_star_comp ⊢
   simp only [Set.mem_union, Set.mem_sep_iff] at u_in_star_comp tu_in_star_comp ⊢
   choose u_in_X s_nss_u using u_in_star_comp
   choose tu_in_X s_nss_tu using tu_in_star_comp
@@ -327,7 +327,7 @@ theorem stellar_subdiv_anticomm_link_left_ad
     (t_in_X : t ∈ X.faces)
     (t_in_star_bd : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
   : ∀ u : Finset E,
-      u ∈ (starComplement X s).faces →
+      u ∈ (StarComplement X s).faces →
         t ∪ u ∈ ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X)).coe
                   ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
                     ''ˢ (simplex {x} ⋆ ∂s)) ⋆
@@ -338,7 +338,7 @@ theorem stellar_subdiv_anticomm_link_left_ad
                   not_mem_link_vertices x_nin_X).faces :=
 by
   intro u u_in_star_comp tu_in_join tu_disj
-  simp only [link, stellarSubdivision, starComplement, AbstractSimplicialComplex.instHasUnion,
+  simp only [Link, stellarSubdivision, StarComplement, AbstractSimplicialComplex.instHasUnion,
     SimplicialUnion] at u_in_star_comp tu_in_join ⊢
   simp only [Set.mem_union, Set.mem_setOf] at u_in_star_comp ⊢
   choose u_in_X s_nss_u using u_in_star_comp
@@ -585,20 +585,20 @@ theorem stellar_subdiv_anticomm_link_left_bc
             ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
               ''ˢ (simplex {x} ⋆ ∂s)) ⋆
                 Lk(X, s))).faces →
-        t ∪ u ∈ (starComplement X s).faces →
+        t ∪ u ∈ (StarComplement X s).faces →
           t ∩ u = ∅ →
             u ∈ σ(Lk(X, t), s \ t, x; 𝕜,
                   @star_boundary_mem_link _ _ _ _ _ _ _ X s t s_ne s_in_X t_in_star_bd,
                   not_mem_link_vertices x_nin_X).faces :=
 by
   intro u u_in_join tu_in_star_comp tu_disj
-  simp only [stellarSubdivision, starComplement, AbstractSimplicialComplex.instHasUnion, SimplicialUnion] at u_in_join tu_in_star_comp ⊢
+  simp only [stellarSubdivision, StarComplement, AbstractSimplicialComplex.instHasUnion, SimplicialUnion] at u_in_join tu_in_star_comp ⊢
   simp only [Set.mem_union, Set.mem_setOf] at tu_in_star_comp ⊢
   choose tu_in_X s_nss_tu using tu_in_star_comp
 
   rw [join_proj_mem] at u_in_join
   choose u'₂ u'₂_in_join u₁ u₁_in_link u_decomp u_ne using u_in_join
-  rw [Set.mem_union, Set.mem_singleton_iff, link, Set.mem_setOf] at u₁_in_link
+  rw [Set.mem_union, Set.mem_singleton_iff, Link, Set.mem_setOf] at u₁_in_link
   simp only [Set.mem_union, Set.mem_singleton_iff, join_proj_mem] at u'₂_in_join
 
   cases' u'₂_in_join with u'₂_in_join u'₂_empty
@@ -808,9 +808,9 @@ by
   choose t'_decomp u_decomp tu_in_join tu_in_link tu_ne using tu_decomp
   simp only [Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf] at t₁_in_link u₁_in_link tu_in_link
 
-  simp only [stellarSubdivision, starComplement, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
+  simp only [stellarSubdivision, StarComplement, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
     Set.mem_union, Set.mem_setOf, Set.mem_singleton_iff, join_proj_mem]
-  simp only [link, Set.mem_setOf] at t₁_in_link u₁_in_link tu_in_link ⊢
+  simp only [Link, Set.mem_setOf] at t₁_in_link u₁_in_link tu_in_link ⊢
 
   rw [Set.mem_union, Set.mem_singleton_iff] at t'₂_in_join u'₂_in_join tu_in_join
 
@@ -824,7 +824,7 @@ by
     by
       rw [Finset.disjoint_iff_inter_eq_empty, Finset.inter_comm]
       cases' t'₁_in_link with t'₁_in_link t'₁_empty
-      · simp only [link, Set.mem_setOf] at t'₁_in_link
+      · simp only [Link, Set.mem_setOf] at t'₁_in_link
         choose t'₁_in_X st'₁_in_X st'₁_disj using t'₁_in_link
         rw [← Finset.subset_empty] at st'₁_disj ⊢
         apply subset_trans _ st'₁_disj
@@ -1233,7 +1233,7 @@ by
             assumption
 
         choose stu₁_diff_in_link stu₁_diff_disj using stu₁_diff_in_link
-        simp only [link, Set.mem_setOf] at stu₁_diff_in_link
+        simp only [Link, Set.mem_setOf] at stu₁_diff_in_link
         choose stu₁_diff_in_X tstu₁_diff_in_X tstu₁_diff_disj using stu₁_diff_in_link
 
         constructor; constructor; assumption
@@ -1279,7 +1279,7 @@ by
             assumption
 
         choose stu₁_diff_in_link stu₁_diff_disj using stu₁_diff_in_link
-        simp only [link, Set.mem_setOf] at stu₁_diff_in_link
+        simp only [Link, Set.mem_setOf] at stu₁_diff_in_link
         choose stu₁_diff_in_X tstu₁_diff_in_X tstu₁_diff_disj using stu₁_diff_in_link
 
         constructor; constructor; assumption
@@ -1395,7 +1395,7 @@ theorem stellar_subdiv_anticomm_link_left
 by
   simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion]
   intro u u_in_link
-  simp only [link, Set.mem_sep_iff] at u_in_link
+  simp only [Link, Set.mem_sep_iff] at u_in_link
   choose u_in_subdiv tu_in_subdiv tu_disj using u_in_link
   cases' u_in_subdiv with u_in_star_comp u_in_join <;>
 
@@ -1415,11 +1415,11 @@ theorem stellar_subdiv_anticomm_link_right_e
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : ∀ u : Finset E,
-      u ∈ (starComplement Lk(X, t) (s \ t)).faces →
+      u ∈ (StarComplement Lk(X, t) (s \ t)).faces →
         u ∈ Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces :=
 by
   intro u u_in_star_comp
-  simp only [link, starComplement, stellarSubdivision, SimplicialUnion] at u_in_star_comp ⊢
+  simp only [Link, StarComplement, stellarSubdivision, SimplicialUnion] at u_in_star_comp ⊢
   simp only [Set.mem_union, Set.mem_sep_iff] at u_in_star_comp ⊢
   choose u_in_link st_nss_u using u_in_star_comp
   choose u_in_X tu_in_X tu_disj using u_in_link
@@ -1458,7 +1458,7 @@ by
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_star_bd
   subst t_decomp
 
-  rw [link, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf] at t₁_in_link
+  rw [Link, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf] at t₁_in_link
   rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
 
   have st₁_eq_s : s \ t₁ = s :=
@@ -1501,7 +1501,7 @@ theorem stellar_subdiv_anticomm_link_right_f
         u ∈ Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces :=
 by
   intro u u_in_join
-  simp only [link, starComplement, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion] at u_in_join ⊢
+  simp only [Link, StarComplement, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion] at u_in_join ⊢
   simp only [Set.mem_union, Set.mem_sep_iff, Set.mem_setOf_eq]
   rw [join_proj_mem] at u_in_join
   choose u'₂ u'₂_in_join u₁ u₁_in_link u_decomp u_ne using u_in_join
@@ -1510,7 +1510,7 @@ by
 
   rw [join_proj_mem] at t_in_star_bd
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_star_bd
-  simp only [link, Set.mem_union, Set.mem_singleton_iff, Set.mem_sep_iff] at t₁_in_link
+  simp only [Link, Set.mem_union, Set.mem_singleton_iff, Set.mem_sep_iff] at t₁_in_link
   simp only [Set.mem_union, Set.mem_singleton_iff] at t₂_in_bd
 
   have st₁_eq_s : s \ t₁ = s :=
@@ -1542,7 +1542,7 @@ by
       choose u₃ u₃_in_barycenter u₂ u₂_in_bd u_decomp u_ne using u'₂_in_join
       simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
       simp only [Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self,
-        @simplexBoundary_mem_iff_subset _ _ (s \ t₂) u₂ (by rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty]; assumption)] at u₂_in_bd
+        simplexBoundary_mem_iff_subset] at u₂_in_bd
 
       cases' u₂_in_bd with u₂_in_bd u₂_empty
       · choose u₂_sss_st₂ u₂_ne using u₂_in_bd
@@ -1635,7 +1635,7 @@ by
     · left; apply isSubcomplex_face_imp_face
       assumption
       simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
-      apply subsimplex_boundary_subcomplex
+      apply simplexBoundary_subsimplex_subcomplex
       apply Finset.sdiff_subset
     · right; assumption
 
@@ -1843,7 +1843,7 @@ by
     · left; apply isSubcomplex_face_imp_face
       assumption
       simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
-      apply subsimplex_boundary_subcomplex
+      apply simplexBoundary_subsimplex_subcomplex
       apply Finset.sdiff_subset
     · right; assumption
 
