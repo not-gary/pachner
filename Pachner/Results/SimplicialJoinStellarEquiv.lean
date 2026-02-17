@@ -18,7 +18,7 @@ by
 
 theorem stellar_join_distr_join_left
     {X Y : AbstractSimplicialComplex E}
-    {s : Finset E} [s_ne : Nonempty s]
+    {s : Finset E}
     {x : E}
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
@@ -341,7 +341,7 @@ by
 
 theorem stellar_join_distr_join_right
     {X Y : AbstractSimplicialComplex E}
-    {s : Finset E} [s_ne : Nonempty s]
+    {s : Finset E}
     {x : E}
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
@@ -1202,7 +1202,7 @@ by
 
 theorem stellar_join_distr_join
     {X Y : AbstractSimplicialComplex E}
-    {s : Finset E} [s_ne : Nonempty s]
+    {s : Finset E}
     {x : E}
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
@@ -1223,16 +1223,16 @@ by
 
 theorem stellar_subdiv_distr_join_left
     {X Y : AbstractSimplicialComplex E}
-    {s : Finset E} [s_ne : Nonempty s]
+    {s : Finset E}
     {x : E}
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : (σ(X, s, x; 𝕜, s_in_X, x_nin_X) ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) =
     (σ(X ⋆ Y, s ⊔ₛ ∅, (x, 0); 𝕜, simplicialJoin_incl_left s_in_X, barycenter_join_left x_nin_X)) :=
 by
-  simp only [stellarSubdivision, AbstractSimplicialComplex.ext_iff,
+  simp only [StellarSubdivision, AbstractSimplicialComplex.ext_iff,
     simplicialJoin_simplicialUnion_right, simplicialJoin_starComplement_left s_in_X,
-    stellarSubdivision, stellar_join_distr_join s_in_X x_nin_X]
+    StellarSubdivision, stellar_join_distr_join s_in_X x_nin_X]
 
 theorem barycenter_join_right
     {X Y : AbstractSimplicialComplex E}
@@ -1286,7 +1286,7 @@ by
   by
     unfold IsSimplicialIso
     use g
-  apply stellar_subdiv_iso
+  apply stellarSubdivision_simplicialIso
   apply f_iso
   apply gf_inv
   simp only [Finset.ext_iff, Finset.mem_image, simplexDisjoint_mem_iff]
@@ -1320,16 +1320,16 @@ by
 
 lemma SimplicialJoin_stellar_subdiv
     {X Y Z : AbstractSimplicialComplex E}
-    (H : ∃ (t : Finset E) (t_in_Y : t ∈ Y) (_ : Nonempty t)
+    (H : ∃ (t : Finset E) (t_in_Y : t ∈ Y)
       (y : E) (y_nin_Y : y ∉ Y.vertices),
       (X ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y)))
-  : ∃ (t' : Finset (E × 𝕜)) (t'_in_YZ : t' ∈ Y ⋆ Z) (_ : Nonempty t')
+  : ∃ (t' : Finset (E × 𝕜)) (t'_in_YZ : t' ∈ Y ⋆ Z)
       (y' : E × 𝕜) (y'_nin_YZ : y' ∉ ((Y ⋆ Z) : AbstractSimplicialComplex (E × 𝕜)).vertices),
     ((X ⋆ Z) : AbstractSimplicialComplex (E × 𝕜)) ≅
       σ(Y ⋆ Z, t', y'; 𝕜, t'_in_YZ, y'_nin_YZ) :=
 by
-  choose t t_in_Y t_nonempty y y_nin_Y X_iso_Ysubdiv using H
-  use t ⊔ₛ ∅, simplicialJoin_incl_left t_in_Y, inferInstance, (y, 0),
+  choose t t_in_Y y y_nin_Y X_iso_Ysubdiv using H
+  use t ⊔ₛ ∅, simplicialJoin_incl_left t_in_Y, (y, 0),
     barycenter_join_left y_nin_Y
   calc (X ⋆ Z: AbstractSimplicialComplex (E × 𝕜))
       _ ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) ⋆ Z := simplicialJoin_simplicialIso_left X_iso_Ysubdiv

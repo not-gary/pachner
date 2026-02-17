@@ -219,7 +219,7 @@ by
   rw [AbstractSimplicialComplex.faces_bot] at s_empty
   contradiction
 
-theorem vertices_congr : X.faces = Y.faces → X.vertices = Y.vertices := by
+theorem vertices_congr : X = Y → X.vertices = Y.vertices := by
   intro X_eq_Y
   simp only [vertices_setOf, X_eq_Y]
 

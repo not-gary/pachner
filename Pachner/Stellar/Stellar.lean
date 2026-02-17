@@ -10,23 +10,23 @@ variable [Ring 𝕜] [Nontrivial 𝕜]
 
 -- barycenter_injective_image
 
--- stellar_subdiv_injective_image_simplices_left
+-- stellarSubdivision_injective_image_simplices_left
 
--- stellar_subdiv_injective_image_simplices_right_ac
+-- stellarSubdivision_injective_image_simplices_right_ac
 
--- stellar_subdiv_injective_image_simplices_right_ad
+-- stellarSubdivision_injective_image_simplices_right_ad
 
--- stellar_subdiv_injective_image_simplices_right_bc
+-- stellarSubdivision_injective_image_simplices_right_bc
 
--- stellar_subdiv_injective_image_simplices_right_bd
+-- stellarSubdivision_injective_image_simplices_right_bd
 
--- stellar_subdiv_injective_image_simplices_right
+-- stellarSubdivision_injective_image_simplices_right
 
--- stellar_subdiv_injective_image_simplices
+-- stellarSubdivision_injective_image_simplices
 
--- stellar_subdiv_injective_image
+-- stellarSubdivision_injective_image
 
--- stellar_subdiv_exists_iso
+-- stellarSsubdivision_exists_iso
 
 -- stellarMove_exists_iso
 
@@ -147,7 +147,7 @@ by
 
 theorem star_boundary_mem_subdiv
     {X : AbstractSimplicialComplex E}
-    {s t : Finset E} [s_ne : Nonempty s]
+    {s t : Finset E}
     {x : E}
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
@@ -157,7 +157,7 @@ by
   intro t_in_star_bd
   rw [simplicialJoinProj_mem] at t_in_star_bd
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_star_bd
-  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union, simplicialJoinProj_mem]
+  simp only [StellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union, simplicialJoinProj_mem]
   right
   use t₂
   cases' t₁_in_link with t₁_in_link t₁_empty

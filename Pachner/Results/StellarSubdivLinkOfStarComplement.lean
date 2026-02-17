@@ -20,7 +20,7 @@ by
   intro t_nin_join
   simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
   choose t_in_X s_nss_t using t_in_star_comp
-  simp only [Set.subset_def, Link, stellarSubdivision, SimplicialUnion, StarComplement,
+  simp only [Set.subset_def, Link, StellarSubdivision, SimplicialUnion, StarComplement,
     Set.mem_union, Set.mem_sep_iff]
   intro u u_in_link
   choose u_in_subdiv ut_in_subdiv ut_disj using u_in_link
@@ -122,7 +122,7 @@ by
   intro t_nin_join
   simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
   choose t_in_X s_nss_t using t_in_star_comp
-  simp only [Set.subset_def, Link, stellarSubdivision, SimplicialUnion, StarComplement,
+  simp only [Set.subset_def, Link, StellarSubdivision, SimplicialUnion, StarComplement,
     Set.mem_union, Set.mem_sep_iff]
   intro u u_in_link
   choose u_in_X tu_in_X tu_disj using u_in_link

@@ -5,8 +5,10 @@ variable {E F 𝕜 : Type _}
 variable [DecidableEq E] [DecidableEq F] [DecidableEq 𝕜]
 variable [AddCommGroup E] [AddCommGroup F]
 variable [Ring 𝕜] [Nontrivial 𝕜]
+variable {X : AbstractSimplicialComplex E} {s : Finset E} {x : E}
+variable {Y : AbstractSimplicialComplex F} {t : Finset F} {y : F}
 
-def stellarSubdivision
+def StellarSubdivision
     (X : AbstractSimplicialComplex E)
     (s : Finset E)
     (x : E)
@@ -15,13 +17,11 @@ def stellarSubdivision
   : AbstractSimplicialComplex E :=
     X\St(X, s) ∪
       (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe ''ˢ
-        (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)))
-          ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜))
+        (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s))  ⋆ Lk(X, s))
 
-notation "σ(" X ", " s ", " x "; " 𝕜 ", " s_in_X ", " x_nin_X ")" =>
-  @stellarSubdivision _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X
+notation "σ(" X ", " s ", " x "; " 𝕜 ", " s_in_X ", " x_nin_X ")" => @StellarSubdivision _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X
 
-instance stellarSubdivision.fintype
+instance StellarSubdivision.fintype
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
     (s : Finset E)
     (x : E)
@@ -29,33 +29,30 @@ instance stellarSubdivision.fintype
     (x_nin_X : x ∉ X.vertices)
   : Fintype σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces :=
 by
-  simp only [stellarSubdivision, SimplicialUnion]
+  simp only [StellarSubdivision, SimplicialUnion]
   have star_comp_fin : Fintype ↥(X\St(X, s)).faces := by apply StarComplement.fintype
   have barycenter_fin : Fintype ↥(simplex {x}).faces := by apply simplex.Fintype {x}
   have bd_fin : Fintype ↥(∂s).faces := by apply SimplexBoundary.fintype
   have barycenter_bd_fin : Fintype ↥(simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)).faces := by
     apply SimplicialJoin.fintype
   have proj_bary_bd_fin :
-    Fintype ((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).faces :=
-    by apply @SimplicialCoe.Fintype _ _ _ _ barycenter_bd_fin
+    Fintype ((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s)).faces :=
+    by apply SimplicialCoe.Fintype
   have Link_fin : Fintype ↥Lk(X, s).faces := by apply Link.fintype
   have proj_link_fin :
     Fintype
-      ↥((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))
+      ↥((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s)
         ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜)).faces :=
     by apply SimplicialJoin.fintype
   have join_fin :
     Fintype
       ↥((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe ''ˢ
-          (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)))
-            ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜))).faces :=
-    by apply @SimplicialCoe.Fintype _ _ _ _ proj_link_fin
-  apply @Set.fintypeUnion _ _ _ _ star_comp_fin join_fin
+          (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))).faces :=
+    by apply SimplicialCoe.Fintype
+  apply Set.fintypeUnion
 
-theorem stellar_subdiv_preserves_dim
-    (X : AbstractSimplicialComplex E) [X_fin : Fintype X.faces]
-    (s : Finset E)
-    (x : E)
+theorem stellarSubdivision_dim
+    [X_fin : Fintype X.faces]
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : X.dim = σ(X, s, x; 𝕜, s_in_X, x_nin_X).dim :=
@@ -84,7 +81,7 @@ by
       have a_in_t : a ∈ t := by apply Finset.mem_of_subset s_ss_t a_in_s
       use t \ {a} ∪ {x}; constructor
       simp only [Set.mem_toFinset]
-      unfold stellarSubdivision
+      unfold StellarSubdivision
       simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union]
       right
       simp only [simplicialJoinProj_mem, Set.mem_union]
@@ -209,7 +206,7 @@ by
       choose b_in_t b_ne_a using b_in_ta
       assumption
     · use t; constructor
-      rw [Set.mem_toFinset, stellarSubdivision]
+      rw [Set.mem_toFinset, StellarSubdivision]
       simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union]
       left
       simp only [StarComplement, Set.mem_sep_iff]
@@ -229,7 +226,7 @@ by
     apply Finset.le_max'
     rw [Finset.mem_union, Finset.mem_image]
     left
-    simp only [AbstractSimplicialComplex.instHasUnion, stellarSubdivision, SimplicialUnion, Set.mem_union] at t_in_subdiv
+    simp only [AbstractSimplicialComplex.instHasUnion, StellarSubdivision, SimplicialUnion, Set.mem_union] at t_in_subdiv
     cases' t_in_subdiv with t_in_star_comp t_in_join
 
     simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
@@ -403,14 +400,13 @@ by
     rw [Finset.mem_union]
     right; assumption
 
-theorem stellar_subdiv_of_singleton_vertices
-    (X : AbstractSimplicialComplex E)
-    (x y : E)
+theorem stellarSubdivision_of_singleton_vertices
+    {y : E}
     (y_in_X : {y} ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : σ(X, {y}, x; 𝕜, y_in_X, x_nin_X).vertices = X.vertices \ {y} ∪ {x} :=
 by
-  simp only [Set.ext_iff, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, simplicialJoinProj_mem, vertex_iff_in_simplex,
+  simp only [Set.ext_iff, StellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, simplicialJoinProj_mem, vertex_iff_in_simplex,
     Set.mem_union, Set.mem_diff, Set.mem_singleton_iff]
   intro a
   constructor
@@ -567,15 +563,12 @@ by
     rw [a_eq_x]
     apply Finset.mem_singleton_self
 
-theorem stellar_subdiv_subset_vertices
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
-    (x : E)
+theorem stellarSubdivision_subset_vertices
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : σ(X, s, x; 𝕜, s_in_X, x_nin_X).vertices ⊆ X.vertices ∪ {x} :=
 by
-  simp only [vertices_setOf, Set.subset_def, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
+  simp only [vertices_setOf, Set.subset_def, StellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
     Set.mem_union, Set.mem_setOf, simplicialJoinProj_mem]
   intro a a_in_subdiv
   choose t t_in_subdiv a_in_t using a_in_subdiv
@@ -709,10 +702,7 @@ by
   rw [t_decomp, Finset.mem_singleton] at a_in_t
   right; rw [Set.mem_singleton_iff]; assumption
 
-theorem stellar_subdiv_vertices
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
-    (x : E)
+theorem stellarSubdivision_vertices
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : s.card > 1 → σ(X, s, x; 𝕜, s_in_X, x_nin_X).vertices = X.vertices ∪ {x} :=
@@ -721,12 +711,12 @@ by
   rw [Set.Subset.antisymm_iff]
   constructor
 
-  apply stellar_subdiv_subset_vertices
+  apply stellarSubdivision_subset_vertices
 
   rw [Set.subset_def]
   intro a a_in_union
   rw [Set.mem_union, Set.mem_singleton_iff, vertex_iff_in_simplex] at a_in_union
-  simp only [vertices_setOf, Set.subset_def, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
+  simp only [vertices_setOf, Set.subset_def, StellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
     Set.mem_union, Set.mem_setOf, simplicialJoinProj_mem]
   cases' a_in_union with a_in_X a_eq_x
 
@@ -793,46 +783,43 @@ by
   apply Finset.mem_singleton_self
 
 
-def barycenterStar
+def BarycenterStar -- TODO: is this the same as St(σ(X, s, x), {x})?
     (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
+    (s : Finset E)
     (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : Set (Finset E) :=
   {t ∈ σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces | x ∈ t}
 
-instance barycenterStar.fintype
+instance BarycenterStar.Fintype
     (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
+    (s : Finset E)
     (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     [Fintype σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces]
-  : Fintype (@barycenterStar _ 𝕜 _ _ _ _ _ X s _ x s_in_X x_nin_X) :=
+  : Fintype (@BarycenterStar _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X) :=
 by
-  simp only [barycenterStar]
+  simp only [BarycenterStar]
   apply Set.fintypeSep
 
-def barycenterWeld
+def BarycenterWeld
     (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
+    (s : Finset E)
     (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : Set (Finset E) :=
-  {(s ∪ (t \ {x})) | t ∈ @barycenterStar _ 𝕜 _ _ _ _ _ X s _ x s_in_X x_nin_X}
+  {(s ∪ (t \ {x})) | t ∈ @BarycenterStar _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X}
 
 theorem barycenterWeld_as_union
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
-    (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : @barycenterWeld _ 𝕜 _ _ _ _ _ X s _ x s_in_X x_nin_X =
-      ⋃ t ∈ @barycenterStar _ 𝕜 _ _ _ _ _ X s _ x s_in_X x_nin_X, {s ∪ t \ {x}} :=
+  : @BarycenterWeld _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X =
+      ⋃ t ∈ @BarycenterStar _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X, {s ∪ t \ {x}} :=
 by
-  simp only [barycenterWeld, Set.ext_iff, Set.mem_iUnion, Set.mem_setOf, Set.mem_singleton_iff]
+  simp only [BarycenterWeld, Set.ext_iff, Set.mem_iUnion, Set.mem_setOf, Set.mem_singleton_iff]
   intro t
   constructor
 
@@ -850,31 +837,28 @@ by
   assumption
   symm; assumption
 
-instance barycenterWeld.fintype
+instance BarycenterWeld.Fintype
     (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
+    (s : Finset E)
     (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     [Fintype σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces]
-  : Fintype (@barycenterWeld _ 𝕜 _ _ _ _ _ X s _ x s_in_X x_nin_X) :=
+  : Fintype (@BarycenterWeld _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X) :=
 by
   rw [barycenterWeld_as_union]
   apply Set.fintypeBiUnion
   intro t t_in_star
   apply Unique.fintype
 
-theorem stellar_weld_simplices
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
-    (x : E)
+theorem stellarWeld_simplices
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : X.faces =
-      {t ∈ σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces | x ∉ t} ∪
-        @barycenterWeld _ 𝕜 _ _ _ _ _ X s _ x s_in_X x_nin_X :=
+      {t ∈ σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces | x ∉ t} ∪ -- TODO: is this σ(X, s, x)\St(σ(X, s, x), {x})?
+        @BarycenterWeld _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X :=
 by
-  simp only [barycenterWeld, Set.ext_iff, Set.mem_union, Set.mem_sep_iff, Set.mem_setOf]
+  simp only [BarycenterWeld, Set.ext_iff, Set.mem_union, Set.mem_sep_iff, Set.mem_setOf]
   intro t
   constructor
   · intro t_in_X
@@ -884,7 +868,7 @@ by
     use t \ s ∪ {x}
     constructor
 
-    simp only [barycenterStar, Set.mem_sep_iff, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union,
+    simp only [BarycenterStar, Set.mem_sep_iff, StellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union,
       simplicialJoinProj_mem]
     constructor
 
@@ -969,7 +953,7 @@ by
     left
     constructor
 
-    simp only [stellarSubdivision, SimplicialUnion, Set.mem_union]
+    simp only [StellarSubdivision, SimplicialUnion, Set.mem_union]
     left
     simp only [StarComplement, Set.mem_sep_iff]
     constructor <;> assumption
@@ -983,7 +967,7 @@ by
   · intro t_in_union
     cases' t_in_union with t_in_subdiv t_join_s
     choose t_in_subdiv x_nin_t using t_in_subdiv
-    simp only [vertices_setOf, Set.subset_def, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
+    simp only [vertices_setOf, Set.subset_def, StellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
       Set.mem_union, Set.mem_setOf, simplicialJoinProj_mem] at t_in_subdiv
     cases' t_in_subdiv with t_in_star_comp t_in_join
     simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
@@ -1065,9 +1049,9 @@ by
     contradiction
 
     choose u u_in_star su_eq_t using t_join_s
-    simp only [barycenterStar, Set.mem_sep_iff] at u_in_star
+    simp only [BarycenterStar, Set.mem_sep_iff] at u_in_star
     choose u_in_subdiv x_in_u using u_in_star
-    simp only [stellarSubdivision, SimplicialUnion, Set.mem_union] at u_in_subdiv
+    simp only [StellarSubdivision, SimplicialUnion, Set.mem_union] at u_in_subdiv
     cases' u_in_subdiv with u_in_star_comp u_in_join
     simp only [StarComplement, Set.mem_sep_iff] at u_in_star_comp
     choose u_in_X s_nss_u using u_in_star_comp
@@ -1269,31 +1253,27 @@ by
 section SynthOrder
 set_option synthInstance.checkSynthOrder false
 
-instance stellarSubdivision.fintypeConverse
+instance StellarSubdivision.FintypeConverse
     (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
+    (s : Finset E)
     (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     [Fintype σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces]
   : Fintype X.faces :=
-  by
-  rw [@stellar_weld_simplices _ 𝕜 _ _ _ _ _ X s _ x s_in_X x_nin_X]
+by
+  rw [@stellarWeld_simplices _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X]
   apply Set.fintypeUnion
 
 end SynthOrder
 
-theorem barycenter_vertex_stellar_subdiv
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
-    [s_ne : Nonempty s]
-    (x : E)
+theorem stellarSubdivision_barycenter_mem
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : x ∈ σ(X, s, x; 𝕜, s_in_X, x_nin_X).vertices :=
 by
   rw [vertex_iff_in_simplex]
-  simp only [stellarSubdivision]
+  simp only [StellarSubdivision]
   use {x}
   constructor
   · right
@@ -1315,22 +1295,15 @@ by
       exact ⟨by right; rfl, by rfl, Finset.singleton_ne_empty x⟩
   · rw [Finset.mem_singleton]
 
-theorem stellar_subdiv_iso_simp
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-    (s : Finset E) [s_ne : Nonempty s]
-    (t : Finset F) [t_ne : Nonempty t]
-    (x : E)
-    (y : F)
+theorem stellarSubdivision_simplicialMap
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)
     (x_nin_X : x ∉ X.vertices)
     (y_nin_Y : y ∉ Y.vertices)
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
-  : Finset.image f.map s = t →
-      f.map x = y →
-        IsSimplicialMap σ(X, s, x; 𝕜, s_in_X, x_nin_X) σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) f.map :=
+  : Finset.image f.map s = t → f.map x = y →
+      IsSimplicialMap σ(X, s, x; 𝕜, s_in_X, x_nin_X) σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) f.map :=
 by
   intro fs_t fx_y
   let f_iso' := f_iso
@@ -1355,7 +1328,7 @@ by
     assumption
   simp only [IsSimplicialMap]
   intro u u_in_subdiv_X
-  simp only [stellarSubdivision, SimplicialUnion, Set.mem_union] at u_in_subdiv_X ⊢
+  simp only [StellarSubdivision, SimplicialUnion, Set.mem_union] at u_in_subdiv_X ⊢
   cases' u_in_subdiv_X with u_in_star_comp u_in_join
 
   left
@@ -1571,22 +1544,15 @@ by
   rw [Finset.image_eq_empty] at fu_empty
   contradiction
 
-theorem stellar_subdiv_iso
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-    (s : Finset E) [s_ne : Nonempty s]
-    (t : Finset F) [t_ne : Nonempty t]
-    (x : E)
-    (y : F)
+theorem stellarSubdivision_simplicialIso
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)
     (x_nin_X : x ∉ X.vertices)
     (y_nin_Y : y ∉ Y.vertices)
     (f : SimplicialMap X Y) (f_iso : IsSimplicialIso f)
     (g : SimplicialMap Y X) (gf_inv : IsInverseSimplicialIso f g)
-  : Finset.image f.map s = t →
-      f.map x = y →
-        g.map y = x → σ(X, s, x; 𝕜, s_in_X, x_nin_X) ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) :=
+  : Finset.image f.map s = t → f.map x = y → g.map y = x
+     → σ(X, s, x; 𝕜, s_in_X, x_nin_X) ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) :=
 by
   intro fs_t fx_y gy_x
   have g_iso : IsSimplicialIso g := by apply simplicialIso_inverse_is_simplicialIso f g f_iso gf_inv
@@ -1619,10 +1585,10 @@ by
     assumption
   let f_subdiv :=
     SimplicialMap.mk f.map
-      (@stellar_subdiv_iso_simp _ _ 𝕜 _ _ _ _ _ _ _ X Y s _ t _ x y s_in_X t_in_Y x_nin_X y_nin_Y f f_iso fs_t fx_y)
+      (@stellarSubdivision_simplicialMap _ _ 𝕜 _ _ _ _ _ _ _ _ _ _ _ _ _ s_in_X t_in_Y x_nin_X y_nin_Y f f_iso fs_t fx_y)
   let g_subdiv :=
     SimplicialMap.mk g.map
-      (@stellar_subdiv_iso_simp _ _ 𝕜 _ _ _ _ _ _ _ Y X t _ s _ y x t_in_Y s_in_X y_nin_Y x_nin_X g g_iso gt_s gy_x)
+      (@stellarSubdivision_simplicialMap _ _ 𝕜 _ _ _ _ _ _ _ _ _ _ _ _ _ t_in_Y s_in_X y_nin_Y x_nin_X g g_iso gt_s gy_x)
   unfold IsSimpliciallyIso
   use f_subdiv
   unfold IsSimplicialIso
@@ -1633,7 +1599,7 @@ by
   · intro a a_in_X
     have a_in_union : a ∈ X.vertices ∪ {x} :=
       by
-      apply @stellar_subdiv_subset_vertices _ 𝕜 _ _ _ _ _ X s
+      apply @stellarSubdivision_subset_vertices _ 𝕜 _ _ _ _ _ X s
       apply a_in_X
     rw [Set.mem_union, Set.mem_singleton_iff] at a_in_union
     cases' a_in_union with a_in_X a_eq_x
@@ -1644,7 +1610,7 @@ by
   · intro a a_in_Y
     have a_in_union : a ∈ Y.vertices ∪ {y} :=
       by
-      apply @stellar_subdiv_subset_vertices _ 𝕜 _ _ _ _ _ Y t
+      apply @stellarSubdivision_subset_vertices _ 𝕜 _ _ _ _ _ Y t
       apply a_in_Y
     rw [Set.mem_union, Set.mem_singleton_iff] at a_in_union
     cases' a_in_union with a_in_Y a_eq_y
@@ -1653,25 +1619,24 @@ by
     subst a_eq_y
     rw [gy_x, fx_y]
 
-def stellarSubdivOfSingletonMap
+def StellarSubdivisionOfSingletonMap
     (x y : E) : E → E := fun a : E => if a = x then y else a
 
-theorem stellar_subdiv_of_singleton_forward_simp
-    (X : AbstractSimplicialComplex E)
-    (x y : E)
+theorem stellarSubdivisionOfSingletonMap_forward_simplicialMap
+    {y : E}
     (y_in_X : {y} ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : IsSimplicialMap
       σ(X, {y}, x; 𝕜, y_in_X, x_nin_X)
-      X (stellarSubdivOfSingletonMap x y) :=
+      X (StellarSubdivisionOfSingletonMap x y) :=
 by
-  simp only [IsSimplicialMap, stellarSubdivision, SimplicialUnion, Set.mem_union]
+  simp only [IsSimplicialMap, StellarSubdivision, SimplicialUnion, Set.mem_union]
   intro s s_in_subdiv
   cases' s_in_subdiv with s_in_star_comp s_in_join
   -- star complement case.
-  have id_s : Finset.image (stellarSubdivOfSingletonMap x y) s = s :=
+  have id_s : Finset.image (StellarSubdivisionOfSingletonMap x y) s = s :=
     by
-    simp only [stellarSubdivOfSingletonMap, Finset.ext_iff]
+    simp only [StellarSubdivisionOfSingletonMap, Finset.ext_iff]
     intro a
     constructor
     intro a_in_img
@@ -1689,7 +1654,7 @@ by
         assumption
       contradiction
       assumption
-    unfold stellarSubdivOfSingletonMap at fb_a
+    unfold StellarSubdivisionOfSingletonMap at fb_a
     simp only [b_ne_x, if_false] at fb_a
     rw [fb_a] at b_in_s
     assumption
@@ -1708,7 +1673,7 @@ by
         assumption
       contradiction
       assumption
-    unfold stellarSubdivOfSingletonMap
+    unfold StellarSubdivisionOfSingletonMap
     simp only [a_ne_x, if_false]
   rw [id_s]
   apply isSubcomplex_face_imp_face
@@ -1750,9 +1715,9 @@ by
   · subst s₃_eq_x
     choose s_decomp s_nonempty using s_decomp
     subst s_decomp
-    have id_s : Finset.image (stellarSubdivOfSingletonMap x y) ({x} ∪ s₁) = {y} ∪ s₁ :=
+    have id_s : Finset.image (StellarSubdivisionOfSingletonMap x y) ({x} ∪ s₁) = {y} ∪ s₁ :=
       by
-      simp only [stellarSubdivOfSingletonMap, Finset.ext_iff, Finset.mem_image, Finset.mem_union,
+      simp only [StellarSubdivisionOfSingletonMap, Finset.ext_iff, Finset.mem_image, Finset.mem_union,
         Finset.mem_singleton]
       intro a
       constructor
@@ -1807,9 +1772,9 @@ by
     choose s_decomp s_nonempty using s_decomp
     rw [Finset.union_empty] at *
     subst s_decomp
-    have id_s : Finset.image (stellarSubdivOfSingletonMap x y) ({x}) = {y} :=
+    have id_s : Finset.image (StellarSubdivisionOfSingletonMap x y) ({x}) = {y} :=
       by
-      simp only [stellarSubdivOfSingletonMap, Finset.ext_iff, Finset.mem_image, Finset.mem_union,
+      simp only [StellarSubdivisionOfSingletonMap, Finset.ext_iff, Finset.mem_image, Finset.mem_union,
         Finset.mem_singleton]
       intro a
       constructor
@@ -1834,9 +1799,9 @@ by
   cases' s₁_in_link with s₁_in_link s₁_empty
 
   choose s₁_in_X ys₁_in_X ys₁_disj using s₁_in_link
-  have id_s : Finset.image (stellarSubdivOfSingletonMap x y) s = s :=
+  have id_s : Finset.image (StellarSubdivisionOfSingletonMap x y) s = s :=
     by
-    simp only [stellarSubdivOfSingletonMap, Finset.ext_iff]
+    simp only [StellarSubdivisionOfSingletonMap, Finset.ext_iff]
     intro a
     constructor
     intro a_in_img
@@ -1856,7 +1821,7 @@ by
         assumption
       contradiction
       assumption
-    unfold stellarSubdivOfSingletonMap at fb_a
+    unfold StellarSubdivisionOfSingletonMap at fb_a
     simp only [b_ne_x, if_false] at fb_a
     rw [fb_a] at b_in_s
     assumption
@@ -1877,7 +1842,7 @@ by
         assumption
       contradiction
       assumption
-    unfold stellarSubdivOfSingletonMap
+    unfold StellarSubdivisionOfSingletonMap
     simp only [a_ne_x, if_false]
   rw [id_s]
   rw [Finset.empty_union] at s_decomp
@@ -1890,16 +1855,15 @@ by
   choose s_empty s_nonempty using s_decomp
   contradiction
 
-theorem stellar_subdiv_of_singleton_inverse_simp
-    (X : AbstractSimplicialComplex E)
-    (x y : E)
+theorem stellarSubdivisionOfSingletonMap_inverse_simplicialMap
+    {y : E}
     (y_in_X : {y} ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : IsSimplicialMap X
       σ(X, {y}, x; 𝕜, y_in_X, x_nin_X)
-      (stellarSubdivOfSingletonMap y x) :=
+      (StellarSubdivisionOfSingletonMap y x) :=
 by
-  simp only [IsSimplicialMap, stellarSubdivision, SimplicialUnion, Set.mem_union]
+  simp only [IsSimplicialMap, StellarSubdivision, SimplicialUnion, Set.mem_union]
   intro s s_in_X
   by_cases y_in_s : y ∈ s
   -- y ∈ s case.
@@ -1971,7 +1935,7 @@ by
     rw [Finset.union_sdiff_of_subset]
     rw [Finset.singleton_subset_iff]
     assumption
-  unfold stellarSubdivOfSingletonMap
+  unfold StellarSubdivisionOfSingletonMap
   rw [s_decomp, Finset.ext_iff]
   intro a
   simp only [Finset.mem_image, Finset.mem_union, Finset.mem_sdiff, Finset.mem_singleton]
@@ -2012,9 +1976,9 @@ by
 
   -- y ∉ s case.
   left
-  have id_s : Finset.image (stellarSubdivOfSingletonMap y x) s = s :=
+  have id_s : Finset.image (StellarSubdivisionOfSingletonMap y x) s = s :=
     by
-    simp only [stellarSubdivOfSingletonMap, Finset.ext_iff]
+    simp only [StellarSubdivisionOfSingletonMap, Finset.ext_iff]
     intro a
     constructor
     intro a_in_img
@@ -2025,7 +1989,7 @@ by
       rw [b_eq_y] at b_in_s
       contradiction
       assumption
-    unfold stellarSubdivOfSingletonMap at fb_a
+    unfold StellarSubdivisionOfSingletonMap at fb_a
     simp only [b_ne_y, if_false] at fb_a
     rw [fb_a] at b_in_s
     assumption
@@ -2037,7 +2001,7 @@ by
       rw [a_eq_y] at a_in_s
       contradiction
       assumption
-    unfold stellarSubdivOfSingletonMap
+    unfold StellarSubdivisionOfSingletonMap
     simp only [a_ne_y, if_false]
   simp only [id_s, StarComplement, Set.mem_sep_iff]
   constructor
@@ -2045,9 +2009,8 @@ by
   rw [Finset.singleton_subset_iff]
   assumption
 
-theorem stellar_subdiv_of_singleton
-    (X : AbstractSimplicialComplex E)
-    (x y : E)
+theorem stellarSubdivision_of_singleton_iso_self
+    {y : E}
     (y_in_X : {y} ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : σ(X, {y}, x; 𝕜, y_in_X, x_nin_X) ≅ X :=
@@ -2056,21 +2019,21 @@ by
     SimplicialMap
       σ(X, {y}, x; 𝕜, y_in_X, x_nin_X)
       X :=
-    SimplicialMap.mk (stellarSubdivOfSingletonMap x y)
-      (stellar_subdiv_of_singleton_forward_simp X x y y_in_X x_nin_X)
+    SimplicialMap.mk (StellarSubdivisionOfSingletonMap x y)
+      (stellarSubdivisionOfSingletonMap_forward_simplicialMap y_in_X x_nin_X)
   let g_subdiv :
     SimplicialMap
       X
       σ(X, {y}, x; 𝕜, y_in_X, x_nin_X) :=
-    SimplicialMap.mk (stellarSubdivOfSingletonMap y x)
-      (stellar_subdiv_of_singleton_inverse_simp X x y y_in_X x_nin_X)
+    SimplicialMap.mk (StellarSubdivisionOfSingletonMap y x)
+      (stellarSubdivisionOfSingletonMap_inverse_simplicialMap y_in_X x_nin_X)
   unfold IsSimpliciallyIso
   use f_subdiv; use g_subdiv
   unfold IsInverseSimplicialIso
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply, id]
   constructor
   · intro a a_in_subdiv
-    simp only [g_subdiv, f_subdiv, stellarSubdivOfSingletonMap]
+    simp only [g_subdiv, f_subdiv, StellarSubdivisionOfSingletonMap]
     split_ifs with a_x y_y a_y
 
     symm
@@ -2078,7 +2041,7 @@ by
 
     contradiction
 
-    rw [stellar_subdiv_of_singleton_vertices, Set.mem_union, Set.mem_diff_singleton,
+    rw [stellarSubdivision_of_singleton_vertices, Set.mem_union, Set.mem_diff_singleton,
       Set.mem_singleton_iff] at a_in_subdiv
     cases' a_in_subdiv with a_in_X_a_ne_y a_eq_y
     choose a_in_X a_ne_y using a_in_X_a_ne_y
@@ -2088,7 +2051,7 @@ by
 
     rfl
   · intro a a_in_X
-    simp only [f_subdiv, g_subdiv, stellarSubdivOfSingletonMap]
+    simp only [f_subdiv, g_subdiv, StellarSubdivisionOfSingletonMap]
     split_ifs
     symm
     assumption
@@ -2097,15 +2060,13 @@ by
     contradiction
     rfl
 
-theorem stellar_subdiv_congr
-    (X Y : AbstractSimplicialComplex E)
-    (s : Finset E)
-    (x : E)
+theorem stellarSubdivision_congr
+    {Y : AbstractSimplicialComplex E}
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-    (X_eq_Y : X.faces = Y.faces)
+    (X_eq_Y : X = Y)
   : σ(X, s, x; 𝕜, s_in_X, x_nin_X) =
       σ(Y, s, x; 𝕜, by rw [← X_eq_Y]; assumption, by rw [← vertices_congr X_eq_Y]; assumption) :=
 by
-  simp only [stellarSubdivision, SimplicialUnion, StarComplement, Link, simplex, SimplexBoundary, X_eq_Y]
+  simp only [StellarSubdivision, SimplicialUnion, StarComplement, Link, simplex, SimplexBoundary, X_eq_Y]
   rfl

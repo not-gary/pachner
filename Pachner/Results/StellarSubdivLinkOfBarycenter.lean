@@ -7,7 +7,7 @@ variable [Ring 𝕜] [Nontrivial 𝕜]
 
 theorem stellar_subdiv_link_of_barycenter_left
     {X : AbstractSimplicialComplex E}
-    {s : Finset E} [s_ne : Nonempty s]
+    {s : Finset E}
     {x : E}
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
@@ -17,7 +17,7 @@ by
   intro a a_in_link
   simp only [Link, Set.mem_sep_iff] at a_in_link
   choose a_in_subdiv xa_in_subdiv xa_disj using a_in_link
-  simp only [stellarSubdivision, SimplicialUnion, Set.mem_union] at xa_in_subdiv
+  simp only [StellarSubdivision, SimplicialUnion, Set.mem_union] at xa_in_subdiv
   cases' xa_in_subdiv with xa_in_star_comp xa_in_join
   simp only [StarComplement, Set.mem_sep_iff] at xa_in_star_comp
   choose xa_in_X s_nss_xa using xa_in_star_comp
@@ -142,7 +142,7 @@ by
 
 theorem stellar_subdiv_link_of_barycenter_right
     {X : AbstractSimplicialComplex E}
-    {s : Finset E} [s_ne : Nonempty s]
+    {s : Finset E}
     {x : E}
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
@@ -153,7 +153,7 @@ by
   rw [simplicialJoinProj_mem] at a_in_img
   choose a₁ a₁_in_link a₂ a₂_in_bd a_decomp a_ne using a_in_img
   rw [Set.mem_union, Set.mem_singleton_iff] at a₁_in_link a₂_in_bd
-  simp only [Link, Set.mem_sep_iff, stellarSubdivision, SimplicialUnion, Set.mem_union]
+  simp only [Link, Set.mem_sep_iff, StellarSubdivision, SimplicialUnion, Set.mem_union]
   constructor; right
   simp only [simplicialJoinProj_mem, Set.mem_union, Set.mem_singleton_iff]
   use ∅ ∪ a₂; constructor
@@ -223,7 +223,7 @@ by
 
 theorem stellar_subdiv_link_of_barycenter
     (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
+    (s : Finset E)
     (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
