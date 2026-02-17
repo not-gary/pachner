@@ -12,7 +12,7 @@ theorem stellar_subdiv_link_of_starComplement_left
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
     (t_in_star_comp : t ∈ X\St(X, s).faces)
-  : t ∉ ((π₁[𝕜] (boundary_disjoint_link X s)).coe
+  : t ∉ ((π₁[𝕜] (disjoint_link_boundary X s)).coe
       ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
         Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) ⊆
           Lk(X, t) :=
@@ -41,10 +41,10 @@ by
     exact face_nonempty u_in_join
     constructor <;> assumption
   -- Case B + (C/D).
-  · rw [join_proj_disj_union_mem] at ut_in_join
+  · rw [simplicialJoinProj_union_mem] at ut_in_join
     choose t' t'_in_join u' u'_in_join t₁ t₁_in_link u₁ u₁_in_link t_decomp u_decomp tu'_in_join
       tu₁_in_link using ut_in_join
-    rw [Set.mem_union, join_proj_disj_union_mem] at tu'_in_join
+    rw [Set.mem_union, simplicialJoinProj_union_mem] at tu'_in_join
     cases' tu'_in_join with tu'_in_join tu'_empty
 
     choose t₃ t₃_in_barycenter u₃ u₃_in_barycenter t₂ t₂_in_bd u₂ u₂_in_bd t'_decomp u'_decomp
@@ -69,9 +69,9 @@ by
     contradiction
     subst t₃_empty
     rw [Finset.empty_union] at t_decomp
-    have contra : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces :=
+    have contra : t ∈ ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces :=
     by
-      rw [join_proj_mem]
+      rw [simplicialJoinProj_mem]
       use t₁; constructor; assumption
       use t₂; constructor; assumption
       rw [Finset.union_comm]
@@ -114,7 +114,7 @@ theorem stellar_subdiv_link_of_starComplement_right
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
     (t_in_star_comp : t ∈ X\St(X, s).faces)
-  : t ∉ ((π₁[𝕜] (boundary_disjoint_link X s)).coe
+  : t ∉ ((π₁[𝕜] (disjoint_link_boundary X s)).coe
       ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
         Lk(X, t) ⊆
           Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) :=
@@ -146,7 +146,7 @@ by
       assumption
       rw [Finset.subset_empty]
       assumption
-    simp only [join_proj_mem, not_exists, not_and_or] at t_nin_join
+    simp only [simplicialJoinProj_mem, not_exists, not_and_or] at t_nin_join
     specialize t_nin_join t
 
     cases' t_nin_join with t_nin_link u_nin_bd
@@ -172,7 +172,7 @@ by
   contrapose
   simp only [Classical.not_not]
   intro s_ss_tu
-  rw [join_proj_mem]
+  rw [simplicialJoinProj_mem]
   use t \ s; constructor
   by_cases ts_ne : t \ s = ∅
   rw [Set.mem_union, ts_ne]
@@ -222,7 +222,7 @@ theorem stellar_subdiv_link_of_starComplement
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (t_in_star_comp : t ∈ X\St(X, s).faces)
-  : t ∉ ((π₁[𝕜] (boundary_disjoint_link X s)).coe
+  : t ∉ ((π₁[𝕜] (disjoint_link_boundary X s)).coe
       ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
         Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) =
           Lk(X, t) :=

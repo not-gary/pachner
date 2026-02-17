@@ -13,7 +13,7 @@ def IsNegOneSphere
   : Prop := Y = ⊥
 
 @[simp]
-def negOneBall (x : E) : AbstractSimplicialComplex E :=
+def NegOneBall (x : E) : AbstractSimplicialComplex E :=
   AbstractSimplicialComplex.mk {{x}}
   (by
     rw [Set.mem_singleton_iff, ← ne_eq]
@@ -28,14 +28,14 @@ def negOneBall (x : E) : AbstractSimplicialComplex E :=
     contradiction
     assumption)
 
-instance negOneBall.fintype (x : α) : Fintype (negOneBall x).faces :=
+instance NegOneBall.fintype (x : E) : Fintype (NegOneBall x).faces :=
 by
-  simp only [negOneBall]
+  simp only [NegOneBall]
   apply Set.fintypeSingleton
 
-theorem dim_of_negOneBall (x : α) : (negOneBall x).dim = 0 :=
+theorem negOneBall_dim (x : E) : (NegOneBall x).dim = 0 :=
 by
-  simp only [AbstractSimplicialComplex.dim, negOneBall]
+  simp only [AbstractSimplicialComplex.dim, NegOneBall]
   unfold face_dim
   simp only [Set.toFinset_singleton, Finset.image_singleton, Finset.card_singleton, Nat.cast_one,
     sub_self, Int.reduceNeg]
@@ -74,7 +74,7 @@ instance Ball.fintype
   : Fintype (mBall X s).faces :=
 by
   simp only [mBall, Finset.coe_sdiff]
-  have fin_power : Fintype ↑(AbstractSimplicialComplex.vertices E Lk(X, s)).toFinset.powerset :=
+  have fin_power : Fintype ↑(Lk(X, s).vertices).toFinset.powerset :=
   by
     apply FinsetCoe.fintype
   apply Set.fintypeDiff
@@ -86,43 +86,41 @@ variable {F : Type _}
 variable [AddCommGroup E] [DecidableEq F] [AddCommGroup F]
 variable {𝕜 : Type _}
 variable [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+variable {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F} {x : E} {y : F}
+
 
 @[simp]
-def cone
+def Cone
   (X : AbstractSimplicialComplex E)
   (x : E)
   (x_nin_X : x ∉ X.vertices) -- Ensure that we use a new point for projection purposes.
-: AbstractSimplicialComplex (E × 𝕜) := (negOneBall x) ⋆ X
+: AbstractSimplicialComplex (E × 𝕜) := (NegOneBall x) ⋆ X
 
-notation "Cone(" X ", " x ")" => cone X x
+notation "Cone(" X ", " x ")" => Cone X x
 
-instance cone.Fintype
+instance Cone.Fintype
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
     (x : E)
     (x_nin_X : x ∉ X.vertices)
   : Fintype ((Cone(X, x) x_nin_X) : AbstractSimplicialComplex (E × 𝕜)).faces :=
 by
-  simp only [cone]
-  apply simplicialJoin.fintype
+  simp only [Cone]
+  apply SimplicialJoin.fintype
 
-def coneIsoMap
+def ConeIsoMap
     (y : F)
     (f : E → F)
   : E × 𝕜 → F × 𝕜 :=
     fun x : E × 𝕜 =>
       if x.snd = 0 then (y, 0) else (f x.fst, x.snd)
 
-theorem cone_iso_simplicial
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-    (x : E)
-    (y : F)
+theorem cone_simplicialMap
     (x_nin_X : x ∉ X.vertices)
     (y_nin_Y : y ∉ Y.vertices)
     (f : SimplicialMap X Y)
-  : IsSimplicialMap (Cone(X, x) x_nin_X) (Cone(Y, y) y_nin_Y : AbstractSimplicialComplex (F × 𝕜)) (coneIsoMap y f.map) :=
+  : IsSimplicialMap (Cone(X, x) x_nin_X) (Cone(Y, y) y_nin_Y : AbstractSimplicialComplex (F × 𝕜)) (ConeIsoMap y f.map) :=
 by
-  simp only [IsSimplicialMap, cone, negOneBall, simplicialJoin_mem]
+  simp only [IsSimplicialMap, Cone, NegOneBall, simplicialJoin_mem]
   intro u u_in_X_cone
   choose s s_in_ball t t_in_X u_eq_st using u_in_X_cone
   rw [Set.mem_union, Set.mem_singleton_iff] at s_in_ball
@@ -142,7 +140,7 @@ by
   rw [Set.mem_singleton_iff, Finset.image_eq_empty]
   assumption
   constructor
-  simp only [u_eq_st, s_eq_x, SimplexDisjointUnion, Finset.image_union, coneIsoMap, Finset.ext_iff]
+  simp only [u_eq_st, s_eq_x, SimplexDisjointUnion, Finset.image_union, ConeIsoMap, Finset.ext_iff]
   intro v
   simp only [Finset.mem_union, Finset.mem_image, Finset.mem_product, Finset.mem_singleton]
   constructor
@@ -151,7 +149,7 @@ by
     choose w w_in_lhs w_eq_v using v_in_lhs
     choose w_eq_x w_zero using w_in_lhs
     revert w_eq_v
-    unfold coneIsoMap
+    unfold ConeIsoMap
     split_ifs
     intro y_eq_v
     simp only [Prod.ext_iff] at y_eq_v
@@ -162,7 +160,7 @@ by
     choose w w_in_rhs w_eq_v using v_in_rhs
     choose w_in_t w_one using w_in_rhs
     revert w_eq_v
-    unfold coneIsoMap
+    unfold ConeIsoMap
     split_ifs with w_zero
     rw [w_one] at w_zero
     simp at w_zero
@@ -180,7 +178,7 @@ by
     left; use(x, 0); constructor
     simp only [Prod.fst, Prod.snd]
     constructor <;> trivial
-    unfold coneIsoMap
+    unfold ConeIsoMap
     simp only [eq_self_iff_true, if_true, Prod.ext_iff]
     rw [@comm _ Eq] at v_eq_y v_zero
     constructor <;> assumption
@@ -189,7 +187,7 @@ by
     right; use(w, 1); constructor
     simp only [Prod.fst, Prod.snd]
     constructor; assumption; trivial
-    unfold coneIsoMap
+    unfold ConeIsoMap
     simp only [Nat.one_ne_zero, if_false, Prod.ext_iff]
     rw [@comm _ Eq] at v_one
     constructor
@@ -219,7 +217,7 @@ by
   right
   rw [Set.mem_singleton_iff, Finset.image_eq_empty]
   assumption
-  simp only [u_eq_st, s_empty, SimplexDisjointUnion, Finset.image_union, coneIsoMap, Finset.ext_iff]
+  simp only [u_eq_st, s_empty, SimplexDisjointUnion, Finset.image_union, ConeIsoMap, Finset.ext_iff]
   constructor
   intro v
   simp only [Finset.mem_union, Finset.mem_image, Finset.mem_product, Finset.mem_singleton]
@@ -234,7 +232,7 @@ by
     choose w w_in_t w_eq_v using v_in_t
     choose w_in_t w_one using w_in_t
     revert w_eq_v
-    unfold coneIsoMap
+    unfold ConeIsoMap
     split_ifs with w_zero
     rw [w_one] at w_zero
     simp at w_zero
@@ -255,7 +253,7 @@ by
     right; use(w, 1); constructor
     simp only [Prod.fst, Prod.snd]
     constructor; assumption; trivial
-    unfold coneIsoMap
+    unfold ConeIsoMap
     simp only [Nat.one_ne_zero, if_false, Prod.ext_iff]
     rw [@comm _ Eq] at v_one
     constructor
@@ -280,11 +278,7 @@ by
   simp at u_eq_st
   simp [u_eq_st]
 
-theorem cone_iso
-    (X : AbstractSimplicialComplex E)
-    (Y : AbstractSimplicialComplex F)
-    (x : E)
-    (y : F)
+theorem cone_simplicialIso
     (x_nin_X : x ∉ X.vertices)
     (y_nin_Y : y ∉ Y.vertices)
     (X_iso_Y : X ≅ Y)
@@ -296,9 +290,9 @@ by
   unfold IsSimplicialIso at f_iso ⊢
   choose g gf_inv using f_iso
   let f_cone : SimplicialMap (Cone(X, x) x_nin_X) (Cone(Y, y) y_nin_Y : AbstractSimplicialComplex (F × 𝕜)) :=
-    SimplicialMap.mk (coneIsoMap y f.map) (cone_iso_simplicial X Y x y x_nin_X y_nin_Y f)
+    SimplicialMap.mk (ConeIsoMap y f.map) (cone_simplicialMap x_nin_X y_nin_Y f)
   let g_cone : SimplicialMap (Cone(Y, y) y_nin_Y) (Cone(X, x) x_nin_X : AbstractSimplicialComplex (E × 𝕜)) :=
-    SimplicialMap.mk (coneIsoMap x g.map) (cone_iso_simplicial Y X y x y_nin_Y x_nin_X g)
+    SimplicialMap.mk (ConeIsoMap x g.map) (cone_simplicialMap y_nin_Y x_nin_X g)
   use f_cone; use g_cone
   unfold IsInverseSimplicialIso at gf_inv ⊢
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply, id] at gf_inv ⊢
@@ -307,7 +301,7 @@ by
   · intro z z_in_X_cone
     rw [vertex_iff_in_simplex] at z_in_X_cone
     choose u u_in_cone z_in_u using z_in_X_cone
-    simp only [cone, negOneBall, simplicialJoin] at u_in_cone
+    simp only [Cone, NegOneBall, SimplicialJoin] at u_in_cone
     simp only [Set.mem_diff, Set.mem_setOf, Set.mem_insert_iff, Set.mem_singleton_iff] at u_in_cone
     choose u_in_cone u_nonempty using u_in_cone
     choose s s_in_ball t t_in_x st_eq_u using u_in_cone
@@ -316,7 +310,7 @@ by
     cases' s_in_ball with s_eq_x contra
     rw [s_eq_x, Finset.mem_singleton] at z_in_ball
     choose z_eq_x z_zero using z_in_ball
-    simp only [coneIsoMap, Prod.ext_iff, z_zero, eq_self_iff_true, if_true, f_cone, g_cone]
+    simp only [ConeIsoMap, Prod.ext_iff, z_zero, eq_self_iff_true, if_true, f_cone, g_cone]
     constructor
     symm
     assumption
@@ -338,12 +332,12 @@ by
       simp at z_in_t
       assumption
     specialize gf_id z_in_X
-    simp [coneIsoMap, z_one, Nat.one_ne_zero, if_false, Prod.ext_iff, f_cone, g_cone]
+    simp [ConeIsoMap, z_one, Nat.one_ne_zero, if_false, Prod.ext_iff, f_cone, g_cone]
     assumption
   · intro z z_in_Y_cone
     rw [vertex_iff_in_simplex] at z_in_Y_cone
     choose u u_in_cone z_in_u using z_in_Y_cone
-    simp only [cone, negOneBall, simplicialJoin] at u_in_cone
+    simp only [Cone, NegOneBall, SimplicialJoin] at u_in_cone
     simp only [Set.mem_diff, Set.mem_setOf, Set.mem_insert_iff, Set.mem_singleton_iff] at u_in_cone
     choose u_in_cone u_nonempty using u_in_cone
     choose s s_in_ball t t_in_x st_eq_u using u_in_cone
@@ -352,7 +346,7 @@ by
     cases' s_in_ball with s_eq_x contra
     rw [s_eq_x, Finset.mem_singleton] at z_in_ball
     choose z_eq_x z_zero using z_in_ball
-    simp only [coneIsoMap, Prod.ext_iff, z_zero, eq_self_iff_true, if_true, f_cone, g_cone]
+    simp only [ConeIsoMap, Prod.ext_iff, z_zero, eq_self_iff_true, if_true, f_cone, g_cone]
     constructor; symm; assumption
     trivial
     rw [contra] at z_in_ball
@@ -372,16 +366,14 @@ by
       simp at z_in_t
       assumption
     specialize fg_id z_in_Y
-    simp [coneIsoMap, z_one, Nat.one_ne_zero, if_false, Prod.ext_iff, f_cone, g_cone]
+    simp [ConeIsoMap, z_one, Nat.one_ne_zero, if_false, Prod.ext_iff, f_cone, g_cone]
     assumption
 
-theorem dim_of_cone
-    (X : AbstractSimplicialComplex E)
+theorem cone_dim
     [Fintype X.faces]
-    (x : E)
     (x_nin_X : x ∉ X.vertices)
   : (Cone(X, x) x_nin_X : AbstractSimplicialComplex (E × 𝕜)).dim = X.dim + 1 :=
 by
-  dsimp only [cone]
-  rw [dim_of_join, dim_of_negOneBall]
+  dsimp only [Cone]
+  rw [dim_of_join, negOneBall_dim]
   simp only [zero_add]

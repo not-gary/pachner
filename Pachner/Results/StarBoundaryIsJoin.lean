@@ -12,19 +12,19 @@ theorem star_boundary_is_join_left
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : (X\St(X, s) ∩
-      ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X)).coe
-        ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+      ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+        ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
           ''ˢ (simplex {x} ⋆ ∂s)) ⋆
               Lk(X, s)))) ⊆
-      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
+      ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
   intro t t_in_inter
   simp only [AbstractSimplicialComplex.instHasInter, SimplicialInter, Set.mem_inter_iff] at t_in_inter
   choose t_in_star_comp t_in_join using t_in_inter
-  simp only [join_proj_mem] at t_in_join
+  simp only [simplicialJoinProj_mem] at t_in_join
   choose t' t'_in_join t₁ t₁_in_link t_decomp t_ne using t_in_join
 
-  rw [Set.mem_union, Set.mem_singleton_iff, join_proj_mem] at t'_in_join
+  rw [Set.mem_union, Set.mem_singleton_iff, simplicialJoinProj_mem] at t'_in_join
   cases' t'_in_join with t'_in_join t'_empty
 
   choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp t'_ne using t'_in_join
@@ -50,7 +50,7 @@ by
     assumption
   subst t₃_empty
   rw [Finset.empty_union] at t_decomp
-  rw [join_proj_mem]
+  rw [simplicialJoinProj_mem]
   use t₁; constructor; assumption
   use t₂; constructor; assumption
   rw [Finset.union_comm]
@@ -59,7 +59,7 @@ by
   subst t'_empty
   rw [Finset.empty_union] at t_decomp
   subst t_decomp
-  rw [join_proj_mem]
+  rw [simplicialJoinProj_mem]
   use t; constructor; assumption
   use ∅; constructor
   rw [Set.mem_union]
@@ -74,15 +74,15 @@ theorem star_boundary_is_join_right
     {x : E}
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) ⊆
+  : ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) ⊆
       (X\St(X, s) ∩
-        ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X)).coe
-            ''ˢ ((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+        ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+            ''ˢ ((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
               ''ˢ (simplex {x} ⋆ ∂s) ⋆
                 Lk(X, s)))) :=
 by
   intro t t_in_join
-  rw [join_proj_mem] at t_in_join
+  rw [simplicialJoinProj_mem] at t_in_join
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_join
   simp only [AbstractSimplicialComplex.instHasInter, SimplicialInter, Set.mem_inter_iff]
   constructor
@@ -152,7 +152,7 @@ by
   assumption
   contradiction
 
-  simp only [join_proj_mem, Set.mem_union, Set.mem_singleton_iff]
+  simp only [simplicialJoinProj_mem, Set.mem_union, Set.mem_singleton_iff]
   use ∅ ∪ t₂; constructor
   rw [Set.mem_union, Set.mem_singleton_iff] at t₂_in_bd
   cases' t₂_in_bd with t₂_in_bd t₂_empty
@@ -178,11 +178,11 @@ theorem star_boundary_is_join
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : (X\St(X, s) ∩
-      ((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X)).coe
-        ''ˢ (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe
+      ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+        ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
           ''ˢ (simplex {x} ⋆ ∂s)) ⋆
               Lk(X, s)))) =
-      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
+      ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
   exact ⟨star_boundary_is_join_left s_in_X x_nin_X, star_boundary_is_join_right s_in_X x_nin_X⟩

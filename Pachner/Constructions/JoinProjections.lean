@@ -6,14 +6,14 @@ variable {E F 𝕜 : Type _}
 variable [DecidableEq E] [DecidableEq F] [DecidableEq 𝕜]
 variable [AddCommGroup E] [AddCommGroup F]
 variable [Ring 𝕜] [Nontrivial 𝕜]
+variable {X Y : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
 -- Show that, for disjoint complexes, projection to the first coordinate is a coercion.
-theorem join_fst_proj_is_coe
-    (X Y : AbstractSimplicialComplex E)
+theorem simplicialJoinProj_injective
   : Disjoint X.vertices Y.vertices → Set.InjOn Prod.fst (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).vertices :=
 by
   intro X_disj_Y
-  simp only [Set.InjOn, vertices_setOf, simplicialJoin, Set.mem_diff, Set.mem_union, Set.mem_setOf]
+  simp only [Set.InjOn, vertices_setOf, SimplicialJoin, Set.mem_diff, Set.mem_union, Set.mem_setOf]
   simp only [vertices_setOf, Set.disjoint_iff_forall_ne, Set.mem_setOf] at X_disj_Y
   intro x₁ x₁_in_lhs x₂ x₂_in_rhs
   choose s₁ s₁_in_join x₁_in_s₁ using x₁_in_lhs
@@ -99,19 +99,17 @@ by
   rw [Prod.ext_iff]
   constructor <;> assumption
 
-def joinFst {X Y : AbstractSimplicialComplex E} (H : Disjoint X.vertices Y.vertices)
+def SimplicialJoinProj {X Y : AbstractSimplicialComplex E} (H : Disjoint X.vertices Y.vertices)
   : SimplicialCoe (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) E :=
-      SimplicialCoe.mk Prod.fst (join_fst_proj_is_coe X Y H)
+      SimplicialCoe.mk Prod.fst (simplicialJoinProj_injective H)
 
-notation "π₁[" 𝕜 "]" => @joinFst _ 𝕜 _ _ _ _ _ _ _
+notation "π₁[" 𝕜 "]" => @SimplicialJoinProj _ 𝕜 _ _ _ _ _ _ _
 
-theorem join_proj_vertices_mem
-    (X Y : AbstractSimplicialComplex E)
-    (x : E)
+theorem simplicialJoinProj_mem_vertices
     (H : Disjoint X.vertices Y.vertices)
   : x ∈ ((π₁[𝕜] H).coe ''ˢ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜))).vertices ↔ x ∈ X.vertices ∨ x ∈ Y.vertices :=
 by
-  simp only [vertices_setOf, SimplicialImage, simplicialJoin, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf, joinFst]
+  simp only [vertices_setOf, SimplicialImage, SimplicialJoin, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf, SimplicialJoinProj]
   constructor
   -- x ∈ X ⋆ Y case.
   intro x_in_join
@@ -203,9 +201,7 @@ by
   simp only [Prod.fst]
   assumption
 
-theorem SimplexDisjointUnion_prod_fst
-    (s t : Finset E)
-  : Finset.image Prod.fst (s ⊔ₛ t : Finset (E × 𝕜)) = s ∪ t :=
+theorem simplexDisjointUnion_simplicialJoinProj : Finset.image Prod.fst (s ⊔ₛ t : Finset (E × 𝕜)) = s ∪ t :=
 by
   simp only [SimplexDisjointUnion, Finset.image_union, Finset.ext_iff, Finset.mem_image,
     Finset.mem_union]
@@ -242,13 +238,11 @@ by
   apply Finset.mem_singleton_self
   simp only [Prod.fst]
 
-theorem join_proj_mem
-    (X Y : AbstractSimplicialComplex E)
-    (s : Finset E)
+theorem simplicialJoinProj_mem
     (H : Disjoint X.vertices Y.vertices)
   : s ∈ ((π₁[𝕜] H).coe ''ˢ (X ⋆ Y)).faces ↔ ∃ t ∈ X.faces ∪ {∅}, ∃ u ∈ Y.faces ∪ {∅}, s = t ∪ u ∧ s ≠ ∅ :=
 by
-  simp only [SimplicialImage, simplicialJoin, joinFst, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf]
+  simp only [SimplicialImage, SimplicialJoin, SimplicialJoinProj, Set.mem_diff, Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf]
   constructor
 
   -- s ∈ X ⋆ Y case.
@@ -257,7 +251,7 @@ by
   choose v_in_join v_ne using v_in_join
   choose t t_in_X u u_in_Y tu_eq_v using v_in_join
   simp only at proj_v_s
-  rw [← tu_eq_v, SimplexDisjointUnion_prod_fst] at proj_v_s
+  rw [← tu_eq_v, simplexDisjointUnion_simplicialJoinProj] at proj_v_s
   use t; constructor; assumption
   use u; constructor; assumption
   constructor
@@ -290,7 +284,7 @@ by
   -- s X ∪ Y case.
   intro x_decomp
   choose t t_in_X u u_in_Y s_eq_tu s_ne using x_decomp
-  rw [← @SimplexDisjointUnion_prod_fst E 𝕜] at s_eq_tu
+  rw [← @simplexDisjointUnion_simplicialJoinProj E 𝕜] at s_eq_tu
   use t ⊔ₛ u; constructor; constructor
   use t; constructor; assumption
   use u
@@ -320,16 +314,14 @@ by
 
   symm; assumption
 
-theorem join_proj_disj_union_mem
-    (X Y : AbstractSimplicialComplex E)
-    (s t : Finset E)
+theorem simplicialJoinProj_union_mem
     (H : Disjoint X.vertices Y.vertices)
   : s ∪ t ∈ ((π₁[𝕜] H).coe ''ˢ (X ⋆ Y)).faces ↔
       ∃ (s₁ : _) (_ : s₁ ∈ X.faces ∪ {∅}) (t₁ : _) (_ : t₁ ∈ X.faces ∪ {∅})
         (s₂ : _) (_ : s₂ ∈ Y.faces ∪ {∅}) (t₂ : _) (_ : t₂ ∈ Y.faces ∪ {∅}),
           s = s₁ ∪ s₂ ∧ t = t₁ ∪ t₂ ∧ s₁ ∪ t₁ ∈ X.faces ∪ {∅} ∧ s₂ ∪ t₂ ∈ Y.faces ∪ {∅} ∧ s ∪ t ≠ ∅ :=
 by
-  rw [join_proj_mem]
+  rw [simplicialJoinProj_mem]
   constructor
 
   -- s ∪ t ∈ X ⋆ Y case.
@@ -444,17 +436,14 @@ by
 -- Useful for combinatorial mfds.
 -- cf. Lean 3 unported code for former def'n using ℕ.
 
-theorem barycenter_disjoint_boundary
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
-    (x : E)
+theorem disjoint_barycenter_boundary
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : Disjoint ((simplex {x}).vertices) ((∂s).vertices) :=
 by
   rw [Set.disjoint_left]
   intro y y_in_barycenter
-  apply @Set.notMem_subset _ _ _ (X.vertices)
+  apply Set.notMem_subset
   rw [Set.subset_def]
   intro z
   apply simplexBoundary_subcomplex_vertices s_in_X
@@ -466,18 +455,15 @@ by
   subst y_in_barycenter
   assumption
 
-theorem barycenter_join_boundary_disjoint_link
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
-    (x : E)
+theorem disjoint_barycenter_join_boundary_link
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : Disjoint (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ ((simplex {x}) ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).vertices)
+  : Disjoint (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ ((simplex {x}) ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).vertices)
        (Lk(X, s).vertices) :=
 by
   rw [Set.disjoint_left]
   intro y y_in_join
-  rw [join_proj_vertices_mem] at y_in_join
+  rw [simplicialJoinProj_mem_vertices] at y_in_join
   simp only [AbstractSimplicialComplex.vertices_eq, Link, Set.mem_iUnion, not_exists]
   intro u u_in_link
   simp only [Set.mem_sep_iff] at u_in_link
@@ -519,11 +505,10 @@ by
   rw [Finset.mem_coe]
   apply y_nin_u
 
-theorem boundary_disjoint_link
+theorem disjoint_link_boundary
     (X : AbstractSimplicialComplex E)
     (s : Finset E)
-  : Disjoint (Lk(X, s).vertices) ((∂s).vertices) :=
-by
+   : Disjoint (Lk(X, s).vertices) ((∂s).vertices) := by
   rw [Set.disjoint_iff_inter_eq_empty, Set.eq_empty_iff_forall_notMem]
   intro x
   simp only [Set.mem_inter_iff, not_and, vertex_iff_in_simplex, not_exists]
@@ -549,10 +534,7 @@ by
   contradiction
   assumption
 
-theorem barycenter_disjoint_link
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
-    (x : E)
+theorem disjoint_link_barycenter
     (x_nin_X : x ∉ X.vertices)
   : Disjoint (Lk(X, s).vertices) ((simplex {x}).vertices) :=
 by

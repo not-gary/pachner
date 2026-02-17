@@ -12,7 +12,7 @@ theorem stellar_subdiv_link_of_barycenter_left
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
   : Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), {x}) ⊆
-      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
+      ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
   intro a a_in_link
   simp only [Link, Set.mem_sep_iff] at a_in_link
@@ -29,10 +29,10 @@ by
     apply Finset.subset_union_left
     apply Finset.singleton_ne_empty
   contradiction
-  rw [join_proj_disj_union_mem] at xa_in_join
+  rw [simplicialJoinProj_union_mem] at xa_in_join
   choose x' x'_in_join a' a'_in_join x₁ x₁_in_link a₁ a₁_in_link x_decomp a_decomp xa'_in_join
     xa₁_in_link using xa_in_join
-  rw [Set.mem_union, Set.mem_singleton_iff, join_proj_disj_union_mem] at xa'_in_join
+  rw [Set.mem_union, Set.mem_singleton_iff, simplicialJoinProj_union_mem] at xa'_in_join
   cases' xa'_in_join with xa'_in_join xa'_empty
 
   choose x₃ x₃_in_barycenter a₃ a₃_in_barycenter x₂ x₂_in_bd a₂ a₂_in_bd x'_decomp a'_decomp
@@ -118,7 +118,7 @@ by
     assumption
   subst a₃_empty
   rw [Finset.empty_union] at a_decomp
-  rw [join_proj_mem]
+  rw [simplicialJoinProj_mem]
   use a₁; constructor; assumption
   use a₂; constructor; assumption
   rw [Finset.union_comm]
@@ -131,7 +131,7 @@ by
   subst x'_empty a'_empty
   rw [Finset.empty_union] at a_decomp x_decomp
   subst x_decomp a_decomp
-  rw [join_proj_mem]
+  rw [simplicialJoinProj_mem]
   use a; constructor; assumption
   use ∅; constructor
   rw [Set.mem_union]
@@ -146,16 +146,16 @@ theorem stellar_subdiv_link_of_barycenter_right
     {x : E}
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
-  : ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) ⊆
+  : ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) ⊆
       Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), {x}) :=
 by
   intro a a_in_img
-  rw [join_proj_mem] at a_in_img
+  rw [simplicialJoinProj_mem] at a_in_img
   choose a₁ a₁_in_link a₂ a₂_in_bd a_decomp a_ne using a_in_img
   rw [Set.mem_union, Set.mem_singleton_iff] at a₁_in_link a₂_in_bd
   simp only [Link, Set.mem_sep_iff, stellarSubdivision, SimplicialUnion, Set.mem_union]
   constructor; right
-  simp only [join_proj_mem, Set.mem_union, Set.mem_singleton_iff]
+  simp only [simplicialJoinProj_mem, Set.mem_union, Set.mem_singleton_iff]
   use ∅ ∪ a₂; constructor
 
   cases' a₂_in_bd with a₂_in_bd a₂_empty
@@ -172,7 +172,7 @@ by
   constructor <;> assumption
 
   constructor; right
-  simp only [join_proj_mem, Set.mem_union, Set.mem_singleton_iff]
+  simp only [simplicialJoinProj_mem, Set.mem_union, Set.mem_singleton_iff]
   use {x} ∪ a₂; constructor; left
   use {x}; constructor; left
   simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe]
@@ -228,7 +228,7 @@ theorem stellar_subdiv_link_of_barycenter
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), {x}) =
-      ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
+      ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
   exact ⟨stellar_subdiv_link_of_barycenter_left, stellar_subdiv_link_of_barycenter_right⟩

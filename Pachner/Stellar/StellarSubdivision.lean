@@ -14,8 +14,8 @@ def stellarSubdivision
     (x_nin_X : x ∉ X.vertices)
   : AbstractSimplicialComplex E :=
     X\St(X, s) ∪
-      (π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X)).coe ''ˢ
-        (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)))
+      (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe ''ˢ
+        (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)))
           ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜))
 
 notation "σ(" X ", " s ", " x "; " 𝕜 ", " s_in_X ", " x_nin_X ")" =>
@@ -34,20 +34,20 @@ by
   have barycenter_fin : Fintype ↥(simplex {x}).faces := by apply simplex.Fintype {x}
   have bd_fin : Fintype ↥(∂s).faces := by apply SimplexBoundary.fintype
   have barycenter_bd_fin : Fintype ↥(simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)).faces := by
-    apply @simplicialJoin.fintype _ _ _ _ _ _ _ (simplex {x}) barycenter_fin (∂s) bd_fin
+    apply SimplicialJoin.fintype
   have proj_bary_bd_fin :
-    Fintype ((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).faces :=
+    Fintype ((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).faces :=
     by apply @SimplicialCoe.Fintype _ _ _ _ barycenter_bd_fin
   have Link_fin : Fintype ↥Lk(X, s).faces := by apply Link.fintype
   have proj_link_fin :
     Fintype
-      ↥((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))
+      ↥((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))
         ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜)).faces :=
-    by apply @simplicialJoin.fintype _ _ _ _ _ _ _ _ proj_bary_bd_fin _ Link_fin
+    by apply SimplicialJoin.fintype
   have join_fin :
     Fintype
-      ↥((π₁[𝕜] (@barycenter_join_boundary_disjoint_link _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X)).coe ''ˢ
-          (((π₁[𝕜] (barycenter_disjoint_boundary X s x s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)))
+      ↥((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe ''ˢ
+          (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)))
             ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜))).faces :=
     by apply @SimplicialCoe.Fintype _ _ _ _ proj_link_fin
   apply @Set.fintypeUnion _ _ _ _ star_comp_fin join_fin
@@ -87,7 +87,7 @@ by
       unfold stellarSubdivision
       simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union]
       right
-      simp only [join_proj_mem, Set.mem_union]
+      simp only [simplicialJoinProj_mem, Set.mem_union]
       use {x} ∪ s \ {a}; constructor; left
       use {x}; constructor; left
       simp only [simplex, Finset.mem_coe, Set.mem_diff]
@@ -239,13 +239,13 @@ by
     assumption
     assumption
 
-    simp only [join_proj_mem] at t_in_join
+    simp only [simplicialJoinProj_mem] at t_in_join
     choose t' t'_in_join t₁ t₁_in_link t_decomp t_ne using t_in_join
     rw [Set.mem_union] at t₁_in_link
 
     cases' t'_in_join with t'_in_join t'_empty
 
-    simp only [join_proj_mem] at t'_in_join
+    simp only [simplicialJoinProj_mem] at t'_in_join
     choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp t'_ne using t'_in_join
     subst t'_decomp
     simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
@@ -410,7 +410,7 @@ theorem stellar_subdiv_of_singleton_vertices
     (x_nin_X : x ∉ X.vertices)
   : σ(X, {y}, x; 𝕜, y_in_X, x_nin_X).vertices = X.vertices \ {y} ∪ {x} :=
 by
-  simp only [Set.ext_iff, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, join_proj_mem, vertex_iff_in_simplex,
+  simp only [Set.ext_iff, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, simplicialJoinProj_mem, vertex_iff_in_simplex,
     Set.mem_union, Set.mem_diff, Set.mem_singleton_iff]
   intro a
   constructor
@@ -576,7 +576,7 @@ theorem stellar_subdiv_subset_vertices
   : σ(X, s, x; 𝕜, s_in_X, x_nin_X).vertices ⊆ X.vertices ∪ {x} :=
 by
   simp only [vertices_setOf, Set.subset_def, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
-    Set.mem_union, Set.mem_setOf, join_proj_mem]
+    Set.mem_union, Set.mem_setOf, simplicialJoinProj_mem]
   intro a a_in_subdiv
   choose t t_in_subdiv a_in_t using a_in_subdiv
   cases' t_in_subdiv with t_in_star_comp t_in_join
@@ -727,7 +727,7 @@ by
   intro a a_in_union
   rw [Set.mem_union, Set.mem_singleton_iff, vertex_iff_in_simplex] at a_in_union
   simp only [vertices_setOf, Set.subset_def, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
-    Set.mem_union, Set.mem_setOf, join_proj_mem]
+    Set.mem_union, Set.mem_setOf, simplicialJoinProj_mem]
   cases' a_in_union with a_in_X a_eq_x
 
   choose t t_in_X a_in_t using a_in_X
@@ -885,7 +885,7 @@ by
     constructor
 
     simp only [barycenterStar, Set.mem_sep_iff, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union,
-      join_proj_mem]
+      simplicialJoinProj_mem]
     constructor
 
     right
@@ -984,12 +984,12 @@ by
     cases' t_in_union with t_in_subdiv t_join_s
     choose t_in_subdiv x_nin_t using t_in_subdiv
     simp only [vertices_setOf, Set.subset_def, stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
-      Set.mem_union, Set.mem_setOf, join_proj_mem] at t_in_subdiv
+      Set.mem_union, Set.mem_setOf, simplicialJoinProj_mem] at t_in_subdiv
     cases' t_in_subdiv with t_in_star_comp t_in_join
     simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
     choose t_in_X s_nss_t using t_in_star_comp
     assumption
-    simp only [join_proj_mem] at t_in_join
+    simp only [simplicialJoinProj_mem] at t_in_join
     choose t' t'_in_join t₁ t₁_in_link t_decomp using t_in_join
     cases' t'_in_join with t'_in_join t'_empty
 
@@ -1075,11 +1075,11 @@ by
       rw [vertex_iff_in_simplex]
       use u
     contradiction
-    simp only [join_proj_mem] at u_in_join
+    simp only [simplicialJoinProj_mem] at u_in_join
     choose u' u'_in_join u₁ u₁_in_link u_decomp using u_in_join
     cases' u'_in_join with u'_in_join u'_empty
 
-    simp only [join_proj_mem] at u'_in_join
+    simp only [simplicialJoinProj_mem] at u'_in_join
     choose u₃ u₃_in_barycenter u₂ u₂_in_bd u'_decomp using u'_in_join
     choose u'_decomp u'_nonempty using u'_decomp
     subst u'_decomp
@@ -1297,11 +1297,11 @@ by
   use {x}
   constructor
   · right
-    rw [join_proj_mem]
+    rw [simplicialJoinProj_mem]
     use {x}
     constructor
     · left
-      rw [join_proj_mem]
+      rw [simplicialJoinProj_mem]
       use {x}
       constructor
       · left
@@ -1391,7 +1391,7 @@ by
   use s
 
   right
-  simp only [join_proj_mem, Set.mem_union] at u_in_join ⊢
+  simp only [simplicialJoinProj_mem, Set.mem_union] at u_in_join ⊢
   choose u' u'_in_join u₁ u₁_in_link u_decomp using u_in_join
   cases' u'_in_join with u'_in_join u'_empty
 
@@ -1715,7 +1715,7 @@ by
   apply s_in_star_comp
   apply starComplement_subcomplex
   -- join case.
-  simp only [Set.mem_union, join_proj_mem] at s_in_join
+  simp only [Set.mem_union, simplicialJoinProj_mem] at s_in_join
   choose s' s'_in_join s₁ s₁_in_link s_decomp using s_in_join
   cases' s'_in_join with s'_in_join s'_empty
 
@@ -1904,7 +1904,7 @@ by
   by_cases y_in_s : y ∈ s
   -- y ∈ s case.
   right
-  simp only [Set.mem_union, join_proj_mem]
+  simp only [Set.mem_union, simplicialJoinProj_mem]
   use {x}
   constructor
 

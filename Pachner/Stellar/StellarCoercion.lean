@@ -70,7 +70,7 @@ by
   rfl
 
   right
-  simp only [join_proj_mem, Set.mem_union] at t_in_join ⊢
+  simp only [simplicialJoinProj_mem, Set.mem_union] at t_in_join ⊢
   choose t' t'_in_join t₁ t₁_in_link t_decomp using t_in_join
   cases' t'_in_join with t'_in_join t'_empty
 
@@ -279,7 +279,7 @@ by
   apply starComplement_subcomplex
 
   right
-  simp only [join_proj_mem, Set.mem_union] at t_in_join ⊢
+  simp only [simplicialJoinProj_mem, Set.mem_union] at t_in_join ⊢
   choose t' t'_in_join t₁ t₁_in_link t_decomp using t_in_join
   cases' t'_in_join with t'_in_join t'_empty
 

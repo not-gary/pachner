@@ -54,11 +54,11 @@ variable [Ring 𝕜] [Nontrivial 𝕜]
 
 -- stellar_subdiv_distr_join_right
 
--- simplicialJoin_stellarEquiv
+-- SimplicialJoin_stellarEquiv
 
--- simplicialJoin_stellarEquiv_left
+-- SimplicialJoin_stellarEquiv_left
 
--- simplicialJoin_stellarEquiv_right
+-- SimplicialJoin_stellarEquiv_right
 
 -- stellar_subdiv_link_of_starComplement
 
@@ -70,17 +70,17 @@ theorem star_boundary_diff_ne
     {X : AbstractSimplicialComplex E}
     {s t : Finset E} [s_ne : Nonempty s]
     {s_in_X : s ∈ X.faces}
-  : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
+  : t ∈ ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
       Nonempty ↥(s \ t) :=
 by
   intro t_in_star_bd
-  rw [join_proj_mem] at t_in_star_bd
+  rw [simplicialJoinProj_mem] at t_in_star_bd
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_star_bd
-  simp only [link, Set.mem_sep_iff, Set.mem_union, Set.mem_singleton_iff] at t₁_in_link
+  simp only [Link, Set.mem_sep_iff, Set.mem_union, Set.mem_singleton_iff] at t₁_in_link
   cases' t₁_in_link with t₁_in_link t₁_empty
 
   choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
-  rw [Set.mem_union, Set.mem_singleton_iff, SimplexBoundary_mem_iff_subset] at t₂_in_bd
+  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
   rw [Finset.nonempty_coe_sort, Finset.sdiff_nonempty]
   simp only [Finset.subset_iff, Classical.not_forall]
   rw [Finset.ssubset_iff] at t₂_in_bd
@@ -109,7 +109,7 @@ by
 
   rw [t₁_empty, Finset.empty_union] at t_decomp
   subst t_decomp
-  rw [Set.mem_union, Set.mem_singleton_iff, SimplexBoundary_mem_iff_subset] at t₂_in_bd
+  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
   cases' t₂_in_bd with t_in_bd t_empty
 
   rw [Finset.nonempty_coe_sort, Finset.sdiff_nonempty]
@@ -151,13 +151,13 @@ theorem star_boundary_mem_subdiv
     {x : E}
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
-  : t ∈ ((π₁[𝕜] (boundary_disjoint_link X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
+  : t ∈ ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
       t ∈ σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces :=
 by
   intro t_in_star_bd
-  rw [join_proj_mem] at t_in_star_bd
+  rw [simplicialJoinProj_mem] at t_in_star_bd
   choose t₁ t₁_in_link t₂ t₂_in_bd t_decomp t_ne using t_in_star_bd
-  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union, join_proj_mem]
+  simp only [stellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.mem_union, simplicialJoinProj_mem]
   right
   use t₂
   cases' t₁_in_link with t₁_in_link t₁_empty

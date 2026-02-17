@@ -345,7 +345,7 @@ by
   rw [Function.Injective.mem_finset_image f_inj] at fs_ss_fu
   assumption
   right
-  simp only [join_proj_mem, Set.mem_union] at u_in_join ⊢
+  simp only [simplicialJoinProj_mem, Set.mem_union] at u_in_join ⊢
   choose u' u'_in_join u₁ u₁_in_link u_decomp u_ne using u_in_join
 
   cases' u'_in_join with u'_in_join u'_empty
@@ -547,10 +547,10 @@ by
     assumption
 
   use ∅ ∪ u₂ ∪ u₁; constructor; right
-  simp only [join_proj_mem]
+  simp only [simplicialJoinProj_mem]
   use ∅ ∪ u₂; constructor
 
-  simp only [Set.mem_union, join_proj_mem]
+  simp only [Set.mem_union, simplicialJoinProj_mem]
   by_cases u₂_empty : u₂ = ∅
   right; rw [u₂_empty, Finset.union_empty]
   apply Set.mem_singleton
@@ -697,9 +697,9 @@ by
     assumption
 
   use u₂; constructor; right
-  rw [join_proj_mem]
+  rw [simplicialJoinProj_mem]
   use u₂; constructor
-  simp only [Set.mem_union, join_proj_mem]
+  simp only [Set.mem_union, simplicialJoinProj_mem]
   left; use ∅; constructor
   right; apply Set.mem_singleton
   use u₂; constructor; left
@@ -800,10 +800,10 @@ by
 
   set u₂ := Finset.image (Function.invFunOn f Set.univ) t₂
   use {x} ∪ u₂ ∪ u₁; constructor; right
-  simp only [join_proj_mem]
+  simp only [simplicialJoinProj_mem]
   use {x} ∪ u₂; constructor
 
-  rw [Set.mem_union, join_proj_mem]
+  rw [Set.mem_union, simplicialJoinProj_mem]
   left; use {x}; constructor
   simp only [simplex, Set.mem_union, Set.mem_diff, Finset.mem_coe]
   left; constructor
@@ -976,7 +976,7 @@ by
     assumption
 
   use {x} ∪ u₂; constructor; right
-  simp only [join_proj_mem, Set.mem_union]
+  simp only [simplicialJoinProj_mem, Set.mem_union]
   use {x} ∪ u₂; constructor; left
   use {x}; constructor; left
   simp only [simplex, Set.mem_diff, Finset.mem_coe]
@@ -1077,7 +1077,7 @@ by
   choose v v_in_X fv_fsu₁ using fst₁_in_fX
   subst fu₁_t₁
   use ∅ ∪ ∅ ∪ u₁; constructor; right
-  simp only [join_proj_mem]
+  simp only [simplicialJoinProj_mem]
   use ∅ ∪ ∅; constructor
 
   simp only [Set.mem_union]
@@ -1144,10 +1144,10 @@ by
   choose v v_in_X fv_fsu₁ using fst₁_in_fX
   subst fu₁_t₁
   use {x} ∪ ∅ ∪ u₁; constructor; right
-  simp only [join_proj_mem]
+  simp only [simplicialJoinProj_mem]
   use {x} ∪ ∅; constructor
 
-  simp only [Set.mem_union, join_proj_mem]
+  simp only [Set.mem_union, simplicialJoinProj_mem]
   left; use {x}; constructor
 
   simp only [simplex, Set.mem_diff, Finset.mem_coe]
@@ -1196,9 +1196,9 @@ by
   assumption
 
   use {x}; constructor; right
-  rw [join_proj_mem]
+  rw [simplicialJoinProj_mem]
   use {x}; constructor
-  rw [Set.mem_union, join_proj_mem]
+  rw [Set.mem_union, simplicialJoinProj_mem]
   left; use {x}; constructor
   simp only [Set.mem_union, simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe]
   left; constructor
@@ -1256,10 +1256,10 @@ by
   simp only [Classical.not_not, ← fu_t]
   apply Finset.image_subset_image
   assumption
-  simp only [join_proj_mem] at t_in_join ⊢
+  simp only [simplicialJoinProj_mem] at t_in_join ⊢
   choose t' t'_in_join t₁ t₁_in_link t_decomp t_ne using t_in_join
 
-  rw [Set.mem_union, join_proj_mem] at t'_in_join
+  rw [Set.mem_union, simplicialJoinProj_mem] at t'_in_join
   cases' t'_in_join with t'_in_join t'_empty
 
   choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp t'_ne using t'_in_join
