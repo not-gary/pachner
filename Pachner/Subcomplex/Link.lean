@@ -3,7 +3,7 @@ import Pachner.Subcomplex.Intersection
 
 variable {E F : Type _}
 variable [DecidableEq E] [DecidableEq F]
-variable {X Y : AbstractSimplicialComplex E} {s t : Finset E}
+variable {X Y : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
 -- Link of a complex wrt a simplex.
 @[simp]
@@ -161,13 +161,19 @@ by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
   exact ⟨link_simplicialCoe_image_left s_in_X, link_simplicialCoe_image_right s_in_X⟩
 
-theorem link_subcomplex_simplices : t ∈ Lk(X, s) → t ∈ X := by
+theorem link_subcomplex_simplices : t ∈ Lk(X, s).faces → t ∈ X.faces := by
   intro t_in_link
   simp only [Link, Set.mem_sep_iff] at t_in_link
   choose t_in_X st_in_X st_disj using t_in_link
   assumption
 
 theorem link_subcomplex : Lk(X, s) ⊆ X := @link_subcomplex_simplices E _ _ _
+
+theorem link_notMem_vertices : x ∉ X.vertices → x ∉ Lk(X, s).vertices := by
+  contrapose
+  simp only [Classical.not_not]
+  apply isSubcomplex_vertices
+  apply link_subcomplex
 
 theorem link_simplicialIso
     {Y : AbstractSimplicialComplex F}

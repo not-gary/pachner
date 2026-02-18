@@ -207,7 +207,7 @@ by
   · subst s_empty
     exact simplicialJoin_incl_right t_in_Y
 
-theorem simplicialJoin_vertices_mem_left : (x, (0 : 𝕜)) ∈ (X ⋆ Y).vertices ↔ x ∈ X.vertices := by
+theorem simplicialJoin_mem_vertices_left : (x, (0 : 𝕜)) ∈ (X ⋆ Y).vertices ↔ x ∈ X.vertices := by
   simp only [AbstractSimplicialComplex.vertices_eq, SimplicialJoin, Set.mem_iUnion, Set.mem_diff]
   constructor
   · intro x0_in_XY
@@ -254,7 +254,14 @@ theorem simplicialJoin_vertices_mem_left : (x, (0 : 𝕜)) ∈ (X ⋆ Y).vertice
     rw [s_empty]
     apply X.empty_notMem
 
-theorem simplicialJoin_vertices_mem_right : (x, (1 : 𝕜)) ∈ (X ⋆ Y).vertices ↔ x ∈ Y.vertices := by
+theorem simplicialJoin_notMem_vertices_left
+  : x ∉ X.vertices → (x, 0) ∉ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).vertices :=
+by
+  contrapose
+  simp only [Classical.not_not, simplicialJoin_mem_vertices_left]
+  exact Set.mem_of_eq_of_mem rfl
+
+theorem simplicialJoin_mem_vertices_right : (x, (1 : 𝕜)) ∈ (X ⋆ Y).vertices ↔ x ∈ Y.vertices := by
   simp only [AbstractSimplicialComplex.vertices_eq, SimplicialJoin, Set.mem_iUnion, Set.mem_diff]
   constructor
   · intro x1_in_XY
@@ -299,6 +306,13 @@ theorem simplicialJoin_vertices_mem_right : (x, (1 : 𝕜)) ∈ (X ⋆ Y).vertic
     intro s_empty
     rw [s_empty]
     apply Y.empty_notMem
+
+theorem simplicialJoin_notMem_vertices_right
+  : x ∉ Y.vertices → (x, 1) ∉ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).vertices :=
+by
+  contrapose
+  simp only [Classical.not_not, simplicialJoin_mem_vertices_right]
+  exact Set.mem_of_eq_of_mem rfl
 
 theorem simplicialJoin_mem_vertices
     (x : E × 𝕜)
@@ -591,7 +605,7 @@ by
     constructor
     simp
     rw [gzx_fxz_id]
-    rw [← @simplicialJoin_vertices_mem_left _ 𝕜]
+    rw [← @simplicialJoin_mem_vertices_left _ 𝕜]
     rw [← h]
     simp only [Prod.mk.eta]
     assumption
@@ -600,7 +614,7 @@ by
     simp
     rw [gwy_fyw_id]
 
-    rw [← @simplicialJoin_vertices_mem_right _ 𝕜 _ _ _ _ X]
+    rw [← @simplicialJoin_mem_vertices_right _ 𝕜 _ _ _ _ X]
     rw [simplicialJoin_mem_vertices] at x_in_XY
     cases' x_in_XY with x_in_XY x_in_XY
     cases' x_in_XY with x_in_X x0
@@ -620,7 +634,7 @@ by
     constructor
     simp
     rw [fxz_gzx_id]
-    rw [← @simplicialJoin_vertices_mem_left _ 𝕜]
+    rw [← @simplicialJoin_mem_vertices_left _ 𝕜]
     rw [← h]
     simp only [Prod.mk.eta]
     assumption
@@ -628,7 +642,7 @@ by
     constructor
     simp
     rw [fyw_gwy_id]
-    rw [← @simplicialJoin_vertices_mem_right _ 𝕜 _ _ _ _ Z]
+    rw [← @simplicialJoin_mem_vertices_right _ 𝕜 _ _ _ _ Z]
     rw [simplicialJoin_mem_vertices] at x_in_ZW
     cases' x_in_ZW with x_in_ZW x_in_ZW
     cases' x_in_ZW with x_in_X x0
@@ -1398,7 +1412,7 @@ by
     choose y_in_b y_one using y_in_b
     have y_in_YZ : (y.fst, 0) ∈ (Y ⋆ Z : AbstractSimplicialComplex (E × 𝕜)).vertices :=
     by
-      rw [simplicialJoin_vertices_mem_left, vertex_iff_in_simplex]
+      rw [simplicialJoin_mem_vertices_left, vertex_iff_in_simplex]
       use b; constructor
       rw [Set.mem_union] at b_in_Y
       cases' b_in_Y with b_in_Y contra
@@ -1517,7 +1531,7 @@ by
     specialize gψ_id y_in_YZ
     have y_in_XY : (y.fst, 1) ∈ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).vertices :=
       by
-      rw [simplicialJoin_vertices_mem_right, vertex_iff_in_simplex]
+      rw [simplicialJoin_mem_vertices_right, vertex_iff_in_simplex]
       use a; constructor
       cases' a_in_X with a_in_Y contra
       assumption

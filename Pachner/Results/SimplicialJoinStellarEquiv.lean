@@ -1,38 +1,21 @@
 import Pachner.Stellar.StellarEquivalence
 import Pachner.Constructions.JoinProperties
 
-variable {E 𝕜 : Type _}
-variable [DecidableEq E] [DecidableEq 𝕜]
-variable [AddCommGroup E]
-variable [Ring 𝕜] [Nontrivial 𝕜]
+variable {E : Type _} [DecidableEq E] [AddCommGroup E]
+variable {𝕜 : Type _} [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+variable {X Y Z W : AbstractSimplicialComplex E} {s t : Finset E} {x y : E}
 
-theorem barycenter_join_left
-    {X Y : AbstractSimplicialComplex E}
-    {x : E}
-  :
-    x ∉ X.vertices → (x, 0) ∉ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).vertices :=
-by
-  contrapose
-  simp only [Classical.not_not, simplicialJoin_vertices_mem_left]
-  exact Set.mem_of_eq_of_mem rfl
-
-theorem stellar_join_distr_join_left
-    {X Y : AbstractSimplicialComplex E}
-    {s : Finset E}
-    {x : E}
+theorem simplicialJoin_stellarSubdivision_faces_left
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : (((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+  : ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
       ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-        ''ˢ (simplex {x} ⋆ ∂s)) ⋆
-          Lk(X, s))) ⋆ Y) ⊆
-      ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) _ _
-            (simplicialJoin_incl_left s_in_X)
-            (barycenter_join_left x_nin_X))).coe
+        ''ˢ (simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y ⊆
+      (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ (X ⋆ Y) _ _
+            (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
         ''ˢ ((π₁[𝕜]
-              (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _ (simplicialJoin_incl_left s_in_X) (barycenter_join_left x_nin_X))).coe
-          ''ˢ ((simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) : AbstractSimplicialComplex ((E × 𝕜) × 𝕜)) ⋆
-            (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)))) :=
+              (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _ (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
+          ''ˢ (simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) :=
 by
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def,
     Set.mem_union, simplicialJoin_mem, simplicialJoinProj_mem]
@@ -339,23 +322,17 @@ by
   rw [ne_eq, simplexDisjoint_empty, not_and_or] at t_ne
   cases t_ne <;> contradiction
 
-theorem stellar_join_distr_join_right
-    {X Y : AbstractSimplicialComplex E}
-    {s : Finset E}
-    {x : E}
+theorem simplicialJoin_stellarSubdivision_faces_right
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) _ _
-            (simplicialJoin_incl_left s_in_X)
-            (barycenter_join_left x_nin_X))).coe
-        ''ˢ ((π₁[𝕜]
-              (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _ (simplicialJoin_incl_left s_in_X) (barycenter_join_left x_nin_X))).coe
-          ''ˢ ((simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) : AbstractSimplicialComplex ((E × 𝕜) × 𝕜)) ⋆
-            (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)))) ⊆
-      (((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+  : (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ (X ⋆ Y) _ _
+            (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
+        ''ˢ ((π₁[𝕜] (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _
+                (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
+          ''ˢ (simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) ⊆
+      ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
         ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-          ''ˢ (simplex {x} ⋆ ∂s)) ⋆
-            Lk(X, s))) ⋆ Y) :=
+          ''ˢ (simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y :=
 by
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def,
     Set.mem_union, Set.mem_singleton_iff, simplicialJoin_mem, simplicialJoinProj_mem]
@@ -1200,60 +1177,39 @@ by
       rw [Finset.empty_union] at t_empty
       contradiction
 
-theorem stellar_join_distr_join
-    {X Y : AbstractSimplicialComplex E}
-    {s : Finset E}
-    {x : E}
+theorem simplicialJoin_stellarSubdivision_faces
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : (((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+  : ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
       ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-        ''ˢ (simplex {x} ⋆ ∂s)) ⋆
-          Lk(X, s))) ⋆ Y) =
-      ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) _ _
-            (simplicialJoin_incl_left s_in_X)
-            (barycenter_join_left x_nin_X))).coe
-        ''ˢ ((π₁[𝕜]
-              (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _ (simplicialJoin_incl_left s_in_X) (barycenter_join_left x_nin_X))).coe
-          ''ˢ ((simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) : AbstractSimplicialComplex ((E × 𝕜) × 𝕜)) ⋆
-            (Lk(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)))) :=
+        ''ˢ (simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y =
+      (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ (X ⋆ Y) _ _
+            (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
+        ''ˢ ((π₁[𝕜] (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _
+                (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
+          ''ˢ ((simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅))) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) :=
 by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
-  exact ⟨stellar_join_distr_join_left s_in_X x_nin_X, stellar_join_distr_join_right s_in_X x_nin_X⟩
+  exact ⟨simplicialJoin_stellarSubdivision_faces_left s_in_X x_nin_X, simplicialJoin_stellarSubdivision_faces_right s_in_X x_nin_X⟩
 
-theorem stellar_subdiv_distr_join_left
-    {X Y : AbstractSimplicialComplex E}
-    {s : Finset E}
-    {x : E}
-    (s_in_X : s ∈ X.faces)
-    (x_nin_X : x ∉ X.vertices)
+theorem simplicialJoin_stellarSubdivision_left
+    {s_in_X : s ∈ X.faces}
+    {x_nin_X : x ∉ X.vertices}
   : (σ(X, s, x; 𝕜, s_in_X, x_nin_X) ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) =
-    (σ(X ⋆ Y, s ⊔ₛ ∅, (x, 0); 𝕜, simplicialJoin_incl_left s_in_X, barycenter_join_left x_nin_X)) :=
+    (σ(X ⋆ Y, s ⊔ₛ ∅, (x, 0); 𝕜, simplicialJoin_incl_left s_in_X, simplicialJoin_notMem_vertices_left x_nin_X)) :=
 by
   simp only [StellarSubdivision, AbstractSimplicialComplex.ext_iff,
     simplicialJoin_simplicialUnion_right, simplicialJoin_starComplement_left s_in_X,
-    StellarSubdivision, stellar_join_distr_join s_in_X x_nin_X]
-
-theorem barycenter_join_right
-    {X Y : AbstractSimplicialComplex E}
-    {x : E}
-  : x ∉ Y.vertices → (x, 1) ∉ (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)).vertices :=
-by
-  contrapose
-  simp only [Classical.not_not, simplicialJoin_vertices_mem_right]
-  exact Set.mem_of_eq_of_mem rfl
+    StellarSubdivision, simplicialJoin_stellarSubdivision_faces s_in_X x_nin_X]
 
 -- TODO: could be = instead of ≅ but requires some work
-theorem stellar_subdiv_distr_join_right
-    {X Y : AbstractSimplicialComplex E}
-    {t : Finset E} [t_ne : Nonempty t]
-    {y : E}
-    (t_in_Y : t ∈ Y.faces)
-    (y_nin_Y : y ∉ Y.vertices)
+theorem simplicialJoin_stellarSubdivision_right
+    {t_in_Y : t ∈ Y.faces}
+    {y_nin_Y : y ∉ Y.vertices}
   : (X ⋆ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) : AbstractSimplicialComplex (E × 𝕜)) ≅
       (σ(X ⋆ Y, ∅ ⊔ₛ t, (y, 1); 𝕜,
         simplicialJoin_incl_right t_in_Y,
-        barycenter_join_right y_nin_Y) : AbstractSimplicialComplex (E × 𝕜)) :=
+        simplicialJoin_notMem_vertices_right y_nin_Y) : AbstractSimplicialComplex (E × 𝕜)) :=
 by
   apply
     @simplicialIso_trans (E × 𝕜) (E × 𝕜) _ _ _ _ (X ⋆ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y)) _
@@ -1261,8 +1217,8 @@ by
   apply simplicialJoin_comm
   apply
     simplicialIso_trans (σ(Y ⋆ X, t ⊔ₛ ∅, (y, 0); 𝕜, simplicialJoin_incl_left t_in_Y,
-        barycenter_join_left y_nin_Y) : AbstractSimplicialComplex (E × 𝕜))
-  rw [stellar_subdiv_distr_join_left]
+        simplicialJoin_notMem_vertices_left y_nin_Y) : AbstractSimplicialComplex (E × 𝕜))
+  rw [simplicialJoin_stellarSubdivision_left]
   let f : SimplicialMap (Y ⋆ X) (X ⋆ Y) :=
     @SimplicialMap.mk (E × 𝕜) (E × 𝕜) _ _ _ SimplicialJoinCommMap simplicialJoin_comm_simplicial
   let g : SimplicialMap (X ⋆ Y) (Y ⋆ X) :=
@@ -1318,8 +1274,7 @@ by
   simp only [g, SimplicialJoinCommMap, Nat.one_ne_zero, if_false]
   simp only [one_ne_zero, ↓reduceIte, f, g]
 
-lemma SimplicialJoin_stellar_subdiv
-    {X Y Z : AbstractSimplicialComplex E}
+lemma simplicialJoin_stellarSubdivision_iso
     (H : ∃ (t : Finset E) (t_in_Y : t ∈ Y)
       (y : E) (y_nin_Y : y ∉ Y.vertices),
       (X ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y)))
@@ -1330,28 +1285,26 @@ lemma SimplicialJoin_stellar_subdiv
 by
   choose t t_in_Y y y_nin_Y X_iso_Ysubdiv using H
   use t ⊔ₛ ∅, simplicialJoin_incl_left t_in_Y, (y, 0),
-    barycenter_join_left y_nin_Y
+    simplicialJoin_notMem_vertices_left y_nin_Y
   calc (X ⋆ Z: AbstractSimplicialComplex (E × 𝕜))
       _ ≅ σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) ⋆ Z := simplicialJoin_simplicialIso_left X_iso_Ysubdiv
-      _ = σ(Y ⋆ Z, t ⊔ₛ ∅, (y, 0); 𝕜, simplicialJoin_incl_left t_in_Y, barycenter_join_left y_nin_Y) :=
-          stellar_subdiv_distr_join_left _ _
+      _ = σ(Y ⋆ Z, t ⊔ₛ ∅, (y, 0); 𝕜, simplicialJoin_incl_left t_in_Y, simplicialJoin_notMem_vertices_left y_nin_Y) :=
+          simplicialJoin_stellarSubdivision_left
 
-theorem SimplicialJoin_stellarMove
-    {X Y Z : AbstractSimplicialComplex E}
+theorem simplicialJoin_stellarMove
   : (X ≅ₛₜₘ[𝕜] Y) → ((X ⋆ Z) ≅ₛₜₘ[𝕜] ((Y ⋆ Z) : AbstractSimplicialComplex (E × 𝕜))) :=
 by
   intro X_move_Y
   cases' X_move_Y with X_move_Ysubdiv h
   · left
-    exact SimplicialJoin_stellar_subdiv X_move_Ysubdiv
+    exact simplicialJoin_stellarSubdivision_iso X_move_Ysubdiv
   cases' h with Ksubdiv_move_L K_iso_L
   · right; left
-    exact SimplicialJoin_stellar_subdiv Ksubdiv_move_L
+    exact simplicialJoin_stellarSubdivision_iso Ksubdiv_move_L
   · right; right
     exact simplicialJoin_simplicialIso_left K_iso_L
 
-theorem SimplicialJoin_stellarEquiv_left
-    {X Y Z : AbstractSimplicialComplex E}
+theorem simplicialJoin_stellarEquiv_left
   : X ≅ₛₜ[𝕜] Y → (X ⋆ Z) ≅ₛₜ[𝕜] (Y ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) :=
 by
   intro X_eq_Y
@@ -1359,24 +1312,22 @@ by
   · rfl
   · calc (X ⋆ Z : AbstractSimplicialComplex (E × 𝕜))
       _ ≅ₛₜ[𝕜]  K ⋆ Z := XZ_eq_KZ
-      _ ≅ₛₜₘ[𝕜] L ⋆ Z := SimplicialJoin_stellarMove K_move_L
+      _ ≅ₛₜₘ[𝕜] L ⋆ Z := simplicialJoin_stellarMove K_move_L
 
-theorem SimplicialJoin_stellarEquiv_right
-    {X Y Z : AbstractSimplicialComplex E}
+theorem simplicialJoin_stellarEquiv_right
   : X ≅ₛₜ[𝕜] Y → (Z ⋆ X) ≅ₛₜ[𝕜] (Z ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) :=
 by
   intro X_eq_Y
   calc (Z ⋆ X : AbstractSimplicialComplex (E × 𝕜))
     _ ≅     X ⋆ Z := simplicialJoin_comm
-    _ ≅ₛₜ[𝕜] Y ⋆ Z := SimplicialJoin_stellarEquiv_left X_eq_Y
+    _ ≅ₛₜ[𝕜] Y ⋆ Z := simplicialJoin_stellarEquiv_left X_eq_Y
     _ ≅     Z ⋆ Y := simplicialJoin_comm
 
 -- Lemma 3.1, p.10
-theorem SimplicialJoin_stellarEquiv
-    {X Y Z W : AbstractSimplicialComplex E}
+theorem simplicialJoin_stellarEquiv
   : X ≅ₛₜ[𝕜] Y → Z ≅ₛₜ[𝕜] W → (X ⋆ Z) ≅ₛₜ[𝕜] (Y ⋆ W : AbstractSimplicialComplex (E × 𝕜)) :=
 by
   intro X_eq_Y Z_eq_W
   calc (X ⋆ Z : AbstractSimplicialComplex (E × 𝕜))
-    _ ≅ₛₜ[𝕜] Y ⋆ Z := SimplicialJoin_stellarEquiv_left X_eq_Y
-    _ ≅ₛₜ[𝕜] Y ⋆ W := SimplicialJoin_stellarEquiv_right Z_eq_W
+    _ ≅ₛₜ[𝕜] Y ⋆ Z := simplicialJoin_stellarEquiv_left X_eq_Y
+    _ ≅ₛₜ[𝕜] Y ⋆ W := simplicialJoin_stellarEquiv_right Z_eq_W

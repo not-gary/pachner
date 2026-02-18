@@ -1,14 +1,10 @@
 import Pachner.Stellar.StellarSubdivision
 
-variable {E 𝕜: Type _}
-variable [DecidableEq E] [DecidableEq 𝕜]
-variable [AddCommGroup E]
-variable [Ring 𝕜] [Nontrivial 𝕜]
+variable {E : Type _} [DecidableEq E] [AddCommGroup E]
+variable {𝕜 : Type _} [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+variable {X : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
 theorem star_boundary_is_join_left
-    {X : AbstractSimplicialComplex E}
-    {s : Finset E} [s_ne : Nonempty s]
-    {x : E}
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : (X\St(X, s) ∩
@@ -69,9 +65,6 @@ by
   assumption
 
 theorem star_boundary_is_join_right
-    {X : AbstractSimplicialComplex E}
-    {s : Finset E} [s_ne : Nonempty s]
-    {x : E}
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) ⊆
@@ -127,6 +120,9 @@ by
   rw [t₂_empty, Finset.union_empty] at t_decomp
   subst t_decomp
   simp only [Finset.eq_empty_iff_forall_notMem, Finset.mem_inter, not_and] at st₁_disj
+  have s_ne : Nonempty { x // x ∈ s } := by
+    rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty]
+    exact face_nonempty s_in_X
   simp only [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty, ne_eq, Finset.eq_empty_iff_forall_notMem,
     not_forall, not_not] at s_ne
   choose a a_in_s using s_ne
@@ -172,9 +168,6 @@ by
   assumption
 
 theorem star_boundary_is_join
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E) [s_ne : Nonempty s]
-    (x : E)
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : (X\St(X, s) ∩

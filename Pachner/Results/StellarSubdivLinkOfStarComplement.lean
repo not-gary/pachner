@@ -1,21 +1,15 @@
 import Pachner.Stellar.StellarSubdivision
 
-variable {E 𝕜 : Type _}
-variable [DecidableEq E] [DecidableEq 𝕜]
-variable [AddCommGroup E]
-variable [Ring 𝕜] [Nontrivial 𝕜]
+variable {E : Type _} [DecidableEq E] [AddCommGroup E]
+variable {𝕜 : Type _} [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+variable {X : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
-theorem stellar_subdiv_link_of_starComplement_left
-    {X : AbstractSimplicialComplex E}
-    {s t : Finset E} [s_ne : Nonempty s]
-    {x : E}
+theorem stellarSubdivision_link_of_starComplement_left
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
     (t_in_star_comp : t ∈ X\St(X, s).faces)
-  : t ∉ ((π₁[𝕜] (disjoint_link_boundary X s)).coe
-      ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
-        Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) ⊆
-          Lk(X, t) :=
+  : t ∉ ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
+        Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) ⊆ Lk(X, t) :=
 by
   intro t_nin_join
   simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
@@ -107,17 +101,12 @@ by
     rw [Set.mem_singleton_iff] at tu_empty
     contradiction
 
-theorem stellar_subdiv_link_of_starComplement_right
-    {X : AbstractSimplicialComplex E}
-    {s t : Finset E} [s_ne : Nonempty s]
-    {x : E}
+theorem stellarSubdivision_link_of_starComplement_right
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
     (t_in_star_comp : t ∈ X\St(X, s).faces)
-  : t ∉ ((π₁[𝕜] (disjoint_link_boundary X s)).coe
-      ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
-        Lk(X, t) ⊆
-          Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) :=
+  : t ∉ ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
+        Lk(X, t) ⊆ Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) :=
 by
   intro t_nin_join
   simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
@@ -215,19 +204,14 @@ by
   constructor; rfl; exact face_nonempty t_in_X
   assumption
 
-theorem stellar_subdiv_link_of_starComplement
-    (X : AbstractSimplicialComplex E)
-    (s t : Finset E) [s_ne : Nonempty s]
-    (x : E)
+theorem stellarSubdivision_link_of_starComplement
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (t_in_star_comp : t ∈ X\St(X, s).faces)
-  : t ∉ ((π₁[𝕜] (disjoint_link_boundary X s)).coe
-      ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
-        Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) =
-          Lk(X, t) :=
+  : t ∉ ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
+        Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t) = Lk(X, t) :=
 by
   intro t_nin_join
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
-  exact ⟨stellar_subdiv_link_of_starComplement_left t_in_star_comp t_nin_join,
-    stellar_subdiv_link_of_starComplement_right t_in_star_comp t_nin_join⟩
+  exact ⟨stellarSubdivision_link_of_starComplement_left t_in_star_comp t_nin_join,
+    stellarSubdivision_link_of_starComplement_right t_in_star_comp t_nin_join⟩

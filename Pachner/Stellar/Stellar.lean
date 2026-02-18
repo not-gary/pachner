@@ -40,29 +40,29 @@ variable [Ring 𝕜] [Nontrivial 𝕜]
 # Properties of Stellar Subdivision
 -/
 
--- barycenter_join_left
+-- simplicialJoin_notMem_vertices_left
 
--- stellar_join_distr_join_left
+-- simplicialJoin_stellarSubdivision_faces_left
 
--- stellar_join_distr_join_right
+-- simplicialJoin_stellarSubdivision_faces_right
 
--- stellar_join_distr_join
+-- simplicialJoin_stellarSubdivision_faces
 
--- stellar_subdiv_distr_join_left
+-- simplicialJoin_stellarSubdivision_left
 
--- barycenter_join_right
+-- simplicialJoin_notMem_vertices_right
 
--- stellar_subdiv_distr_join_right
+-- simplicialJoin_stellarSubdivision_right
 
--- SimplicialJoin_stellarEquiv
+-- simplicialJoin_stellarEquiv
 
--- SimplicialJoin_stellarEquiv_left
+-- simplicialJoin_stellarEquiv_left
 
--- SimplicialJoin_stellarEquiv_right
+-- simplicialJoin_stellarEquiv_right
 
--- stellar_subdiv_link_of_starComplement
+-- stellarSubdivision_link_of_starComplement
 
--- stellar_subdiv_link_of_barycenter
+-- stellarSubdivision_link_of_barycenter
 
 -- star_boundary_is_join
 
@@ -123,27 +123,27 @@ by
 
   contradiction
 
--- star_boundary_mem_link
+-- starBoundary_mem_link
 
--- not_mem_link_vertices
+-- link_notMem_vertices
 
--- stellar_subdiv_anticomm_link_left_ac
+-- stellarSubdivision_anticomm_link_left_ac
 
--- stellar_subdiv_anticomm_link_left_ad_tu_in_X
+-- stellarSubdivision_anticomm_link_left_ad_tu_in_X
 
--- stellar_subdiv_anticomm_link_left_ad_st_nss_u
+-- stellarSubdivision_anticomm_link_left_ad_st_nss_u
 
--- stellar_subdiv_anticomm_link_left_ad
+-- stellarSubdivision_anticomm_link_left_ad
 
--- stellar_subdiv_anticomm_link_left_bc
+-- stellarSubdivision_anticomm_link_left_bc
 
--- stellar_subdiv_anticomm_link_left_bd_u_ss_st
+-- stellarSubdivision_anticomm_link_left_bd_u_ss_st
 
--- stellar_subdiv_anticomm_link_left_bd_u_mem_link
+-- stellarSubdivision_anticomm_link_left_bd_u_mem_link
 
--- stellar_subdiv_anticomm_link_left_bd_stu_mem_link
+-- stellarSubdivision_anticomm_link_left_bd_stu_mem_link
 
--- stellar_subdiv_anticomm_link_left_bd
+-- stellarSubdivision_anticomm_link_left_bd
 
 theorem star_boundary_mem_subdiv
     {X : AbstractSimplicialComplex E}
@@ -208,14 +208,14 @@ by
       rw [Finset.empty_union] at t_decomp
       contradiction
 
--- stellar_subdiv_anticomm_link_left
+-- stellarSubdivision_anticomm_link_left
 
--- stellar_subdiv_anticomm_link_right_e
+-- stellarSubdivision_anticomm_link_right_e
 
--- star_boundary_mem_compl
+-- starBoundary_mem_compl
 
--- stellar_subdiv_anticomm_link_right_f
+-- stellarSubdivision_anticomm_link_right_f
 
--- stellar_subdiv_anticomm_link_right
+-- stellarSubdivision_anticomm_link_right
 
--- stellar_subdiv_anticomm_link
+-- stellarSubdivision_anticomm_link

@@ -1,14 +1,10 @@
 import Pachner.Stellar.StellarSubdivision
 
-variable {E 𝕜 : Type _}
-variable [DecidableEq E] [DecidableEq 𝕜]
-variable [AddCommGroup E]
-variable [Ring 𝕜] [Nontrivial 𝕜]
+variable {E : Type _} [DecidableEq E] [AddCommGroup E]
+variable {𝕜 : Type _} [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+variable {X : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
-theorem stellar_subdiv_link_of_barycenter_left
-    {X : AbstractSimplicialComplex E}
-    {s : Finset E}
-    {x : E}
+theorem stellarSubdivision_link_of_barycenter_left
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
   : Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), {x}) ⊆
@@ -140,10 +136,7 @@ by
   rw [Finset.union_empty]
   exact face_nonempty a_in_subdiv
 
-theorem stellar_subdiv_link_of_barycenter_right
-    {X : AbstractSimplicialComplex E}
-    {s : Finset E}
-    {x : E}
+theorem stellarSubdivision_link_of_barycenter_right
     {s_in_X : s ∈ X.faces}
     {x_nin_X : x ∉ X.vertices}
   : ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) ⊆
@@ -221,14 +214,11 @@ by
     assumption
   contradiction
 
-theorem stellar_subdiv_link_of_barycenter
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
-    (x : E)
+theorem stellarSubdivision_link_of_barycenter
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), {x}) =
       ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
-  exact ⟨stellar_subdiv_link_of_barycenter_left, stellar_subdiv_link_of_barycenter_right⟩
+  exact ⟨stellarSubdivision_link_of_barycenter_left, stellarSubdivision_link_of_barycenter_right⟩
