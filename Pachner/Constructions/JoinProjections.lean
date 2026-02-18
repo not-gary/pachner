@@ -439,7 +439,7 @@ by
 theorem disjoint_barycenter_boundary
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : Disjoint ((simplex {x}).vertices) ((∂s).vertices) :=
+  : Disjoint ((Simplex {x}).vertices) ((∂s).vertices) :=
 by
   rw [Set.disjoint_left]
   intro y y_in_barycenter
@@ -447,7 +447,7 @@ by
   rw [Set.subset_def]
   intro z
   apply faceBoundary_subcomplex_vertices s_in_X
-  simp only [AbstractSimplicialComplex.vertices, simplex] at y_in_barycenter
+  simp only [AbstractSimplicialComplex.vertices, Simplex] at y_in_barycenter
   simp only [Finset.coe_powerset, Finset.coe_singleton, Set.mem_diff, Set.mem_preimage,
     Set.mem_powerset_iff, Set.subset_singleton_iff, Set.mem_singleton_iff, forall_eq,
     Finset.singleton_ne_empty, not_false_eq_true, and_true,
@@ -458,7 +458,7 @@ by
 theorem disjoint_barycenter_join_boundary_link
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : Disjoint (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ ((simplex {x}) ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).vertices)
+  : Disjoint (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ ((Simplex {x}) ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜))).vertices)
        (Lk(X, s).vertices) :=
 by
   rw [Set.disjoint_left]
@@ -471,7 +471,7 @@ by
   cases' y_in_join with y_in_barycenter y_in_bd
 
   -- y ∈ {x}
-  simp only [AbstractSimplicialComplex.vertices_eq, simplex, Set.mem_iUnion] at y_in_barycenter
+  simp only [AbstractSimplicialComplex.vertices_eq, Simplex, Set.mem_iUnion] at y_in_barycenter
   choose t Ht y_in_t using y_in_barycenter
   rw [Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at Ht
   choose Ht t_ne using Ht
@@ -536,7 +536,7 @@ theorem disjoint_link_boundary
 
 theorem disjoint_link_barycenter
     (x_nin_X : x ∉ X.vertices)
-  : Disjoint (Lk(X, s).vertices) ((simplex {x}).vertices) :=
+  : Disjoint (Lk(X, s).vertices) ((Simplex {x}).vertices) :=
 by
   rw [Set.disjoint_iff_inter_eq_empty, Set.eq_empty_iff_forall_notMem]
   intro y
@@ -545,7 +545,7 @@ by
   simp only [Link, Set.mem_sep_iff] at t_in_link
   choose t t_in_link y_in_t using t_in_link
   choose t_in_X st_in_X st_disj using t_in_link
-  simp only [simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u_in_barycenter
+  simp only [Simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u_in_barycenter
   cases' u_in_barycenter with u_eq_x u_nonempty
   rw [Set.mem_singleton_iff] at u_nonempty
   cases' u_eq_x with u_empty u_eq_x

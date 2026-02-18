@@ -195,7 +195,7 @@ theorem stellarSubdivision_anticomm_link_left_ad_st_nss_u
     (u_in_X : u ∈ X.faces)
     (tu_disj : t ∩ u = ∅)
     (su₁_disj : s ∩ u₁ = ∅)
-    (tu_in_join : t₂ ∪ u₂ ∈ ((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s)).faces ∪ {∅})
+    (tu_in_join : t₂ ∪ u₂ ∈ ((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (Simplex {x} ⋆ ∂s)).faces ∪ {∅})
     (t_decomp : t = t₁ ∪ t₂)
     (u_decomp : u = u₁ ∪ u₂)
   : ¬s \ t₂ ⊆ u :=
@@ -206,7 +206,7 @@ by
     choose t₂_decomp u₂_decomp tu₃_in_barycenter tu₂_in_bd using tu₂_decomp
     have u₃_empty : u₃ = ∅ :=
     by
-      simp only [simplex, Set.mem_union, Set.mem_singleton_iff, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+      simp only [Simplex, Set.mem_union, Set.mem_singleton_iff, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
       cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
       · choose u₃_eq_x u₃_ne using u₃_in_barycenter
         cases' u₃_eq_x with u₃_empty u₃_eq_x; contradiction
@@ -222,7 +222,7 @@ by
       · assumption
     have t₃_empty : t₃ = ∅ :=
     by
-      simp only [simplex, Set.mem_union, Set.mem_singleton_iff, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+      simp only [Simplex, Set.mem_union, Set.mem_singleton_iff, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
       cases' t₃_in_barycenter with t₃_in_barycenter t₃_empty
       · choose t₃_eq_x t₃_ne using t₃_in_barycenter
         cases' t₃_eq_x with t₃_empty t₃_eq_x; contradiction
@@ -318,7 +318,7 @@ theorem stellarSubdivision_anticomm_link_left_ad
       u ∈ (StarComplement X s).faces →
         t ∪ u ∈ ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
                   ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-                    ''ˢ (simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))).faces →
+                    ''ˢ (Simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))).faces →
           t ∩ u = ∅ →
             u ∈ σ(Lk(X, t), s \ t, x; 𝕜, starBoundary_mem_link s_in_X t_in_star_bd,
                   link_notMem_vertices x_nin_X).faces :=
@@ -353,7 +353,7 @@ by
       have t₃_empty : t₃ = ∅ :=
       by
         cases' t₃_in_barycenter with t₃_in_barycenter t₃_empty
-        · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+        · simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
           choose t₃_in_barycenter t₃_ne using t₃_in_barycenter
           cases' t₃_in_barycenter with t₃_empty t₃_eq_x; contradiction
           have contra : x ∈ X.vertices :=
@@ -383,7 +383,7 @@ by
       have u₃_empty : u₃ = ∅ :=
       by
         cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
-        · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+        · simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
           choose u₃_in_barycenter u₃_ne using u₃_in_barycenter
           cases' u₃_in_barycenter with u₃_empty u₃_eq_x; contradiction
           have contra : x ∈ X.vertices :=
@@ -419,7 +419,7 @@ by
     have t₃_empty : t₃ = ∅ :=
     by
       cases' t₃_in_barycenter with t₃_in_barycenter t₃_empty
-      · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+      · simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         choose t₃_in_barycenter t₃_ne using t₃_in_barycenter
         cases' t₃_in_barycenter with t₃_empty t₃_eq_x; contradiction
         have contra : x ∈ X.vertices :=
@@ -438,7 +438,7 @@ by
       have u₃_empty : u₃ = ∅ :=
       by
         cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
-        · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+        · simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
           choose u₃_in_barycenter u₃_ne using u₃_in_barycenter
           cases' u₃_in_barycenter with u₃_empty u₃_eq_x; contradiction
           have contra : x ∈ X.vertices :=
@@ -527,7 +527,7 @@ by
           have u₃_empty : u₃ = ∅ :=
           by
             cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
-            · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+            · simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
               choose u₃_in_barycenter u₃_ne using u₃_in_barycenter
               cases' u₃_in_barycenter with u₃_empty u₃_eq_x; contradiction
               have contra : x ∈ X.vertices :=
@@ -571,7 +571,7 @@ theorem stellarSubdivision_anticomm_link_left_bc
   : ∀ u : Finset E,
       u ∈ ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
             ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-              ''ˢ (simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))).faces →
+              ''ˢ (Simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))).faces →
         t ∪ u ∈ (StarComplement X s).faces →
           t ∩ u = ∅ →
             u ∈ σ(Lk(X, t), s \ t, x; 𝕜, starBoundary_mem_link s_in_X t_in_star_bd,
@@ -592,7 +592,7 @@ by
     have u₃_empty : u₃ = ∅ :=
     by
       cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
-      · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+      · simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
         choose u₃_in_barycenter u₃_ne using u₃_in_barycenter
         cases' u₃_in_barycenter with u₃_empty u₃_eq_x; contradiction
         have contra : x ∈ X.vertices :=
@@ -774,10 +774,10 @@ theorem stellarSubdivision_anticomm_link_left_bd
   : ∀ u : Finset E,
       u ∈ ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
             ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-              ''ˢ (simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))).faces →
+              ''ˢ (Simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))).faces →
         t ∪ u ∈ ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
                   ''ˢ ((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-                    ''ˢ (simplex {x} ⋆ ∂s) ⋆ Lk(X, s))).faces →
+                    ''ˢ (Simplex {x} ⋆ ∂s) ⋆ Lk(X, s))).faces →
           t ∩ u = ∅ →
             u ∈ σ(Lk(X, t), s \ t, x; 𝕜, starBoundary_mem_link s_in_X t_in_star_bd,
                   link_notMem_vertices x_nin_X).faces :=
@@ -816,7 +816,7 @@ by
           have w₃_empty : w₃ = ∅ :=
           by
             cases' w₃_in_barycenter with w₃_in_barycenter w₃_empty
-            · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at w₃_in_barycenter
+            · simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at w₃_in_barycenter
               choose w₃_in_barycenter w₃_ne using w₃_in_barycenter
               cases' w₃_in_barycenter with w₃_empty w₃_eq_x; contradiction
               have contra : x ∈ X.vertices :=
@@ -971,7 +971,7 @@ by
           have w₃_empty : w₃ = ∅ :=
           by
             cases' w₃_in_barycenter with w₃_in_barycenter w₃_empty
-            · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at w₃_in_barycenter
+            · simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at w₃_in_barycenter
               choose w₃_in_barycenter w₃_ne using w₃_in_barycenter
               cases' w₃_in_barycenter with w₃_empty w₃_eq_x; contradiction
               have contra : x ∈ X.vertices :=
@@ -991,13 +991,13 @@ by
         by
           rw [u'_decomp] at u'₂_decomp
           cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
-          · simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+          · simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
             choose u₃_in_barycenter u₃_ne using u₃_in_barycenter
             cases' u₃_in_barycenter with u₃_empty u₃_eq_x; contradiction
 
             subst u₃_eq_x
             cases' z₃_in_barycenter with z₃_in_barycenter z₃_empty
-            · simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at z₃_in_barycenter
+            · simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at z₃_in_barycenter
               choose z₃_in_barycenter z₃_ne using z₃_in_barycenter
               cases' z₃_in_barycenter with z₃_empty z₃_eq_x; contradiction
 
@@ -1077,7 +1077,7 @@ by
             have z₃_empty : z₃ = ∅ :=
             by
               cases' z₃_in_barycenter with z₃_in_barycenter z₃_empty
-              · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at z₃_in_barycenter
+              · simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at z₃_in_barycenter
                 choose z₃_in_barycenter z₃_ne using z₃_in_barycenter
                 cases' z₃_in_barycenter with z₃_empty z₃_eq_x; contradiction
                 have contra : x ∈ X.vertices :=
@@ -1102,7 +1102,7 @@ by
           rw [Set.mem_union, Set.mem_singleton_iff] at z₃_in_barycenter
           cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty <;>
           cases' z₃_in_barycenter with z₃_in_barycenter z₃_empty
-          · simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at z₃_in_barycenter u₃_in_barycenter
+          · simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at z₃_in_barycenter u₃_in_barycenter
 
             choose z₃_in_barycenter z₃_ne using z₃_in_barycenter
             cases' z₃_in_barycenter with z₃_empty z₃_eq_x; contradiction
@@ -1112,7 +1112,7 @@ by
 
             rw [z₃_eq_x, u₃_eq_x]
           · rw [z₃_empty, Finset.empty_union] at u'₂_decomp
-            simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+            simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
             choose u₃_in_barycenter u₃_ne using u₃_in_barycenter
             cases' u₃_in_barycenter with u₃_empty u₃_eq_x; contradiction
 
@@ -1128,7 +1128,7 @@ by
               left; apply Finset.mem_singleton_self
             contradiction
           · rw [u₃_empty, Finset.empty_union] at u'₂_decomp
-            simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at z₃_in_barycenter
+            simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at z₃_in_barycenter
             choose z₃_in_barycenter z₃_ne using z₃_in_barycenter
             cases' z₃_in_barycenter with z₃_empty z₃_eq_x; contradiction
 
@@ -1428,7 +1428,7 @@ theorem stellarSubdivision_anticomm_link_right_f
       u ∈ ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _
                     (starBoundary_mem_link s_in_X t_in_star_bd) (link_notMem_vertices x_nin_X))).coe
             ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary (starBoundary_mem_compl s_in_X t_in_star_bd) x_nin_X)).coe
-              ''ˢ (simplex {x} ⋆ ∂(s \ t))) ⋆ Lk(Lk(X, t), s \ t))).faces →
+              ''ˢ (Simplex {x} ⋆ ∂(s \ t))) ⋆ Lk(Lk(X, t), s \ t))).faces →
         u ∈ Lk(σ(X, s, x; 𝕜, s_in_X, x_nin_X), t).faces :=
 by
   intro u u_in_join
@@ -1471,7 +1471,7 @@ by
       rotate_left; contradiction
 
       choose u₃ u₃_in_barycenter u₂ u₂_in_bd u_decomp u_ne using u'₂_in_join
-      simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+      simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
       simp only [Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self,
         faceBoundary_mem_iff_subset] at u₂_in_bd
 
@@ -1732,7 +1732,7 @@ by
     have tu₃_disj : (t₁ ∪ t₂) ∩ u₃ = ∅ :=
     by
       cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
-      · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+      · simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
         choose u₃_eq_x u₃_ne using u₃_in_barycenter
         cases' u₃_eq_x with u₃_empty u₃_eq_x; contradiction
 
@@ -1880,7 +1880,7 @@ by
     have tu₃_disj : (t₁ ∪ t₂) ∩ u₃ = ∅ :=
     by
       cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
-      · simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+      · simp only [Simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
         choose u₃_eq_x u₃_ne using u₃_in_barycenter
         cases' u₃_eq_x with u₃_empty u₃_eq_x; contradiction
 

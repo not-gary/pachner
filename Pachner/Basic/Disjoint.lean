@@ -25,7 +25,7 @@ by
   simp only [Set.subset_empty_iff] at ⊢ XY_disj
   assumption
 
-theorem disjoint_singleton : x ∉ X.vertices → DisjointComplexes X (simplex {x}) := by
+theorem disjoint_singleton : x ∉ X.vertices → DisjointComplexes X (Simplex {x}) := by
   simp only [DisjointComplexes, simplex_vertices]
   intro x_nin_X
   rw [Set.disjoint_iff_inter_eq_empty, Finset.coe_singleton, Set.inter_singleton_eq_empty]

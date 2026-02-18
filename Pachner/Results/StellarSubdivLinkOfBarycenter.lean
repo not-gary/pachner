@@ -83,7 +83,7 @@ by
   subst x_decomp
   have a₃_empty : a₃ = ∅ :=
   by
-    simp only [simplex, Set.mem_union, Set.mem_singleton_iff, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
+    simp only [Simplex, Set.mem_union, Set.mem_singleton_iff, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
       Finset.subset_singleton_iff] at xa₃_in_barycenter
     cases' xa₃_in_barycenter with xa₃_eq_x xa₃_empty
 
@@ -168,7 +168,7 @@ by
   simp only [simplicialJoinProj_mem, Set.mem_union, Set.mem_singleton_iff]
   use {x} ∪ a₂; constructor; left
   use {x}; constructor; left
-  simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe]
+  simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe]
   constructor
   apply Finset.mem_powerset_self
   apply Finset.singleton_ne_empty

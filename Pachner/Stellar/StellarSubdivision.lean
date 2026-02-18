@@ -17,7 +17,7 @@ def StellarSubdivision
   : AbstractSimplicialComplex E :=
     X\St(X, s) ∪
       (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe ''ˢ
-        (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s))  ⋆ Lk(X, s))
+        (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (Simplex {x} ⋆ ∂s))  ⋆ Lk(X, s))
 
 notation "σ(" X ", " s ", " x "; " 𝕜 ", " s_in_X ", " x_nin_X ")" => @StellarSubdivision _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X
 
@@ -31,23 +31,23 @@ instance StellarSubdivision.fintype
 by
   simp only [StellarSubdivision, SimplicialUnion]
   have star_comp_fin : Fintype ↥(X\St(X, s)).faces := by apply StarComplement.fintype
-  have barycenter_fin : Fintype ↥(simplex {x}).faces := by apply simplex.Fintype {x}
+  have barycenter_fin : Fintype ↥(Simplex {x}).faces := by apply Simplex.Fintype {x}
   have bd_fin : Fintype ↥(∂s).faces := by apply FaceBoundary.fintype
-  have barycenter_bd_fin : Fintype ↥(simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)).faces := by
+  have barycenter_bd_fin : Fintype ↥(Simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)).faces := by
     apply SimplicialJoin.fintype
   have proj_bary_bd_fin :
-    Fintype ((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s)).faces :=
+    Fintype ((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (Simplex {x} ⋆ ∂s)).faces :=
     by apply SimplicialCoe.Fintype
   have Link_fin : Fintype ↥Lk(X, s).faces := by apply Link.fintype
   have proj_link_fin :
     Fintype
-      ↥((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s)
+      ↥((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (Simplex {x} ⋆ ∂s)
         ⋆ Lk(X, s) : AbstractSimplicialComplex (E × 𝕜)).faces :=
     by apply SimplicialJoin.fintype
   have join_fin :
     Fintype
       ↥((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe ''ˢ
-          (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))).faces :=
+          (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (Simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))).faces :=
     by apply SimplicialCoe.Fintype
   apply Set.fintypeUnion
 
@@ -87,7 +87,7 @@ by
       simp only [simplicialJoinProj_mem, Set.mem_union]
       use {x} ∪ s \ {a}; constructor; left
       use {x}; constructor; left
-      simp only [simplex, Finset.mem_coe, Set.mem_diff]
+      simp only [Simplex, Finset.mem_coe, Set.mem_diff]
       constructor
       apply Finset.mem_powerset_self
       rw [Set.mem_singleton_iff, ← ne_eq]
@@ -245,7 +245,7 @@ by
     simp only [simplicialJoinProj_mem] at t'_in_join
     choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp t'_ne using t'_in_join
     subst t'_decomp
-    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+    simp only [Simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
     cases' t₃_in_barycenter with t₃_eq_x t₃_empty
     · have s_ne : Nonempty {x // x ∈ s} :=
       by
@@ -466,7 +466,7 @@ by
     right; assumption
     have a_nin_s₃ : a ∉ s₃ :=
     by
-      simp only [simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at s₃_in_barycenter
+      simp only [Simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at s₃_in_barycenter
       choose s₃_in_barycenter s₃_ne using s₃_in_barycenter
       cases' s₃_in_barycenter with contra s₃_eq_x
       contradiction
@@ -542,7 +542,7 @@ by
 
     left
     use {x}; constructor; left
-    simp only [simplex, Set.mem_diff, Finset.mem_coe]
+    simp only [Simplex, Set.mem_diff, Finset.mem_coe]
     constructor
     apply Finset.mem_powerset_self
     rw [Set.mem_singleton_iff]
@@ -616,7 +616,7 @@ by
   cases' a_in_t with a_in_t a_in_t₁
   cases' a_in_t with a_in_t₃ a_in_t₂
   right
-  have a_in_x : a ∈ (simplex {x}).vertices :=
+  have a_in_x : a ∈ (Simplex {x}).vertices :=
   by
     rw [vertex_iff_in_face]
     use t₃
@@ -677,7 +677,7 @@ by
   subst t₂_empty
   rw [Finset.union_empty] at t'_decomp
   subst t'_decomp
-  simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
   choose t₃_in_barycenter t₃_empty using t₃_in_barycenter
   cases' t₃_in_barycenter with t₃_empty t₃_eq_x
@@ -754,7 +754,7 @@ by
   constructor
 
   left
-  simp only [simplex, Finset.mem_coe, Set.mem_diff]
+  simp only [Simplex, Finset.mem_coe, Set.mem_diff]
   constructor
   apply Finset.mem_powerset_self
   apply Finset.singleton_ne_empty
@@ -881,7 +881,7 @@ by
     constructor
 
     left
-    simp only [simplex, Finset.mem_coe, Set.mem_diff]
+    simp only [Simplex, Finset.mem_coe, Set.mem_diff]
     constructor
     apply Finset.mem_powerset_self
     apply Finset.singleton_ne_empty
@@ -981,7 +981,7 @@ by
     subst t'_decomp
     have t₃_empty : t₃ = ∅ :=
       by
-      simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+      simp only [Simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
       cases' t₃_in_barycenter with t₃_eq_x t₃_empty
       have contra : x ∈ t := by
         rw [Set.mem_diff] at t₃_eq_x
@@ -1101,7 +1101,7 @@ by
     have su₂_rw : s ∪ u₂ = s := by
       rw [Finset.union_eq_left]
       simp only [u₂_ss_s]
-    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+    simp only [Simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
     cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
 
     choose u₃_eq_x u₃_nonempty using u₃_in_barycenter
@@ -1122,7 +1122,7 @@ by
     rw [Finset.union_empty] at *
     cases' u₃_in_barycenter with u₃_eq_x u₃_empty
 
-    simp only [simplex, Set.mem_diff, Finset.mem_coe] at u₃_eq_x
+    simp only [Simplex, Set.mem_diff, Finset.mem_coe] at u₃_eq_x
     choose u₃_eq_x u₃_nonempty using u₃_eq_x
     simp only [Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_eq_x
     cases' u₃_eq_x with u₃_empty u₃_eq_x
@@ -1152,7 +1152,7 @@ by
     subst su_eq_t
     choose u_decomp u_nonempty using u_decomp
     subst u_decomp
-    simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
+    simp only [Simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
     cases' u₃_in_barycenter with u₃_in_barycenter u₃_empty
 
     choose u₃_eq_x u₃_nonempty using u₃_in_barycenter
@@ -1284,7 +1284,7 @@ by
       use {x}
       constructor
       · left
-        simp only [simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset]
+        simp only [Simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset]
         constructor
         rfl
         simp only [Set.mem_singleton_iff, Finset.singleton_ne_empty, not_false_eq_true]
@@ -1377,7 +1377,7 @@ by
   use Finset.image f.map u₃
   constructor
 
-  simp only [simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
+  simp only [Simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
   cases' u₃_in_barycenter with u₃_x u₃_empty
 
   left
@@ -1704,7 +1704,7 @@ by
   cases' s₁_in_link with s₁_in_link s₁_empty
 
   choose s₁_in_X ys₁_in_X ys₁_disj using s₁_in_link
-  simp only [simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at s₃_in_barycenter
+  simp only [Simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at s₃_in_barycenter
   rw [and_or_right, or_comm, Set.mem_singleton_iff, ← or_assoc, or_self_iff] at s₃_in_barycenter
   choose s₃_in_barycenter _ using s₃_in_barycenter
   cases' s₃_in_barycenter with s₃_empty s₃_eq_x
@@ -1760,7 +1760,7 @@ by
     assumption
 
   subst s₁_empty
-  simp only [simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at s₃_in_barycenter
+  simp only [Simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at s₃_in_barycenter
   rw [and_or_right, or_comm, Set.mem_singleton_iff, ← or_assoc, or_self_iff] at s₃_in_barycenter
   choose s₃_in_barycenter _ using s₃_in_barycenter
   cases' s₃_in_barycenter with s₃_empty s₃_eq_x
@@ -1880,7 +1880,7 @@ by
   use {x}
   constructor
 
-  simp only [simplex, Set.mem_diff, Finset.mem_coe]
+  simp only [Simplex, Set.mem_diff, Finset.mem_coe]
 
   left
   constructor
@@ -2067,5 +2067,5 @@ theorem stellarSubdivision_congr
   : σ(X, s, x; 𝕜, s_in_X, x_nin_X) =
       σ(Y, s, x; 𝕜, by rw [← X_eq_Y]; assumption, by rw [← vertices_congr X_eq_Y]; assumption) :=
 by
-  simp only [StellarSubdivision, SimplicialUnion, StarComplement, Link, simplex, FaceBoundary, X_eq_Y]
+  simp only [StellarSubdivision, SimplicialUnion, StarComplement, Link, Simplex, FaceBoundary, X_eq_Y]
   rfl

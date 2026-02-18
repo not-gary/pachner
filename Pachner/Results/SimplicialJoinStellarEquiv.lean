@@ -10,12 +10,12 @@ theorem simplicialJoin_stellarSubdivision_faces_left
     (x_nin_X : x ∉ X.vertices)
   : ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
       ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-        ''ˢ (simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y ⊆
+        ''ˢ (Simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y ⊆
       (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ (X ⋆ Y) _ _
             (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
         ''ˢ ((π₁[𝕜]
               (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _ (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
-          ''ˢ (simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) :=
+          ''ˢ (Simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) :=
 by
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def,
     Set.mem_union, simplicialJoin_mem, simplicialJoinProj_mem]
@@ -35,7 +35,7 @@ by
 
   use u₃ ⊔ₛ ∅ ∪ (u₂ ⊔ₛ ∅); constructor; left
   use u₃ ⊔ₛ ∅; constructor; left
-  simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
+  simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
   constructor; right
   cases' u₃_in_barycenter with u₃_empty u₃_eq_x
   contradiction
@@ -154,7 +154,7 @@ by
 
   use u₃ ⊔ₛ ∅; constructor; left
   use u₃ ⊔ₛ ∅; constructor; left
-  simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
+  simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
   choose u₃_in_barycenter u₃_ne using u₃_in_barycenter
   cases' u₃_in_barycenter with u₃_empty u₃_in_barycenter
   contradiction
@@ -329,10 +329,10 @@ theorem simplicialJoin_stellarSubdivision_faces_right
             (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
         ''ˢ ((π₁[𝕜] (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _
                 (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
-          ''ˢ (simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) ⊆
+          ''ˢ (Simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) ⊆
       ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
         ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-          ''ˢ (simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y :=
+          ''ˢ (Simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y :=
 by
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def,
     Set.mem_union, Set.mem_singleton_iff, simplicialJoin_mem, simplicialJoinProj_mem]
@@ -354,7 +354,7 @@ by
   · choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp t'_ne using t'_in_join
     subst t'_decomp
 
-    simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
+    simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
       Finset.subset_singleton_iff] at t₃_in_barycenter
     simp only [faceBoundary_mem_iff_subset, Finset.ssubset_iff] at t₂_in_bd
 
@@ -387,7 +387,7 @@ by
       use Finset.image Prod.fst (t₃ ∪ t₂); constructor; left
       use Finset.image Prod.fst t₃; constructor; left
 
-      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
+      simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
         Finset.subset_singleton_iff]
       simp only [t₃_in_barycenter, Finset.image_singleton, Prod.fst]
       constructor; right; trivial
@@ -517,7 +517,7 @@ by
         assumption
       have t₃_lift : Finset.image Prod.fst t₃ ⊔ₛ ∅ = t₃ :=
       by
-        simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+        simp only [Simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
         simp only [FaceDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
@@ -537,7 +537,7 @@ by
       use Finset.image Prod.fst (t₃ ∪ t₂); constructor; left
       use Finset.image Prod.fst t₃; constructor; left
 
-      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
+      simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
         Finset.subset_singleton_iff]
       simp only [t₃_in_barycenter, Finset.image_singleton, Prod.fst]
       constructor; right; trivial
@@ -639,7 +639,7 @@ by
         assumption
       have t₃_lift : Finset.image Prod.fst t₃ ⊔ₛ ∅ = t₃ :=
       by
-        simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+        simp only [Simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
         simp only [FaceDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
@@ -672,7 +672,7 @@ by
       use Finset.image Prod.fst (t₃ ∪ ∅); constructor; left
       use Finset.image Prod.fst t₃; constructor; left
 
-      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
+      simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
         Finset.subset_singleton_iff]
       simp only [t₃_in_barycenter, Finset.image_singleton, Prod.fst]
       constructor; right; trivial
@@ -720,7 +720,7 @@ by
 
       have t₃_lift : Finset.image Prod.fst t₃ ⊔ₛ ∅ = t₃ :=
       by
-        simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+        simp only [Simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
         simp only [FaceDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
@@ -738,7 +738,7 @@ by
       use Finset.image Prod.fst (t₃ ∪ ∅); constructor; left
       use Finset.image Prod.fst t₃; constructor; left
 
-      simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
+      simp only [Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
         Finset.subset_singleton_iff]
       simp only [t₃_in_barycenter, Finset.image_singleton, Prod.fst]
       constructor; right; trivial
@@ -761,7 +761,7 @@ by
 
       have t₃_lift : Finset.image Prod.fst t₃ ⊔ₛ ∅ = t₃ :=
       by
-        simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+        simp only [Simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
         simp only [FaceDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
@@ -1182,12 +1182,12 @@ theorem simplicialJoin_stellarSubdivision_faces
     (x_nin_X : x ∉ X.vertices)
   : ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
       ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-        ''ˢ (simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y =
+        ''ˢ (Simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y =
       (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ (X ⋆ Y) _ _
             (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
         ''ˢ ((π₁[𝕜] (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _
                 (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
-          ''ˢ ((simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅))) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) :=
+          ''ˢ ((Simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅))) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) :=
 by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
   exact ⟨simplicialJoin_stellarSubdivision_faces_left s_in_X x_nin_X, simplicialJoin_stellarSubdivision_faces_right s_in_X x_nin_X⟩

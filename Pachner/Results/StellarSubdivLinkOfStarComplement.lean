@@ -45,7 +45,7 @@ by
       tu₃_in_barycenter tu₂_in_bd using tu'_in_join
     subst t'_decomp
     subst u'_decomp
-    simp only [simplex, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
+    simp only [Simplex, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
       Finset.subset_singleton_iff, Set.mem_singleton_iff] at t₃_in_barycenter
     cases' t₃_in_barycenter with contra t₃_empty
     choose contra t₃_ne using contra

@@ -10,7 +10,7 @@ theorem star_boundary_is_join_left
   : (X\St(X, s) ∩
       ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
         ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-          ''ˢ (simplex {x} ⋆ ∂s)) ⋆
+          ''ˢ (Simplex {x} ⋆ ∂s)) ⋆
               Lk(X, s)))) ⊆
       ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by
@@ -29,7 +29,7 @@ by
   choose t_in_X s_nss_t using t_in_star_comp
   have t₃_empty : t₃ = ∅ :=
   by
-    simp only [simplex, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
+    simp only [Simplex, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
     cases' t₃_in_barycenter with t₃_eq_x t₃_empty
     choose t₃_eq_x t₃_ne using t₃_eq_x
     cases' t₃_eq_x with t₃_empty t₃_eq_x
@@ -71,7 +71,7 @@ theorem star_boundary_is_join_right
       (X\St(X, s) ∩
         ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
             ''ˢ ((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-              ''ˢ (simplex {x} ⋆ ∂s) ⋆
+              ''ˢ (Simplex {x} ⋆ ∂s) ⋆
                 Lk(X, s)))) :=
 by
   intro t t_in_join
@@ -173,7 +173,7 @@ theorem star_boundary_is_join
   : (X\St(X, s) ∩
       ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
         ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
-          ''ˢ (simplex {x} ⋆ ∂s)) ⋆
+          ''ˢ (Simplex {x} ⋆ ∂s)) ⋆
               Lk(X, s)))) =
       ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) :=
 by

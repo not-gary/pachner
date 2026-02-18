@@ -75,7 +75,7 @@ by
   use Finset.image (StellarCoeMap φ.coe x y) t₃
   constructor
 
-  simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff, Set.mem_diff] at t₃_in_barycenter ⊢
+  simp only [Simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff, Set.mem_diff] at t₃_in_barycenter ⊢
   rw [and_or_right, or_comm, Set.mem_singleton_iff, ← or_assoc, or_self_iff] at t₃_in_barycenter
   choose t₃_in_barycenter _ using t₃_in_barycenter
   cases' t₃_in_barycenter with t₃_empty t₃_x
@@ -279,7 +279,7 @@ by
   use Finset.image (StellarCoeMap (φ⁻ᶜ.map) y x) t₃
   constructor
 
-  simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff, Set.mem_diff] at t₃_in_barycenter ⊢
+  simp only [Simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff, Set.mem_diff] at t₃_in_barycenter ⊢
   rw [and_or_right, or_comm, Set.mem_singleton_iff, ← or_assoc, or_self_iff] at t₃_in_barycenter
   choose t₃_in_barycenter _ using t₃_in_barycenter
   cases' t₃_in_barycenter with t₃_empty t₃_x

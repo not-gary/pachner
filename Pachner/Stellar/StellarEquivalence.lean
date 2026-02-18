@@ -324,7 +324,7 @@ by
 
   left
   use Finset.image f u₃; constructor
-  simp only [simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
+  simp only [Simplex, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter ⊢
   cases' u₃_in_barycenter with u₃_eq_x u₃_empty
 
   rotate_left
@@ -768,7 +768,7 @@ by
 
   rw [Set.mem_union, simplicialJoinProj_mem]
   left; use {x}; constructor
-  simp only [simplex, Set.mem_union, Set.mem_diff, Finset.mem_coe]
+  simp only [Simplex, Set.mem_union, Set.mem_diff, Finset.mem_coe]
   left; constructor
   apply Finset.mem_powerset_self
   rw [Set.mem_singleton_iff]
@@ -942,7 +942,7 @@ by
   simp only [simplicialJoinProj_mem, Set.mem_union]
   use {x} ∪ u₂; constructor; left
   use {x}; constructor; left
-  simp only [simplex, Set.mem_diff, Finset.mem_coe]
+  simp only [Simplex, Set.mem_diff, Finset.mem_coe]
   constructor; apply Finset.mem_powerset_self
   rw [Set.mem_singleton_iff, ← ne_eq]
   apply Finset.singleton_ne_empty
@@ -1107,7 +1107,7 @@ by
   simp only [Set.mem_union, simplicialJoinProj_mem]
   left; use {x}; constructor
 
-  simp only [simplex, Set.mem_diff, Finset.mem_coe]
+  simp only [Simplex, Set.mem_diff, Finset.mem_coe]
   left; constructor; apply Finset.mem_powerset_self
   rw [Set.mem_singleton_iff]
   apply Finset.singleton_ne_empty
@@ -1157,7 +1157,7 @@ by
   use {x}; constructor
   rw [Set.mem_union, simplicialJoinProj_mem]
   left; use {x}; constructor
-  simp only [Set.mem_union, simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe]
+  simp only [Set.mem_union, Simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe]
   left; constructor
   apply Finset.mem_powerset_self
   apply Finset.singleton_ne_empty
@@ -1220,7 +1220,7 @@ by
   subst t'_decomp
   simp only [FaceBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset] at t₂_in_bd
-  simp only [simplex, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
+  simp only [Simplex, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
     Finset.subset_singleton_iff, Set.mem_singleton_iff] at t₃_in_barycenter
   cases' t₂_in_bd with t₂_in_bd t₂_empty <;>
 
