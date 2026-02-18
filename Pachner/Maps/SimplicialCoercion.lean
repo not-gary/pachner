@@ -43,7 +43,7 @@ by
     simp only [← Finset.coe_inj, Finset.coe_image]
     apply Set.InjOn.invFunOn_image
     apply φ.Injective
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     assumption
   rw [inv_id]
   assumption

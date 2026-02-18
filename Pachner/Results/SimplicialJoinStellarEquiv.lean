@@ -41,29 +41,29 @@ by
   contradiction
 
   rw [u₃_eq_x]
-  simp only [SimplexDisjointUnion, Finset.product_singleton, Finset.map_singleton,
+  simp only [FaceDisjointUnion, Finset.product_singleton, Finset.map_singleton,
     Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
 
   cases' u₃_in_barycenter with u₃_empty u₃_eq_x
   rw [Set.mem_singleton_iff] at u₃_ne
   contradiction
 
-  rw [u₃_eq_x, simplexDisjoint_empty, not_and_or]
+  rw [u₃_eq_x, faceDisjoint_empty, not_and_or]
   left; apply Finset.singleton_ne_empty
 
   use u₂ ⊔ₛ ∅; constructor; left
   rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne, and_assoc] at u₂_in_bd ⊢
   choose u₂_ss_s u₂_ne_s u₂_ne using u₂_in_bd
 
-  simp only [ne_eq, simplexDisjoint_subset_unique, simplexDisjoint_eq_unique, not_and]
+  simp only [ne_eq, faceDisjoint_subset_unique, faceDisjoint_eq_unique, not_and]
   constructor; constructor; assumption; rfl
   constructor; intro contra; contradiction
 
-  rw [simplexDisjoint_empty, not_and_or]
+  rw [faceDisjoint_empty, not_and_or]
   left; assumption
 
   constructor; rfl
-  simp only [ne_eq, Finset.union_eq_empty, not_and_or, simplexDisjoint_empty]
+  simp only [ne_eq, Finset.union_eq_empty, not_and_or, faceDisjoint_empty]
   left; left
   rw [Set.mem_singleton_iff] at u₃_ne
   assumption
@@ -78,11 +78,11 @@ by
   exact simplicialJoin_mem_left u₁_in_X (Set.mem_union_left {∅} v_in_Y)
 
   constructor
-  rw [simplexDisjoint_distr_union, Finset.empty_union]
+  rw [faceDisjoint_distr_union, Finset.empty_union]
   exact simplicialJoin_mem_left su₁_in_X (Set.mem_union_left {∅} v_in_Y)
 
-  rw [simplexDisjoint_distr_inter, Finset.empty_inter, su₁_disj]
-  simp only [SimplexDisjointUnion, Finset.product_singleton, Finset.map_empty, Finset.empty_union]
+  rw [faceDisjoint_distr_inter, Finset.empty_inter, su₁_disj]
+  simp only [FaceDisjointUnion, Finset.product_singleton, Finset.map_empty, Finset.empty_union]
 
   left
   subst u₁_empty
@@ -96,30 +96,30 @@ by
 
   right
   subst v_empty u₁_empty
-  rw [Set.mem_singleton_iff, simplexDisjoint_empty, and_self]
+  rw [Set.mem_singleton_iff, faceDisjoint_empty, and_self]
 
-  simp only [simplexDisjoint_distr_union, Finset.empty_union, ← u_decomp]
+  simp only [faceDisjoint_distr_union, Finset.empty_union, ← u_decomp]
   assumption
 
   use ∅ ⊔ₛ ∅ ∪ (u₂ ⊔ₛ  ∅); constructor; left
   use ∅ ⊔ₛ ∅; constructor; right
-  rw [Set.mem_singleton_iff, simplexDisjoint_empty]
+  rw [Set.mem_singleton_iff, faceDisjoint_empty]
   constructor <;> rfl
 
   use u₂ ⊔ₛ ∅; constructor; left
   simp only [SimplexBoundary, Set.mem_diff, Set.mem_insert_iff, Finset.mem_coe, Finset.mem_powerset, not_or, Set.mem_singleton_iff] at u₂_in_bd ⊢
   choose u₂_ss_s u₂_ne_s u₂_ne using u₂_in_bd
   constructor
-  rw [simplexDisjoint_subset_unique]
+  rw [faceDisjoint_subset_unique]
   constructor; assumption; rfl
   constructor
-  rw [simplexDisjoint_eq_unique, not_and_or]
+  rw [faceDisjoint_eq_unique, not_and_or]
   left; assumption
-  rw [simplexDisjoint_empty, not_and_or]
+  rw [faceDisjoint_empty, not_and_or]
   left; assumption
 
   constructor; rfl
-  simp only [simplexDisjoint_distr_union, Finset.empty_union, ne_eq, simplexDisjoint_empty, not_and_or]
+  simp only [faceDisjoint_distr_union, Finset.empty_union, ne_eq, faceDisjoint_empty, not_and_or]
   left; exact face_nonempty u₂_in_bd
 
   use u₁ ⊔ₛ v; constructor
@@ -130,10 +130,10 @@ by
 
   exact simplicialJoin_mem_left u₁_in_X v_in_Y
   constructor
-  rw [simplexDisjoint_distr_union, Finset.empty_union]
+  rw [faceDisjoint_distr_union, Finset.empty_union]
 
   exact simplicialJoin_mem_left su₁_in_X v_in_Y
-  rw [simplexDisjoint_distr_inter, simplexDisjoint_empty]
+  rw [faceDisjoint_distr_inter, faceDisjoint_empty]
   constructor; assumption; rfl
 
   subst u₁_empty
@@ -144,9 +144,9 @@ by
 
   right
   subst v_empty
-  rw [Set.mem_singleton_iff, simplexDisjoint_empty, and_self]
+  rw [Set.mem_singleton_iff, faceDisjoint_empty, and_self]
 
-  simp only [simplexDisjoint_distr_union, Finset.empty_union]
+  simp only [faceDisjoint_distr_union, Finset.empty_union]
   rw [Set.mem_singleton_iff] at u₃_empty
   rw [u₃_empty, Finset.empty_union] at u_decomp
   rw [u_decomp] at t_eq_uv
@@ -161,9 +161,9 @@ by
   constructor; right
   rw [Finset.eq_singleton_iff_unique_mem] at u₃_in_barycenter ⊢
   choose x_in_u₃ a_eq_x using u₃_in_barycenter
-  constructor; rw [simplexDisjoint_mem_iff_left]; assumption
+  constructor; rw [faceDisjoint_mem_iff_left]; assumption
   intro b b_in_u₃
-  rw [simplexDisjoint_mem_iff] at b_in_u₃
+  rw [faceDisjoint_mem_iff] at b_in_u₃
   cases' b_in_u₃ with b_in_u₃ contra
   choose b1_in_u₃ b2_zero using b_in_u₃
   specialize a_eq_x b.1 b1_in_u₃
@@ -172,16 +172,16 @@ by
   choose contra b2_one using contra
   contradiction
 
-  rw [simplexDisjoint_empty, not_and_or]
+  rw [faceDisjoint_empty, not_and_or]
   left; assumption
 
   use ∅ ⊔ₛ ∅; constructor; right
-  rw [Set.mem_singleton_iff, simplexDisjoint_empty]
+  rw [Set.mem_singleton_iff, faceDisjoint_empty]
   constructor <;> rfl
 
   constructor
-  simp only [simplexDisjoint_distr_union, Finset.union_empty]
-  rw [ne_eq, simplexDisjoint_empty, not_and_or]
+  simp only [faceDisjoint_distr_union, Finset.union_empty]
+  rw [ne_eq, faceDisjoint_empty, not_and_or]
   left; exact face_nonempty u₃_in_barycenter
 
   use u₁ ⊔ₛ v; constructor
@@ -195,10 +195,10 @@ by
   exact simplicialJoin_mem_left u₁_in_X (Set.mem_union_left {∅} v_in_Y)
 
   constructor
-  rw [simplexDisjoint_distr_union, Finset.empty_union]
+  rw [faceDisjoint_distr_union, Finset.empty_union]
   exact simplicialJoin_mem_left su₁_in_X (Set.mem_union_left {∅} v_in_Y)
 
-  rw [simplexDisjoint_distr_inter, Finset.empty_inter, simplexDisjoint_empty]
+  rw [faceDisjoint_distr_inter, Finset.empty_inter, faceDisjoint_empty]
   constructor; assumption; rfl
 
   left
@@ -208,9 +208,9 @@ by
   constructor
   exact simplicialJoin_incl_left u₁_in_X
   constructor
-  rw [simplexDisjoint_distr_union, Finset.empty_union]
+  rw [faceDisjoint_distr_union, Finset.empty_union]
   exact simplicialJoin_incl_left su₁_in_X
-  rw [simplexDisjoint_distr_inter, Finset.empty_inter, simplexDisjoint_empty]
+  rw [faceDisjoint_distr_inter, Finset.empty_inter, faceDisjoint_empty]
   constructor; assumption; rfl
 
   left
@@ -218,19 +218,19 @@ by
   constructor
   exact simplicialJoin_incl_right v_in_Y
   constructor
-  rw [simplexDisjoint_distr_union, Finset.empty_union, Finset.union_empty]
+  rw [faceDisjoint_distr_union, Finset.empty_union, Finset.union_empty]
   exact simplicialJoin_mem_left s_in_X (Set.mem_union_left {∅} v_in_Y)
 
-  rw [simplexDisjoint_distr_inter, Finset.empty_inter, Finset.inter_empty, simplexDisjoint_empty]
+  rw [faceDisjoint_distr_inter, Finset.empty_inter, Finset.inter_empty, faceDisjoint_empty]
   constructor <;> rfl
 
   right
   rw [Set.mem_singleton_iff] at v_empty
   subst u₁_empty v_empty
-  rw [simplexDisjoint_empty]
+  rw [faceDisjoint_empty]
   constructor <;> rfl
 
-  rw [simplexDisjoint_distr_union, Finset.empty_union]
+  rw [faceDisjoint_distr_union, Finset.empty_union]
   rw [Set.mem_singleton_iff] at u₂_empty
   rw [u₂_empty, Finset.union_empty] at u_decomp
   rw [← u_decomp]
@@ -248,7 +248,7 @@ by
 
   use ∅ ⊔ₛ ∅; constructor
   right
-  rw [Set.mem_singleton_iff, simplexDisjoint_empty]
+  rw [Set.mem_singleton_iff, faceDisjoint_empty]
   constructor <;> rfl
 
   use u ⊔ₛ v; constructor; left
@@ -259,19 +259,19 @@ by
   exact simplicialJoin_mem_left u_in_X (Set.mem_union_left {∅} v_in_Y)
 
   constructor
-  simp only [simplexDisjoint_distr_union, Finset.empty_union]
+  simp only [faceDisjoint_distr_union, Finset.empty_union]
   exact simplicialJoin_mem_left su_in_X (Set.mem_union_left {∅} v_in_Y)
 
-  rw [simplexDisjoint_distr_inter, Finset.empty_inter, simplexDisjoint_empty]
+  rw [faceDisjoint_distr_inter, Finset.empty_inter, faceDisjoint_empty]
   constructor; assumption; rfl
 
-  simp only [simplexDisjoint_distr_union, Finset.empty_union]
+  simp only [faceDisjoint_distr_union, Finset.empty_union]
   assumption
 
   rw [Set.mem_singleton_iff] at v_empty
   subst v_empty
   use ∅ ⊔ₛ ∅; constructor; right
-  rw [Set.mem_singleton_iff, simplexDisjoint_empty]
+  rw [Set.mem_singleton_iff, faceDisjoint_empty]
   constructor <;> rfl
 
   use u ⊔ₛ ∅; constructor; left
@@ -280,12 +280,12 @@ by
   constructor
   exact simplicialJoin_incl_left u_in_X
   constructor
-  rw [simplexDisjoint_distr_union, Finset.empty_union]
+  rw [faceDisjoint_distr_union, Finset.empty_union]
   exact simplicialJoin_incl_left su_in_X
-  rw [simplexDisjoint_distr_inter, Finset.empty_inter, simplexDisjoint_empty]
+  rw [faceDisjoint_distr_inter, Finset.empty_inter, faceDisjoint_empty]
   constructor; assumption; rfl
 
-  simp only [simplexDisjoint_distr_union, Finset.empty_union]
+  simp only [faceDisjoint_distr_union, Finset.empty_union]
   assumption
 
   rw [Set.mem_singleton_iff] at u₁_empty
@@ -300,7 +300,7 @@ by
   subst u_empty
   cases' v_in_Y with v_in_Y v_empty
   use ∅ ⊔ₛ ∅; constructor; right
-  rw [Set.mem_singleton_iff, simplexDisjoint_empty]
+  rw [Set.mem_singleton_iff, faceDisjoint_empty]
   constructor <;> rfl
 
   use ∅ ⊔ₛ v; constructor; left
@@ -308,18 +308,18 @@ by
   constructor
   exact simplicialJoin_incl_right v_in_Y
   constructor
-  rw [simplexDisjoint_distr_union, Finset.union_empty, Finset.empty_union]
+  rw [faceDisjoint_distr_union, Finset.union_empty, Finset.empty_union]
   exact simplicialJoin_mem_left s_in_X (Set.mem_union_left {∅} v_in_Y)
-  rw [simplexDisjoint_distr_inter, Finset.inter_empty, Finset.empty_inter, simplexDisjoint_empty]
+  rw [faceDisjoint_distr_inter, Finset.inter_empty, Finset.empty_inter, faceDisjoint_empty]
   constructor <;> rfl
 
-  simp only [simplexDisjoint_distr_union, Finset.empty_union]
+  simp only [faceDisjoint_distr_union, Finset.empty_union]
   assumption
 
   rw [Set.mem_singleton_iff] at v_empty
   choose t_empty t_ne using t_eq_uv
   subst v_empty t_empty
-  rw [ne_eq, simplexDisjoint_empty, not_and_or] at t_ne
+  rw [ne_eq, faceDisjoint_empty, not_and_or] at t_ne
   cases t_ne <;> contradiction
 
 theorem simplicialJoin_stellarSubdivision_faces_right
@@ -342,7 +342,7 @@ by
   have s_zero : ∀ a : E × 𝕜, a ∈ s ⊔ₛ ∅ → a.snd = 0 :=
   by
     intro a a_in_s
-    rw [simplexDisjoint_mem_iff] at a_in_s
+    rw [faceDisjoint_mem_iff] at a_in_s
     cases' a_in_s with a_in_s contra
     choose a_in_s a_zero using a_in_s
     assumption
@@ -374,13 +374,13 @@ by
       choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
       subst t₁_eq_u₁u₂
 
-      rw [simplexDisjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
+      rw [faceDisjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
       choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
-      rw [simplexDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
+      rw [faceDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
       choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
       subst su₁_eq_v₁ u₂_eq_v₂
 
-      rw [simplexDisjoint_distr_inter, Finset.empty_inter, simplexDisjoint_empty] at st₁_disj
+      rw [faceDisjoint_distr_inter, Finset.empty_inter, faceDisjoint_empty] at st₁_disj
       choose su₁_disj taut using st₁_disj
 
       use Finset.image Prod.fst (t₃ ∪ t₂) ∪ u₁; constructor; left
@@ -433,7 +433,7 @@ by
       cases' b_in_at₂ with b_eq_a b_in_t₂
       subst b_eq_a
       specialize at₂_ss_s (Finset.mem_insert_self a t₂)
-      rw [← @Prod.mk.eta _ _ a, a_zero, simplexDisjoint_mem_iff_left] at at₂_ss_s
+      rw [← @Prod.mk.eta _ _ a, a_zero, faceDisjoint_mem_iff_left] at at₂_ss_s
       assumption
       rw [Finset.mem_image] at b_in_t₂
       choose c c_in_t₂ proj_c_b using b_in_t₂
@@ -442,7 +442,7 @@ by
         rw [Finset.mem_insert]
         right; assumption
       specialize s_zero c c_in_s
-      rw [← @Prod.mk.eta _ _ c, s_zero, simplexDisjoint_mem_iff_left, proj_c_b] at c_in_s
+      rw [← @Prod.mk.eta _ _ c, s_zero, faceDisjoint_mem_iff_left, proj_c_b] at c_in_s
       assumption
 
       rw [ne_eq, Finset.image_eq_empty]
@@ -489,7 +489,7 @@ by
 
       have t₂_lift : Finset.image Prod.fst t₂ ⊔ₛ ∅ = t₂ :=
       by
-        simp only [Finset.ext_iff, simplexDisjoint_mem_iff, Finset.mem_image]
+        simp only [Finset.ext_iff, faceDisjoint_mem_iff, Finset.mem_image]
         intro b
         constructor
         intro b_in_img
@@ -519,11 +519,11 @@ by
       by
         simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
-        simp only [SimplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+        simp only [FaceDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
 
       rw [← t₂_lift, ← t₃_lift] at t_decomp
-      simp only [simplexDisjoint_distr_union, ← Finset.image_union, Finset.empty_union] at t_decomp
+      simp only [faceDisjoint_distr_union, ← Finset.image_union, Finset.empty_union] at t_decomp
       assumption
     · subst t₁_empty
       choose t₃_in_barycenter t₃_ne using t₃_in_barycenter
@@ -583,7 +583,7 @@ by
       cases' b_in_at₂ with b_eq_a b_in_t₂
       subst b_eq_a
       specialize at₂_ss_s (Finset.mem_insert_self a t₂)
-      rw [← @Prod.mk.eta _ _ a, a_zero, simplexDisjoint_mem_iff_left] at at₂_ss_s
+      rw [← @Prod.mk.eta _ _ a, a_zero, faceDisjoint_mem_iff_left] at at₂_ss_s
       assumption
       rw [Finset.mem_image] at b_in_t₂
       choose c c_in_t₂ proj_c_b using b_in_t₂
@@ -592,7 +592,7 @@ by
         rw [Finset.mem_insert]
         right; assumption
       specialize s_zero c c_in_s
-      rw [← @Prod.mk.eta _ _ c, s_zero, simplexDisjoint_mem_iff_left, proj_c_b] at c_in_s
+      rw [← @Prod.mk.eta _ _ c, s_zero, faceDisjoint_mem_iff_left, proj_c_b] at c_in_s
       assumption
 
       rw [ne_eq, Finset.image_eq_empty]
@@ -611,7 +611,7 @@ by
       use ∅; constructor; right; rfl
       have t₂_lift : Finset.image Prod.fst t₂ ⊔ₛ ∅ = t₂ :=
       by
-        simp only [Finset.ext_iff, simplexDisjoint_mem_iff, Finset.mem_image]
+        simp only [Finset.ext_iff, faceDisjoint_mem_iff, Finset.mem_image]
         intro b
         constructor
         intro b_in_img
@@ -641,11 +641,11 @@ by
       by
         simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
-        simp only [SimplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+        simp only [FaceDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
 
       rw [← t₂_lift, ← t₃_lift] at t_decomp
-      simp only [simplexDisjoint_distr_union, ← Finset.image_union, Finset.union_empty] at t_decomp
+      simp only [faceDisjoint_distr_union, ← Finset.image_union, Finset.union_empty] at t_decomp
       rw [Finset.union_empty]
       assumption
     · subst t₂_empty
@@ -659,13 +659,13 @@ by
       choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
       subst t₁_eq_u₁u₂
 
-      rw [simplexDisjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
+      rw [faceDisjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
       choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
-      rw [simplexDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
+      rw [faceDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
       choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
       subst su₁_eq_v₁ u₂_eq_v₂
 
-      rw [simplexDisjoint_distr_inter, Finset.empty_inter, simplexDisjoint_empty] at st₁_disj
+      rw [faceDisjoint_distr_inter, Finset.empty_inter, faceDisjoint_empty] at st₁_disj
       choose su₁_disj taut using st₁_disj
 
       use Finset.image Prod.fst (t₃ ∪ ∅) ∪ u₁; constructor; left
@@ -722,11 +722,11 @@ by
       by
         simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
-        simp only [SimplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+        simp only [FaceDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
 
       rw [← t₃_lift] at t_decomp
-      simp only [Finset.union_empty, simplexDisjoint_distr_union, Finset.empty_union] at t_decomp
+      simp only [Finset.union_empty, faceDisjoint_distr_union, Finset.empty_union] at t_decomp
       rw [Finset.image_union, Finset.image_empty, Finset.union_empty]
       assumption
     · subst t₁_empty t₂_empty
@@ -763,7 +763,7 @@ by
       by
         simp only [simplex, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at t₃_in_barycenter
         rw [t₃_in_barycenter]
-        simp only [SimplexDisjointUnion, Finset.image_singleton, Finset.product_singleton,
+        simp only [FaceDisjointUnion, Finset.image_singleton, Finset.product_singleton,
           Finset.map_singleton, Function.Embedding.coeFn_mk, Finset.map_empty, Finset.union_empty]
 
       rw [← t₃_lift] at t_decomp
@@ -779,13 +779,13 @@ by
       choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
       subst t₁_eq_u₁u₂
 
-      rw [simplexDisjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
+      rw [faceDisjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
       choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
-      rw [simplexDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
+      rw [faceDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
       choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
       subst su₁_eq_v₁ u₂_eq_v₂
 
-      rw [simplexDisjoint_distr_inter, Finset.empty_inter, simplexDisjoint_empty] at st₁_disj
+      rw [faceDisjoint_distr_inter, Finset.empty_inter, faceDisjoint_empty] at st₁_disj
       choose su₁_disj taut using st₁_disj
 
       use Finset.image Prod.fst (∅ ∪ t₂) ∪ u₁; constructor; left
@@ -832,7 +832,7 @@ by
       cases' b_in_at₂ with b_eq_a b_in_t₂
       subst b_eq_a
       specialize at₂_ss_s (Finset.mem_insert_self a t₂)
-      rw [← @Prod.mk.eta _ _ a, a_zero, simplexDisjoint_mem_iff_left] at at₂_ss_s
+      rw [← @Prod.mk.eta _ _ a, a_zero, faceDisjoint_mem_iff_left] at at₂_ss_s
       assumption
       rw [Finset.mem_image] at b_in_t₂
       choose c c_in_t₂ proj_c_b using b_in_t₂
@@ -841,7 +841,7 @@ by
         rw [Finset.mem_insert]
         right; assumption
       specialize s_zero c c_in_s
-      rw [← @Prod.mk.eta _ _ c, s_zero, simplexDisjoint_mem_iff_left, proj_c_b] at c_in_s
+      rw [← @Prod.mk.eta _ _ c, s_zero, faceDisjoint_mem_iff_left, proj_c_b] at c_in_s
       assumption
 
       rw [ne_eq, Finset.image_eq_empty]
@@ -888,7 +888,7 @@ by
 
       have t₂_lift : Finset.image Prod.fst t₂ ⊔ₛ ∅ = t₂ :=
       by
-        simp only [Finset.ext_iff, simplexDisjoint_mem_iff, Finset.mem_image]
+        simp only [Finset.ext_iff, faceDisjoint_mem_iff, Finset.mem_image]
         intro b
         constructor
         intro b_in_img
@@ -916,7 +916,7 @@ by
         assumption
 
       rw [← t₂_lift] at t_decomp
-      simp only [Finset.empty_union, simplexDisjoint_distr_union] at t_decomp
+      simp only [Finset.empty_union, faceDisjoint_distr_union] at t_decomp
       rw [Finset.empty_union]
       assumption
     · subst t₁_empty t₃_empty
@@ -967,7 +967,7 @@ by
       cases' b_in_at₂ with b_eq_a b_in_t₂
       subst b_eq_a
       specialize at₂_ss_s (Finset.mem_insert_self a t₂)
-      rw [← @Prod.mk.eta _ _ a, a_zero, simplexDisjoint_mem_iff_left] at at₂_ss_s
+      rw [← @Prod.mk.eta _ _ a, a_zero, faceDisjoint_mem_iff_left] at at₂_ss_s
       assumption
       rw [Finset.mem_image] at b_in_t₂
       choose c c_in_t₂ proj_c_b using b_in_t₂
@@ -976,7 +976,7 @@ by
         rw [Finset.mem_insert]
         right; assumption
       specialize s_zero c c_in_s
-      rw [← @Prod.mk.eta _ _ c, s_zero, simplexDisjoint_mem_iff_left, proj_c_b] at c_in_s
+      rw [← @Prod.mk.eta _ _ c, s_zero, faceDisjoint_mem_iff_left, proj_c_b] at c_in_s
       assumption
 
       rw [ne_eq, Finset.image_eq_empty]
@@ -997,7 +997,7 @@ by
 
       have t₂_lift : Finset.image Prod.fst t₂ ⊔ₛ ∅ = t₂ :=
       by
-        simp only [Finset.ext_iff, simplexDisjoint_mem_iff, Finset.mem_image]
+        simp only [Finset.ext_iff, faceDisjoint_mem_iff, Finset.mem_image]
         intro b
         constructor
         intro b_in_img
@@ -1034,13 +1034,13 @@ by
       choose u₁ u₁_in_X u₂ u₂_in_Y t₁_eq_u₁u₂ t₁_ne using t₁_in_XY
       subst t₁_eq_u₁u₂
 
-      rw [simplexDisjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
+      rw [faceDisjoint_distr_union, Finset.empty_union, simplicialJoin_mem] at st₁_in_XY
       choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
-      rw [simplexDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
+      rw [faceDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
       choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
       subst su₁_eq_v₁ u₂_eq_v₂
 
-      rw [simplexDisjoint_distr_inter, Finset.empty_inter, simplexDisjoint_empty] at st₁_disj
+      rw [faceDisjoint_distr_inter, Finset.empty_inter, faceDisjoint_empty] at st₁_disj
       choose su₁_disj taut using st₁_disj
 
       use Finset.image Prod.fst (∅ ∪ ∅ : Finset (E × 𝕜)) ∪ u₁; constructor; left
@@ -1102,9 +1102,9 @@ by
         constructor; assumption
         constructor
 
-        rw [simplexDisjoint_distr_union, simplicialJoin_mem] at st₁_in_XY
+        rw [faceDisjoint_distr_union, simplicialJoin_mem] at st₁_in_XY
         choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
-        rw [simplexDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
+        rw [faceDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
         choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
         subst su₁_eq_v₁
         cases' v₁_in_X with su₁_in_X su₁_empty
@@ -1119,7 +1119,7 @@ by
           subst s_empty
           rw [Finset.empty_union]
           assumption
-        rw [simplexDisjoint_distr_inter, simplexDisjoint_empty] at st₁_disj
+        rw [faceDisjoint_distr_inter, faceDisjoint_empty] at st₁_disj
         choose su₁_disj u₂_empty using st₁_disj
         assumption
         constructor
@@ -1137,9 +1137,9 @@ by
         constructor; assumption
         constructor
 
-        rw [simplexDisjoint_distr_union, simplicialJoin_mem] at st₁_in_XY
+        rw [faceDisjoint_distr_union, simplicialJoin_mem] at st₁_in_XY
         choose v₁ v₁_in_X v₂ v₂_in_Y su₁u₂_eq_v₁v₂ su₁u₂_ne using st₁_in_XY
-        rw [simplexDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
+        rw [faceDisjoint_eq_unique] at su₁u₂_eq_v₁v₂
         choose su₁_eq_v₁ u₂_eq_v₂ using su₁u₂_eq_v₁v₂
         subst su₁_eq_v₁
         cases' v₁_in_X with su₁_in_X su₁_empty
@@ -1154,7 +1154,7 @@ by
           subst s_empty
           rw [Finset.empty_union]
           assumption
-        rw [simplexDisjoint_distr_inter, simplexDisjoint_empty] at st₁_disj
+        rw [faceDisjoint_distr_inter, faceDisjoint_empty] at st₁_disj
         choose su₁_disj u₂_empty using st₁_disj
         assumption
         constructor
@@ -1170,7 +1170,7 @@ by
         rw [Finset.empty_union] at t_decomp
         assumption
       · subst u₁_empty u₂_empty
-        rw [ne_eq, simplexDisjoint_empty, not_and_or] at t₁_ne
+        rw [ne_eq, faceDisjoint_empty, not_and_or] at t₁_ne
         cases t₁_ne <;> contradiction
     · subst t₁_empty
       choose t_empty t_ne using t_decomp
@@ -1245,7 +1245,7 @@ by
   apply stellarSubdivision_simplicialIso
   apply f_iso
   apply gf_inv
-  simp only [Finset.ext_iff, Finset.mem_image, simplexDisjoint_mem_iff]
+  simp only [Finset.ext_iff, Finset.mem_image, faceDisjoint_mem_iff]
   intro a
   constructor
   · intro a_in_img

@@ -126,10 +126,10 @@ by
   choose gf_id fg_id using gf_inv
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply] at gf_id
   have x₁_in_X : x₁ ∈ X.vertices := by
-    rw [vertex_iff_in_simplex]
+    rw [vertex_iff_in_face]
     use s; constructor <;> assumption
   have x₂_in_X : x₂ ∈ X.vertices := by
-    rw [vertex_iff_in_simplex]
+    rw [vertex_iff_in_face]
     use s; constructor <;> assumption
   have gfx₁_eq_x₁ : g.map (f.map x₁) = x₁ :=
     by
@@ -161,7 +161,7 @@ by
   specialize gf_id x_in_Y
   simp only [SimplicialMap.comp, Function.comp_apply] at gf_id
   use g.map x; constructor
-  rw [vertex_iff_in_simplex] at x_in_Y ⊢
+  rw [vertex_iff_in_face] at x_in_Y ⊢
   choose s s_in_Y x_in_s using x_in_Y
   use Finset.image g.map s; constructor
   apply g.is_simplicial
@@ -203,7 +203,7 @@ by
   conv_rhs => rw [← @Set.image_id F ↑t]
   apply Set.EqOn.image_eq
   simp only [Set.restrict_eq_restrict_iff, SimplicialMap.comp] at gf_id
-  have t_in_vert : ↑t ⊆ Y.vertices := by apply simplex_subset_vertices t_in_Y
+  have t_in_vert : ↑t ⊆ Y.vertices := by apply face_subset_vertices t_in_Y
   apply Set.EqOn.mono t_in_vert
   assumption
   intro t_in_lift

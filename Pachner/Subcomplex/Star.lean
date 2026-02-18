@@ -89,7 +89,7 @@ by
     simp only [Finset.mem_image, Function.comp_apply] at x_in_img
     choose y y_in_s gfy_eq_x using x_in_img
     have y_in_X : y ∈ X.vertices := by
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use s
     specialize gf_id y_in_X
     rw [← gfy_eq_x, gf_id]
@@ -98,7 +98,7 @@ by
     simp only [Finset.mem_image, Function.comp_apply]
     use x; constructor; assumption
     have x_in_X : x ∈ X.vertices := by
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use s
     specialize gf_id x_in_X
     assumption

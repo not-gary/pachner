@@ -112,7 +112,7 @@ theorem simplexBoundary_simplicialIso : (simplex s ≅ simplex t) → ∂s ≅ �
     choose u_sset_s u_ne_s u_ne using u_in_s
     constructor
     simp only [← Finset.coe_subset, ← Finset.coe_inj, ← simplex_vertices t]
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply f.is_simplicial
     simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset]
     constructor <;> assumption
@@ -182,7 +182,7 @@ theorem simplexBoundary_simplicialIso : (simplex s ≅ simplex t) → ∂s ≅ �
     choose u_sset_t u_ne_t u_ne using u_in_t
     constructor
     simp only [← Finset.coe_subset, ← Finset.coe_inj, ← simplex_vertices s]
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply g.is_simplicial
     simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset]
     constructor <;> assumption
@@ -285,7 +285,7 @@ by
       apply Set.SurjOn.mapsTo_invFunOn
       apply simplicialCoe_surjective_vertices
       apply simplicialCoe_mapsTo_vertices
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use t
       constructor
       apply (φ.coe ''ˢ X).down_closed
@@ -317,7 +317,7 @@ by
     simp only [← Finset.coe_inj, Finset.coe_image]
     apply Set.InjOn.invFunOn_image
     apply φ.Injective
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     assumption
   constructor
   have inv_t_ss_φs : Finset.image (φ⁻ᶜ).map t ⊆ Finset.image (φ⁻ᶜ).map (Finset.image φ.coe s) :=
@@ -381,13 +381,13 @@ by
     rw [Set.mem_image]
     use a
     apply φ.Injective
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply X.down_closed
     apply s_in_X
     rw [Finset.mem_coe, Finset.mem_powerset] at u_ss_s
     assumption
     assumption
-    rw [vertex_iff_in_simplex]
+    rw [vertex_iff_in_face]
     use s
     constructor <;> assumption
   · rw [u_empty] at u_not_empty

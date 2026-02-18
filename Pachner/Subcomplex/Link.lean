@@ -83,17 +83,17 @@ by
     constructor
     intro a_in_v
     have a_in_X : a ∈ X.vertices := by
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use v; constructor <;> assumption
     rw [← Set.InjOn.mem_image_iff φ.Injective] at a_in_v ⊢
     specialize φv_ss_φsu a_in_v
     assumption
     rw [Finset.coe_union]
     apply Set.union_subset <;>
-      · apply simplex_subset_vertices
+      · apply face_subset_vertices
         assumption
     assumption
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     assumption
     assumption
     intro a_in_su
@@ -101,19 +101,19 @@ by
       by
       rw [Finset.coe_union, Set.mem_union] at a_in_su
       cases' a_in_su with a_in_s a_in_u
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use s; constructor <;> assumption
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use u; constructor <;> assumption
     rw [← Set.InjOn.mem_image_iff φ.Injective] at a_in_su ⊢
     specialize φsu_ss_φv a_in_su
     assumption
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     assumption
     assumption
     rw [Finset.coe_union]
     apply Set.union_subset <;>
-      · apply simplex_subset_vertices
+      · apply face_subset_vertices
         assumption
     assumption
   rw [← v_su]
@@ -123,9 +123,9 @@ by
     Finset.image_eq_empty] at st_disj
   assumption
   apply φ.Injective
-  apply simplex_subset_vertices
+  apply face_subset_vertices
   assumption
-  apply simplex_subset_vertices
+  apply face_subset_vertices
   assumption
   assumption
 
@@ -148,9 +148,9 @@ by
     Finset.image_eq_empty]
   assumption
   apply φ.Injective
-  apply simplex_subset_vertices
+  apply face_subset_vertices
   assumption
-  apply simplex_subset_vertices
+  apply face_subset_vertices
   assumption
 
 theorem link_coe_image
@@ -221,7 +221,7 @@ by
     simp only [Finset.mem_image, Function.comp_apply] at x_in_img
     choose y y_in_s gfy_eq_x using x_in_img
     have y_in_X : y ∈ X.vertices := by
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use s
     specialize gf_id y_in_X
     rw [← gfy_eq_x, gf_id]
@@ -230,7 +230,7 @@ by
     simp only [Finset.mem_image, Function.comp_apply]
     use x; constructor; assumption
     have x_in_X : x ∈ X.vertices := by
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use s
     specialize gf_id x_in_X
     assumption

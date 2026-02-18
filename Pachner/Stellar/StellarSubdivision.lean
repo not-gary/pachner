@@ -201,7 +201,7 @@ by
       simp only [Classical.not_not]
       intro b_eq_c
       subst b_eq_c
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use t; constructor; assumption
       choose b_in_t b_ne_a using b_in_ta
       assumption
@@ -298,7 +298,7 @@ by
       by_contra x_in_t
       have contra : x ∈ X.vertices :=
       by
-        rw [vertex_iff_in_simplex]
+        rw [vertex_iff_in_face]
         use s ∪ t₁; constructor
         cases' t₁_in_link with t₁_in_link t₁_empty
 
@@ -406,7 +406,7 @@ theorem stellarSubdivision_of_singleton_vertices
     (x_nin_X : x ∉ X.vertices)
   : σ(X, {y}, x; 𝕜, y_in_X, x_nin_X).vertices = X.vertices \ {y} ∪ {x} :=
 by
-  simp only [Set.ext_iff, StellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, simplicialJoinProj_mem, vertex_iff_in_simplex,
+  simp only [Set.ext_iff, StellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion, simplicialJoinProj_mem, vertex_iff_in_face,
     Set.mem_union, Set.mem_diff, Set.mem_singleton_iff]
   intro a
   constructor
@@ -618,7 +618,7 @@ by
   right
   have a_in_x : a ∈ (simplex {x}).vertices :=
   by
-    rw [vertex_iff_in_simplex]
+    rw [vertex_iff_in_face]
     use t₃
   cases' t₃_in_barycenter with t₃_in_barycenter t₃_empty
   rw [simplex_vertices, Finset.mem_coe, Finset.mem_singleton] at a_in_x
@@ -715,7 +715,7 @@ by
 
   rw [Set.subset_def]
   intro a a_in_union
-  rw [Set.mem_union, Set.mem_singleton_iff, vertex_iff_in_simplex] at a_in_union
+  rw [Set.mem_union, Set.mem_singleton_iff, vertex_iff_in_face] at a_in_union
   simp only [vertices_setOf, Set.subset_def, StellarSubdivision, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
     Set.mem_union, Set.mem_setOf, simplicialJoinProj_mem]
   cases' a_in_union with a_in_X a_eq_x
@@ -945,7 +945,7 @@ by
     contrapose
     simp only [Classical.not_not]
     intro x_in_t
-    rw [vertex_iff_in_simplex]
+    rw [vertex_iff_in_face]
     use t
 
     assumption
@@ -962,7 +962,7 @@ by
     contrapose
     simp only [Classical.not_not]
     intro x_in_t
-    rw [vertex_iff_in_simplex]
+    rw [vertex_iff_in_face]
     use t
   · intro t_in_union
     cases' t_in_union with t_in_subdiv t_join_s
@@ -1056,7 +1056,7 @@ by
     simp only [StarComplement, Set.mem_sep_iff] at u_in_star_comp
     choose u_in_X s_nss_u using u_in_star_comp
     have contra : x ∈ X.vertices := by
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use u
     contradiction
     simp only [simplicialJoinProj_mem] at u_in_join
@@ -1080,7 +1080,7 @@ by
       rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_singleton_right]
       by_contra
       have contra : x ∈ X.vertices := by
-        rw [vertex_iff_in_simplex]
+        rw [vertex_iff_in_face]
         use u₁
       contradiction
     have xu₂_rw : u₂ \ {x} = u₂ :=
@@ -1088,7 +1088,7 @@ by
       rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_singleton_right]
       by_contra
       have contra : x ∈ X.vertices := by
-        rw [vertex_iff_in_simplex]
+        rw [vertex_iff_in_face]
         use u₂; constructor
         apply X.down_closed s_in_X
         simp only [u₂_ss_s]
@@ -1140,7 +1140,7 @@ by
       rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_singleton_right]
       by_contra
       have contra : x ∈ X.vertices := by
-        rw [vertex_iff_in_simplex]
+        rw [vertex_iff_in_face]
         use u₁
       contradiction
     rw [xu₁_rw]
@@ -1174,7 +1174,7 @@ by
       rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_singleton_right]
       by_contra
       have contra : x ∈ X.vertices := by
-        rw [vertex_iff_in_simplex]
+        rw [vertex_iff_in_face]
         use u₂; constructor
         apply X.down_closed s_in_X
         simp only [u₂_ss_s]
@@ -1272,7 +1272,7 @@ theorem stellarSubdivision_barycenter_mem
     (x_nin_X : x ∉ X.vertices)
   : x ∈ σ(X, s, x; 𝕜, s_in_X, x_nin_X).vertices :=
 by
-  rw [vertex_iff_in_simplex]
+  rw [vertex_iff_in_face]
   simp only [StellarSubdivision]
   use {x}
   constructor
@@ -1320,7 +1320,7 @@ by
     intro x x_in_s
     have x_in_vert : x ∈ X.vertices :=
       by
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use s; constructor; assumption
       rw [← Finset.mem_coe]
       assumption
@@ -1353,14 +1353,14 @@ by
   apply simplicialIso_injective_vertices
   assumption
 
-  rw [vertex_iff_in_simplex]
+  rw [vertex_iff_in_face]
   use u
   constructor
   assumption
   choose w_in_u fw_eq_fz using w_in_u
   assumption
 
-  rw [vertex_iff_in_simplex]
+  rw [vertex_iff_in_face]
   use s
 
   right
@@ -1569,7 +1569,7 @@ by
     choose c c_in_s fc_b using b_in_t
     subst fc_b
     have c_in_X : c ∈ X.vertices := by
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use s
     specialize gf_id c_in_X
     rw [gf_id] at gb_a
@@ -1579,7 +1579,7 @@ by
     use f.map a; constructor
     use a
     have a_in_X : a ∈ X.vertices := by
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use s
     specialize gf_id a_in_X
     assumption
@@ -1646,7 +1646,7 @@ by
       by_cases b_eq_x : b = x
       rw [b_eq_x] at b_in_s
       have contra : x ∈ X.vertices := by
-        rw [vertex_iff_in_simplex]
+        rw [vertex_iff_in_face]
         use s; constructor
         apply isSubcomplex_face_imp_face
         apply s_in_star_comp
@@ -1665,7 +1665,7 @@ by
       by_cases a_eq_x : a = x
       rw [a_eq_x] at a_in_s
       have contra : x ∈ X.vertices := by
-        rw [vertex_iff_in_simplex]
+        rw [vertex_iff_in_face]
         use s; constructor
         apply isSubcomplex_face_imp_face
         apply s_in_star_comp
@@ -1733,7 +1733,7 @@ by
         by_cases b_eq_x : b = x
         rw [b_eq_x] at b_in_s₁
         have contra : x ∈ X.vertices := by
-          rw [vertex_iff_in_simplex]
+          rw [vertex_iff_in_face]
           use s₁
         contradiction
         assumption
@@ -1750,7 +1750,7 @@ by
         by_cases a_eq_x : a = x
         rw [a_eq_x] at a_in_s₁
         have contra : x ∈ X.vertices := by
-          rw [vertex_iff_in_simplex]
+          rw [vertex_iff_in_face]
           use s₁
         contradiction
         assumption
@@ -1811,7 +1811,7 @@ by
       by_cases b_eq_x : b = x
       rw [b_eq_x] at b_in_s
       have contra : x ∈ X.vertices := by
-        rw [vertex_iff_in_simplex]
+        rw [vertex_iff_in_face]
         use s
         constructor
         rw [Finset.empty_union] at s_decomp
@@ -1832,7 +1832,7 @@ by
       by_cases a_eq_x : a = x
       rw [a_eq_x] at a_in_s
       have contra : x ∈ X.vertices := by
-        rw [vertex_iff_in_simplex]
+        rw [vertex_iff_in_face]
         use s
         constructor
         rw [Finset.empty_union] at s_decomp

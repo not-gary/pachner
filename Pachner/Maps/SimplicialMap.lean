@@ -95,7 +95,7 @@ theorem simplicialImage_congr (f g : E → F) : Set.EqOn f g X.vertices → (f '
     apply Set.EqOn.image_eq
     apply Set.EqOn.symm
     apply @Set.EqOn.mono _ _ _ X.vertices
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     assumption
     assumption
   · intro s_in_fX
@@ -104,7 +104,7 @@ theorem simplicialImage_congr (f g : E → F) : Set.EqOn f g X.vertices → (f '
     simp only [← fs_t, ← Finset.coe_inj, Finset.coe_image]
     apply Set.EqOn.image_eq
     apply @Set.EqOn.mono _ _ _ X.vertices
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     assumption
     assumption
 
@@ -213,7 +213,7 @@ by
   constructor
   intro x₁ x₁_in_X x₂ x₂_in_X fx₁_eq_fx₂
   simp only [Set.mem_setOf] at x₁_in_X x₂_in_X
-  rw [← vertex_iff_in_simplex, AbstractSimplicialComplex.mem_vertices] at x₁_in_X x₂_in_X
+  rw [← vertex_iff_in_face, AbstractSimplicialComplex.mem_vertices] at x₁_in_X x₂_in_X
   specialize lift_inj x₁_in_X x₂_in_X
   rw [← Finset.singleton_inj, ← Finset.image_singleton, ← Finset.image_singleton] at fx₁_eq_fx₂
   specialize lift_inj fx₁_eq_fx₂
@@ -269,8 +269,8 @@ by
   choose img_range img_inj img_surj using img_bij
   intro s₁ s₁_in_X s₂ s₂_in_X fs₁_eq_fs₂
   simp only [Finset.ext_iff] at fs₁_eq_fs₂ ⊢
-  have s₁_ss_vert : ↑s₁ ⊆ X.vertices := by apply simplex_subset_vertices s₁_in_X
-  have s₂_ss_vert : ↑s₂ ⊆ X.vertices := by apply simplex_subset_vertices s₂_in_X
+  have s₁_ss_vert : ↑s₁ ⊆ X.vertices := by apply face_subset_vertices s₁_in_X
+  have s₂_ss_vert : ↑s₂ ⊆ X.vertices := by apply face_subset_vertices s₂_in_X
   intro a
   specialize fs₁_eq_fs₂ (f.map a)
   cases' fs₁_eq_fs₂ with fs₁_ss_fs₂ fs₂_ss_fs₁

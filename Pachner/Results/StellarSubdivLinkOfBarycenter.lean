@@ -187,7 +187,7 @@ by
   rw [Finset.mem_union] at x_in_a
   have contra : x ∈ X.vertices :=
   by
-    rw [vertex_iff_in_simplex]
+    rw [vertex_iff_in_face]
     cases' x_in_a with x_in_a₁ x_in_a₂
     use a₁; constructor
     apply isSubcomplex_face_imp_face

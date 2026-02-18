@@ -58,7 +58,7 @@ by
   simp only [Classical.not_not]
   revert x
   simp only [← Finset.mem_coe, ← Set.subset_def]
-  apply simplex_subset_vertices
+  apply face_subset_vertices
   apply isSubcomplex_face_imp_face
   exact starComplement_subcomplex_simplices s t t_in_star_comp
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
@@ -115,7 +115,7 @@ by
   simp only [Classical.not_not, ← Finset.mem_coe]
   have t₂_in_X : ↑t₂ ⊆ X.vertices :=
     by
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply t₂_in_bd
     apply simplexBoundary_subcomplex
@@ -166,7 +166,7 @@ by
   simp only [Classical.not_not, ← Finset.mem_coe]
   have t₁_in_X : ↑t₁ ⊆ X.vertices :=
     by
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply t₁_in_link
     apply link_subcomplex
@@ -209,7 +209,7 @@ by
   simp only [Classical.not_not, ← Finset.mem_coe]
   have t_in_X : ↑t ⊆ X.vertices :=
     by
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply t_in_link
     apply link_subcomplex
@@ -251,7 +251,7 @@ by
     simp only [← Finset.coe_inj, Finset.coe_image]
     apply Set.InjOn.invFunOn_image
     apply φ.Injective
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply u_in_star_comp
     apply starComplement_subcomplex
@@ -263,7 +263,7 @@ by
   simp only [Classical.not_not]
   revert y
   simp only [← Finset.mem_coe, ← Set.subset_def]
-  apply simplex_subset_vertices
+  apply face_subset_vertices
   apply isSubcomplex_face_imp_face
   assumption
   apply starComplement_subcomplex
@@ -314,7 +314,7 @@ by
     simp only [← Finset.coe_inj, Finset.coe_image]
     apply Set.InjOn.invFunOn_image
     apply φ.Injective
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply u_in_bd
     apply simplexBoundary_subcomplex
@@ -327,7 +327,7 @@ by
   simp only [Classical.not_not, ← Finset.mem_coe]
   have t₂_in_X : ↑t₂ ⊆ (φ.coe ''ˢ X).vertices :=
     by
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply t₂_in_bd
     apply simplexBoundary_subcomplex
@@ -366,7 +366,7 @@ by
     simp only [← Finset.coe_inj, Finset.coe_image]
     apply Set.InjOn.invFunOn_image
     apply φ.Injective
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply u_in_link
     apply link_subcomplex
@@ -379,7 +379,7 @@ by
   simp only [Classical.not_not, ← Finset.mem_coe]
   have t₁_in_X : ↑t₁ ⊆ (φ.coe ''ˢ X).vertices :=
     by
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply t₁_in_link
     apply link_subcomplex
@@ -438,7 +438,7 @@ by
     simp only [← Finset.coe_inj, Finset.coe_image]
     apply Set.InjOn.invFunOn_image
     apply φ.Injective
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply u_in_link
     apply link_subcomplex
@@ -451,7 +451,7 @@ by
   simp only [Classical.not_not, ← Finset.mem_coe]
   have t₁_in_X : ↑t ⊆ (φ.coe ''ˢ X).vertices :=
     by
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply t_in_link
     apply link_subcomplex
@@ -535,7 +535,7 @@ by
     contrapose
     simp only [Classical.not_not, ← Finset.mem_coe]
     have s_ss_X : ↑s ⊆ X.vertices := by
-      apply simplex_subset_vertices
+      apply face_subset_vertices
       assumption
     rw [Set.subset_def] at s_ss_X
     specialize s_ss_X x

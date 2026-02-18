@@ -140,7 +140,7 @@ by
   rw [Set.mem_singleton_iff, Finset.image_eq_empty]
   assumption
   constructor
-  simp only [u_eq_st, s_eq_x, SimplexDisjointUnion, Finset.image_union, ConeIsoMap, Finset.ext_iff]
+  simp only [u_eq_st, s_eq_x, FaceDisjointUnion, Finset.image_union, ConeIsoMap, Finset.ext_iff]
   intro v
   simp only [Finset.mem_union, Finset.mem_image, Finset.mem_product, Finset.mem_singleton]
   constructor
@@ -217,7 +217,7 @@ by
   right
   rw [Set.mem_singleton_iff, Finset.image_eq_empty]
   assumption
-  simp only [u_eq_st, s_empty, SimplexDisjointUnion, Finset.image_union, ConeIsoMap, Finset.ext_iff]
+  simp only [u_eq_st, s_empty, FaceDisjointUnion, Finset.image_union, ConeIsoMap, Finset.ext_iff]
   constructor
   intro v
   simp only [Finset.mem_union, Finset.mem_image, Finset.mem_product, Finset.mem_singleton]
@@ -274,7 +274,7 @@ by
   rw [Classical.not_not]
   intro t_empty
   rw [t_empty] at u_eq_st
-  unfold SimplexDisjointUnion at u_eq_st
+  unfold FaceDisjointUnion at u_eq_st
   simp at u_eq_st
   simp [u_eq_st]
 
@@ -299,13 +299,13 @@ by
   choose gf_id fg_id using gf_inv
   constructor
   · intro z z_in_X_cone
-    rw [vertex_iff_in_simplex] at z_in_X_cone
+    rw [vertex_iff_in_face] at z_in_X_cone
     choose u u_in_cone z_in_u using z_in_X_cone
     simp only [Cone, NegOneBall, SimplicialJoin] at u_in_cone
     simp only [Set.mem_diff, Set.mem_setOf, Set.mem_insert_iff, Set.mem_singleton_iff] at u_in_cone
     choose u_in_cone u_nonempty using u_in_cone
     choose s s_in_ball t t_in_x st_eq_u using u_in_cone
-    rw [← st_eq_u, simplexDisjoint_mem_iff] at z_in_u
+    rw [← st_eq_u, faceDisjoint_mem_iff] at z_in_u
     cases' z_in_u with z_in_ball z_in_t
     cases' s_in_ball with s_eq_x contra
     rw [s_eq_x, Finset.mem_singleton] at z_in_ball
@@ -321,7 +321,7 @@ by
     choose z_in_t z_one using z_in_t
     have z_in_X : z.fst ∈ X.vertices :=
       by
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use t
       constructor
       simp only [Set.mem_union] at t_in_x
@@ -335,13 +335,13 @@ by
     simp [ConeIsoMap, z_one, Nat.one_ne_zero, if_false, Prod.ext_iff, f_cone, g_cone]
     assumption
   · intro z z_in_Y_cone
-    rw [vertex_iff_in_simplex] at z_in_Y_cone
+    rw [vertex_iff_in_face] at z_in_Y_cone
     choose u u_in_cone z_in_u using z_in_Y_cone
     simp only [Cone, NegOneBall, SimplicialJoin] at u_in_cone
     simp only [Set.mem_diff, Set.mem_setOf, Set.mem_insert_iff, Set.mem_singleton_iff] at u_in_cone
     choose u_in_cone u_nonempty using u_in_cone
     choose s s_in_ball t t_in_x st_eq_u using u_in_cone
-    rw [← st_eq_u, simplexDisjoint_mem_iff] at z_in_u
+    rw [← st_eq_u, faceDisjoint_mem_iff] at z_in_u
     cases' z_in_u with z_in_ball z_in_t
     cases' s_in_ball with s_eq_x contra
     rw [s_eq_x, Finset.mem_singleton] at z_in_ball
@@ -355,7 +355,7 @@ by
     choose z_in_t z_one using z_in_t
     have z_in_Y : z.fst ∈ Y.vertices :=
       by
-      rw [vertex_iff_in_simplex]
+      rw [vertex_iff_in_face]
       use t
       constructor
       simp only [Set.mem_union] at t_in_x

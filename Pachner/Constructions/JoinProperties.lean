@@ -159,7 +159,7 @@ theorem simplicialJoin_simplicialInter_right : (X ⋆ (Y ∩ Z)) = (X ⋆ Y ∩ 
     rcases Hy with ⟨sy, Hsy, ty, Hty, Hxy⟩
     rcases Hz with ⟨sz, Hsz, tz, Htz, Hxz⟩
     subst Hxy
-    rw [simplexDisjoint_eq_unique] at Hxz
+    rw [faceDisjoint_eq_unique] at Hxz
     cases' Hxz with Hsz Htz
     subst Hsz; subst Htz
     rw [Set.mem_diff]
@@ -203,7 +203,7 @@ by
     constructor
     use s ∪ t; constructor; tauto
     use u
-    constructor <;> try rw [simplexDisjoint_distr_union]; simp
+    constructor <;> try rw [faceDisjoint_distr_union]; simp
     assumption
     simp
     intro s_empty
@@ -228,7 +228,7 @@ by
     use u
     constructor
     assumption
-    rw [simplexDisjoint_distr_union, simplexDisjoint_eq_unique]
+    rw [faceDisjoint_distr_union, faceDisjoint_eq_unique]
     constructor
     rw [Finset.union_empty]
     rw [Finset.empty_union]
@@ -243,7 +243,7 @@ by
     choose Hx_union x_union_nonempty using Hx_union
     rcases Hx_union with ⟨t', Ht', u', Hu', Hx_union⟩
     subst Hx
-    rw [simplexDisjoint_distr_union, simplexDisjoint_eq_unique] at Hx_union
+    rw [faceDisjoint_distr_union, faceDisjoint_eq_unique] at Hx_union
     cases' Hx_union with Ht' Hu'
     simp at Hu'
     subst Ht'; subst Hu'
@@ -303,7 +303,7 @@ by
     use t; constructor; tauto
     use u; tauto
     subst Hx
-    rw [simplexDisjoint_subset_unique]
+    rw [faceDisjoint_subset_unique]
     simp; tauto
     rw [Set.mem_singleton_iff] at t_empty
     subst t_empty
@@ -313,7 +313,7 @@ by
     constructor; tauto
     use u; tauto
     subst Hx
-    rw [simplexDisjoint_subset_unique]
+    rw [faceDisjoint_subset_unique]
     simp
     revert s_in_X
     contrapose
@@ -326,7 +326,7 @@ by
     cases' Hx with Hx x_nonempty
     rcases Hx with ⟨t, Ht, u, Hu, Hx⟩
     subst Hx
-    rw [simplexDisjoint_subset_unique] at Hs_not_sset_x
+    rw [faceDisjoint_subset_unique] at Hs_not_sset_x
     simp at Hs_not_sset_x
     cases' Ht with Ht t_empty
     · constructor
@@ -381,8 +381,8 @@ by
     cases' H_left with H_left st_x_nonempty
     rcases H_left with ⟨s'', Hs'', t'', Ht'', H_union⟩
     subst Hx
-    rw [simplexDisjoint_distr_inter, simplexDisjoint_empty] at H_inter
-    rw [simplexDisjoint_distr_union, simplexDisjoint_eq_unique] at H_union
+    rw [faceDisjoint_distr_inter, faceDisjoint_empty] at H_inter
+    rw [faceDisjoint_distr_union, faceDisjoint_eq_unique] at H_union
     cases' H_union with H_s_union H_t_union
     subst H_s_union; subst H_t_union
     constructor
@@ -466,7 +466,7 @@ by
       subst t_empty
       simp; tauto
       subst Hx
-      rw [simplexDisjoint_distr_union]
+      rw [faceDisjoint_distr_union]
       subst Hx
       simp
       intro s_empty t_empty s'_empty
@@ -474,7 +474,7 @@ by
       simp at x_nonempty
       assumption
       subst Hx
-      rw [simplexDisjoint_distr_inter, simplexDisjoint_empty]
+      rw [faceDisjoint_distr_inter, faceDisjoint_empty]
       cases' Hs' with Hs' s_empty
       rw [Set.mem_sep_iff] at Hs'
       constructor; tauto

@@ -19,11 +19,11 @@ by
   choose s₁ s₁_in_join x₁_in_s₁ using x₁_in_lhs
   choose s₁_in_join s₁_ne using s₁_in_join
   choose u₁ u₁_in_X v₁ v₁_in_Y uv₁_eq_s₁ using s₁_in_join
-  rw [← uv₁_eq_s₁, simplexDisjoint_mem_iff] at x₁_in_s₁
+  rw [← uv₁_eq_s₁, faceDisjoint_mem_iff] at x₁_in_s₁
   choose s₂ s₂_in_join x₂_in_s₂ using x₂_in_rhs
   choose s₂_in_join s₂_ne using s₂_in_join
   choose u₂ u₂_in_X v₂ v₂_in_Y uv₂_eq_s₂ using s₂_in_join
-  rw [← uv₂_eq_s₂, simplexDisjoint_mem_iff] at x₂_in_s₂
+  rw [← uv₂_eq_s₂, faceDisjoint_mem_iff] at x₂_in_s₂
   cases' x₁_in_s₁ with x₁_in_X x₁_in_Y <;> cases' x₂_in_s₂ with x₂_in_X x₂_in_Y
 
   -- x₁, x₂ ∈ X case.
@@ -119,7 +119,7 @@ by
   choose s s_in_X t t_in_Y st_eq_v using v_in_join
   rw [← proj_v_u, Finset.mem_image] at x_in_u
   choose y y_in_v proj_y_x using x_in_u
-  rw [← st_eq_v, simplexDisjoint_mem_iff] at y_in_v
+  rw [← st_eq_v, faceDisjoint_mem_iff] at y_in_v
   cases' y_in_v with y_in_X y_in_Y
   left
   choose y_in_s y_zero using y_in_X
@@ -151,10 +151,10 @@ by
   use s; constructor; left; assumption
   use ∅; constructor; right; rfl
   rfl
-  rw [Set.notMem_singleton_iff, ne_eq, simplexDisjoint_empty, not_and_or]
+  rw [Set.notMem_singleton_iff, ne_eq, faceDisjoint_empty, not_and_or]
   left; apply Finset.ne_empty_of_mem x_in_s
 
-  simp only [SimplexDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
+  simp only [FaceDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
     Finset.union_empty]
   simp only [Finset.ext_iff, Finset.mem_image]
   intro a
@@ -180,10 +180,10 @@ by
   use ∅; constructor; right; rfl
   use t; constructor; left; assumption
   rfl
-  rw [Set.notMem_singleton_iff, ne_eq, simplexDisjoint_empty, not_and_or]
+  rw [Set.notMem_singleton_iff, ne_eq, faceDisjoint_empty, not_and_or]
   right; apply Finset.ne_empty_of_mem x_in_t
 
-  simp only [SimplexDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
+  simp only [FaceDisjointUnion, Finset.image_union, Finset.empty_product, Finset.image_empty,
     Finset.empty_union]
   simp only [Finset.ext_iff, Finset.mem_image]
   intro a
@@ -201,9 +201,9 @@ by
   simp only [Prod.fst]
   assumption
 
-theorem simplexDisjointUnion_simplicialJoinProj : Finset.image Prod.fst (s ⊔ₛ t : Finset (E × 𝕜)) = s ∪ t :=
+theorem faceDisjointUnion_simplicialJoinProj : Finset.image Prod.fst (s ⊔ₛ t : Finset (E × 𝕜)) = s ∪ t :=
 by
-  simp only [SimplexDisjointUnion, Finset.image_union, Finset.ext_iff, Finset.mem_image,
+  simp only [FaceDisjointUnion, Finset.image_union, Finset.ext_iff, Finset.mem_image,
     Finset.mem_union]
   intro x
   constructor
@@ -251,7 +251,7 @@ by
   choose v_in_join v_ne using v_in_join
   choose t t_in_X u u_in_Y tu_eq_v using v_in_join
   simp only at proj_v_s
-  rw [← tu_eq_v, simplexDisjointUnion_simplicialJoinProj] at proj_v_s
+  rw [← tu_eq_v, faceDisjointUnion_simplicialJoinProj] at proj_v_s
   use t; constructor; assumption
   use u; constructor; assumption
   constructor
@@ -278,18 +278,18 @@ by
   apply Y.empty_notMem
 
   subst t_empty u_empty tu_eq_v
-  rw [Set.notMem_singleton_iff, ne_eq, simplexDisjoint_empty, not_and_or] at v_ne
+  rw [Set.notMem_singleton_iff, ne_eq, faceDisjoint_empty, not_and_or] at v_ne
   cases v_ne <;> contradiction
 
   -- s X ∪ Y case.
   intro x_decomp
   choose t t_in_X u u_in_Y s_eq_tu s_ne using x_decomp
-  rw [← @simplexDisjointUnion_simplicialJoinProj E 𝕜] at s_eq_tu
+  rw [← @faceDisjointUnion_simplicialJoinProj E 𝕜] at s_eq_tu
   use t ⊔ₛ u; constructor; constructor
   use t; constructor; assumption
   use u
 
-  rw [Set.notMem_singleton_iff, ne_eq, simplexDisjoint_empty, not_and_or]
+  rw [Set.notMem_singleton_iff, ne_eq, faceDisjoint_empty, not_and_or]
   cases' t_in_X with t_in_X t_empty
   left
   revert t_in_X
@@ -309,7 +309,7 @@ by
   apply Y.empty_notMem
 
   subst t_empty u_empty s_eq_tu
-  rw [ne_eq, Finset.image_eq_empty, simplexDisjoint_empty, not_and_or] at s_ne
+  rw [ne_eq, Finset.image_eq_empty, faceDisjoint_empty, not_and_or] at s_ne
   cases s_ne <;> contradiction
 
   symm; assumption
@@ -511,7 +511,7 @@ theorem disjoint_link_boundary
    : Disjoint (Lk(X, s).vertices) ((∂s).vertices) := by
   rw [Set.disjoint_iff_inter_eq_empty, Set.eq_empty_iff_forall_notMem]
   intro x
-  simp only [Set.mem_inter_iff, not_and, vertex_iff_in_simplex, not_exists]
+  simp only [Set.mem_inter_iff, not_and, vertex_iff_in_face, not_exists]
   intro t_in_link u u_in_bd
   simp only [Link, Set.mem_sep_iff] at t_in_link
   choose t t_in_link x_in_t using t_in_link
@@ -540,7 +540,7 @@ theorem disjoint_link_barycenter
 by
   rw [Set.disjoint_iff_inter_eq_empty, Set.eq_empty_iff_forall_notMem]
   intro y
-  simp only [Set.mem_inter_iff, not_and, vertex_iff_in_simplex, not_exists]
+  simp only [Set.mem_inter_iff, not_and, vertex_iff_in_face, not_exists]
   intro t_in_link u u_in_barycenter
   simp only [Link, Set.mem_sep_iff] at t_in_link
   choose t t_in_link y_in_t using t_in_link
@@ -557,7 +557,7 @@ by
     apply Set.inter_subset_inter
     simp only [u_eq_x, Finset.coe_singleton]
     rfl
-    apply simplex_subset_vertices
+    apply face_subset_vertices
     assumption
     rw [Set.subset_empty_iff, Set.eq_empty_iff_forall_notMem]
     intro y
