@@ -851,7 +851,7 @@ by
   intro t t_in_star
   apply Unique.fintype
 
-theorem stellarWeld_simplices
+theorem stellarWeld_faces
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : X.faces =
@@ -1261,7 +1261,7 @@ instance StellarSubdivision.FintypeConverse
     [Fintype σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces]
   : Fintype X.faces :=
 by
-  rw [@stellarWeld_simplices _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X]
+  rw [@stellarWeld_faces _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X]
   apply Set.fintypeUnion
 
 end SynthOrder

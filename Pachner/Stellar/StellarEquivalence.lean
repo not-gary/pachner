@@ -280,7 +280,7 @@ theorem barycenter_injective_image : x ∉ X.vertices → Function.Injective f �
     assumption
   contradiction
 
-theorem stellarSubdivision_injective_image_simplices_left
+theorem stellarSubdivision_injective_image_faces_left
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
@@ -454,7 +454,7 @@ by
 
   contradiction
 
-theorem stellarSubdivision_injective_image_simplices_right_ac
+theorem stellarSubdivision_injective_image_faces_right_ac
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
@@ -736,7 +736,7 @@ by
   rw [Finset.empty_union, Finset.union_empty]
   assumption
 
-theorem stellarSubdivision_injective_image_simplices_right_ad
+theorem stellarSubdivision_injective_image_faces_right_ad
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
@@ -1015,7 +1015,7 @@ by
   rw [Finset.union_empty] at t_decomp
   rw [← t₃_eq_fx, fu₂_t₂, t_decomp]
 
-theorem stellarSubdivision_injective_image_simplices_right_bc
+theorem stellarSubdivision_injective_image_faces_right_bc
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
@@ -1078,7 +1078,7 @@ by
   symm
   assumption
 
-theorem stellarSubdivision_injective_image_simplices_right_bd
+theorem stellarSubdivision_injective_image_faces_right_bd
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
@@ -1183,7 +1183,7 @@ by
   subst t₁_empty t₂_empty t₃_eq_fx t_decomp
   simp only [Finset.union_empty]
 
-theorem stellarSubdivision_injective_image_simplices_right
+theorem stellarSubdivision_injective_image_faces_right
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
@@ -1230,7 +1230,7 @@ by
 
   -- Cases C, D resp.
   choose t₂_ss_fs t₂_ne_fs using t₂_in_bd
-  apply stellarSubdivision_injective_image_simplices_right_ac
+  apply stellarSubdivision_injective_image_faces_right_ac
   assumption
 
   use t₁; use t₂; use t₃
@@ -1243,7 +1243,7 @@ by
   constructor; assumption
   assumption
 
-  apply stellarSubdivision_injective_image_simplices_right_bd
+  apply stellarSubdivision_injective_image_faces_right_bd
   assumption
 
   use t₁; use t₂; use t₃
@@ -1255,7 +1255,7 @@ by
   constructor; assumption
   assumption
 
-  apply stellarSubdivision_injective_image_simplices_right_bc
+  apply stellarSubdivision_injective_image_faces_right_bc
   assumption
 
   use t₁; use t₂; use t₃
@@ -1272,7 +1272,7 @@ by
   simp only [Finset.union_empty] at t_decomp
   contradiction
 
-  apply stellarSubdivision_injective_image_simplices_right_bc
+  apply stellarSubdivision_injective_image_faces_right_bc
   assumption
   use t₁; use ∅; use ∅
   rw [Set.mem_union] at t₁_in_link
@@ -1291,7 +1291,7 @@ by
   rw [Finset.empty_union] at t_decomp
   contradiction
 
-  apply stellarSubdivision_injective_image_simplices_right_ad
+  apply stellarSubdivision_injective_image_faces_right_ad
   assumption
 
   use t₁; use t₂; use t₃
@@ -1322,9 +1322,9 @@ theorem stellarSubdivision_injective_image
 by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
   constructor
-  apply stellarSubdivision_injective_image_simplices_left
+  apply stellarSubdivision_injective_image_faces_left
   assumption
-  apply stellarSubdivision_injective_image_simplices_right
+  apply stellarSubdivision_injective_image_faces_right
   assumption
 
 theorem stellarSsubdivision_exists_iso

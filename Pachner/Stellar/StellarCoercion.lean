@@ -11,8 +11,7 @@ variable {φ : SimplicialCoe X F}
 @[simp]
 def StellarCoeMap (f : E → F) (x : E) (y : F) : E → F := fun a : E => if a = x then y else f a
 
-theorem stellarCoe_simplex_image
-    (y : F)
+theorem stellarCoe_face_image
     (f : E → F)
   : x ∉ s → Finset.image (StellarCoeMap f x y) s = Finset.image f s :=
 by
@@ -50,7 +49,7 @@ by
   cases' t_in_subdiv with t_in_star_comp t_in_join
 
   left
-  rw [starComplement_simplicialCoe_image X s s_in_X φ, stellarCoe_simplex_image]
+  rw [starComplement_simplicialCoe_image X s s_in_X φ, stellarCoe_face_image]
   apply isSimplicialMap_onto_image
   assumption
   revert x_nin_X
@@ -103,7 +102,7 @@ by
   constructor
 
   left
-  rw [faceBoundary_simplicialCoe_image, stellarCoe_simplex_image]
+  rw [faceBoundary_simplicialCoe_image, stellarCoe_face_image]
   apply isSimplicialMap_onto_image
   assumption
 
@@ -155,7 +154,7 @@ by
   cases' t₁_in_link with t₁_in_link t₁_empty
 
   left
-  rw [link_coe_image, stellarCoe_simplex_image]
+  rw [link_coe_image, stellarCoe_face_image]
   apply isSimplicialMap_onto_image
   assumption
   revert x_nin_X
@@ -198,7 +197,7 @@ by
   constructor
 
   left
-  rw [link_coe_image, stellarCoe_simplex_image]
+  rw [link_coe_image, stellarCoe_face_image]
   apply isSimplicialMap_onto_image
   assumption
   revert x_nin_X
@@ -238,7 +237,7 @@ by
   cases' t_in_subdiv with t_in_star_comp t_in_join
 
   left
-  rw [stellarCoe_simplex_image]
+  rw [stellarCoe_face_image]
   rw [starComplement_simplicialCoe_image, simplicialImage_is_lift_image, Set.mem_image] at t_in_star_comp
   choose u u_in_star_comp φu_t using t_in_star_comp
   simp only [SimplicialMapLift] at φu_t
@@ -301,7 +300,7 @@ by
   cases' t₂_in_bd with t₂_in_bd t₂_empty
 
   left
-  rw [stellarCoe_simplex_image]
+  rw [stellarCoe_face_image]
   rw [faceBoundary_simplicialCoe_image, simplicialImage_is_lift_image, Set.mem_image] at t₂_in_bd
   choose u u_in_bd φu_t₂ using t₂_in_bd
   simp only [SimplicialMapLift] at φu_t₂
@@ -351,7 +350,7 @@ by
 
   constructor
 
-  rw [stellarCoe_simplex_image]
+  rw [stellarCoe_face_image]
   rw [link_coe_image, simplicialImage_is_lift_image, Set.mem_image] at t₁_in_link
 
   left
@@ -425,7 +424,7 @@ by
   constructor
 
   left
-  rw [stellarCoe_simplex_image]
+  rw [stellarCoe_face_image]
   rw [link_coe_image, simplicialImage_is_lift_image, Set.mem_image] at t_in_link
   choose u u_in_link φu_t using t_in_link
   simp only [SimplicialMapLift] at φu_t
@@ -537,7 +536,7 @@ by
     rw [Set.subset_def] at s_ss_X
     specialize s_ss_X x
     assumption
-  simp only [@stellarCoe_simplex_image _ _ _ _ _ _ s x y φ.coe x_nin_s]
+  simp only [stellarCoe_face_image φ.coe x_nin_s]
   simp only [StellarCoeMap, eq_self_iff_true, if_true]
   rw [stellarSubdivision_congr]
   rw [simplicialImage_congr]

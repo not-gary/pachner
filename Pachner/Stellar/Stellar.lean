@@ -10,19 +10,19 @@ variable [Ring 𝕜] [Nontrivial 𝕜]
 
 -- barycenter_injective_image
 
--- stellarSubdivision_injective_image_simplices_left
+-- stellarSubdivision_injective_image_faces_left
 
--- stellarSubdivision_injective_image_simplices_right_ac
+-- stellarSubdivision_injective_image_faces_right_ac
 
--- stellarSubdivision_injective_image_simplices_right_ad
+-- stellarSubdivision_injective_image_faces_right_ad
 
--- stellarSubdivision_injective_image_simplices_right_bc
+-- stellarSubdivision_injective_image_faces_right_bc
 
--- stellarSubdivision_injective_image_simplices_right_bd
+-- stellarSubdivision_injective_image_faces_right_bd
 
--- stellarSubdivision_injective_image_simplices_right
+-- stellarSubdivision_injective_image_faces_right
 
--- stellarSubdivision_injective_image_simplices
+-- stellarSubdivision_injective_image_faces
 
 -- stellarSubdivision_injective_image
 

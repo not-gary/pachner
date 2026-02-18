@@ -45,7 +45,7 @@ by
     Int.reduceNeg, Left.neg_nonpos_iff, zero_le_one, sup_of_le_left]
   all_goals { apply Finset.singleton_nonempty }
 
--- The ball around a simplex.
+-- The ball around a face.
 def mBall
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
     (s : Finset E)
