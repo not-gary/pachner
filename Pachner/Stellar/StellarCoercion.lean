@@ -59,10 +59,7 @@ by
   revert x
   simp only [← Finset.mem_coe, ← Set.subset_def]
   apply face_subset_vertices
-  apply isSubcomplex_face_imp_face
-  exact starComplement_subcomplex_simplices s t t_in_star_comp
-  simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
-  rfl
+  exact isSubcomplex_face_imp_face t_in_star_comp (starComplement_subcomplex s)
 
   right
   simp only [simplicialJoinProj_mem, Set.mem_union] at t_in_join ⊢
@@ -106,7 +103,7 @@ by
   constructor
 
   left
-  rw [simplexBoundary_simplicialCoe_image, stellarCoe_simplex_image]
+  rw [faceBoundary_simplicialCoe_image, stellarCoe_simplex_image]
   apply isSimplicialMap_onto_image
   assumption
 
@@ -118,7 +115,7 @@ by
     apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply t₂_in_bd
-    apply simplexBoundary_subcomplex
+    apply faceBoundary_subcomplex
     assumption
   rw [Set.subset_def] at t₂_in_X
   specialize t₂_in_X x
@@ -305,7 +302,7 @@ by
 
   left
   rw [stellarCoe_simplex_image]
-  rw [simplexBoundary_simplicialCoe_image, simplicialImage_is_lift_image, Set.mem_image] at t₂_in_bd
+  rw [faceBoundary_simplicialCoe_image, simplicialImage_is_lift_image, Set.mem_image] at t₂_in_bd
   choose u u_in_bd φu_t₂ using t₂_in_bd
   simp only [SimplicialMapLift] at φu_t₂
   rw [← φu_t₂]
@@ -317,7 +314,7 @@ by
     apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply u_in_bd
-    apply simplexBoundary_subcomplex
+    apply faceBoundary_subcomplex
     assumption
   rw [inv_u]
   assumption
@@ -330,7 +327,7 @@ by
     apply face_subset_vertices
     apply isSubcomplex_face_imp_face
     apply t₂_in_bd
-    apply simplexBoundary_subcomplex
+    apply faceBoundary_subcomplex
     apply isSimplicialMap_onto_image
     assumption
   rw [Set.subset_def] at t₂_in_X

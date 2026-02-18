@@ -52,7 +52,7 @@ by
   left; apply Finset.singleton_ne_empty
 
   use u₂ ⊔ₛ ∅; constructor; left
-  rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne, and_assoc] at u₂_in_bd ⊢
+  rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne, and_assoc] at u₂_in_bd ⊢
   choose u₂_ss_s u₂_ne_s u₂_ne using u₂_in_bd
 
   simp only [ne_eq, faceDisjoint_subset_unique, faceDisjoint_eq_unique, not_and]
@@ -107,7 +107,7 @@ by
   constructor <;> rfl
 
   use u₂ ⊔ₛ ∅; constructor; left
-  simp only [SimplexBoundary, Set.mem_diff, Set.mem_insert_iff, Finset.mem_coe, Finset.mem_powerset, not_or, Set.mem_singleton_iff] at u₂_in_bd ⊢
+  simp only [FaceBoundary, Set.mem_diff, Set.mem_insert_iff, Finset.mem_coe, Finset.mem_powerset, not_or, Set.mem_singleton_iff] at u₂_in_bd ⊢
   choose u₂_ss_s u₂_ne_s u₂_ne using u₂_in_bd
   constructor
   rw [faceDisjoint_subset_unique]
@@ -356,7 +356,7 @@ by
 
     simp only [simplex, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset,
       Finset.subset_singleton_iff] at t₃_in_barycenter
-    simp only [simplexBoundary_mem_iff_subset, Finset.ssubset_iff] at t₂_in_bd
+    simp only [faceBoundary_mem_iff_subset, Finset.ssubset_iff] at t₂_in_bd
 
     cases' t₃_in_barycenter with t₃_in_barycenter t₃_empty <;>
     cases' t₂_in_bd with t₂_in_bd t₂_empty <;>
@@ -394,7 +394,7 @@ by
       apply Finset.singleton_ne_empty
 
       use Finset.image Prod.fst t₂; constructor; left
-      rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff]
+      rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff]
       constructor
 
       use Prod.fst a
@@ -544,7 +544,7 @@ by
       apply Finset.singleton_ne_empty
 
       use Finset.image Prod.fst t₂; constructor; left
-      rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff]
+      rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff]
       constructor
 
       use Prod.fst a
@@ -793,7 +793,7 @@ by
       use ∅; constructor; right; rfl
 
       use Finset.image Prod.fst t₂; constructor; left
-      rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff]
+      rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff]
       constructor
 
       use Prod.fst a
@@ -928,7 +928,7 @@ by
       use ∅; constructor; right; rfl
 
       use Finset.image Prod.fst t₂; constructor; left
-      rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff]
+      rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff]
       constructor
 
       use Prod.fst a

@@ -4,7 +4,7 @@ variable {E F : Type _}
 variable [DecidableEq E] [DecidableEq F]
 variable {X : AbstractSimplicialComplex E}
 
--- Complement of the star of a complex wrt a simplex.
+-- Complement of the star of a complex wrt a face.
 @[simp]
 def StarComplement
     (X : AbstractSimplicialComplex E)
@@ -46,19 +46,11 @@ by
     apply Finset.decidableDExistsFinset
   apply @Set.fintypeSep _ _ _ _ H_dec
 
-theorem starComplement_subcomplex_simplices
-    (s t : Finset E)
-  : t ∈ X\St(X, s).faces → t ∈ X.faces :=
-by
-  simp only [StarComplement, Set.mem_sep_iff]
-  intro t_in_star_comp
-  choose t_in_X s_nss_t using t_in_star_comp
-  assumption
-
 theorem starComplement_subcomplex (s : Finset E) : X\St(X, s) ⊆ X := by
   simp only [IsSubcomplex, AbstractSimplicialComplex.instHasSubset, Set.subset_def]
-  intro t
-  apply starComplement_subcomplex_simplices
+  intro t t_in_star_comp
+  simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
+  exact t_in_star_comp.left
 
 theorem starComplement_simplicialIso
     {X : AbstractSimplicialComplex E}

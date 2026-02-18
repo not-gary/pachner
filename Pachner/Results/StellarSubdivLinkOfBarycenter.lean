@@ -71,7 +71,7 @@ by
       rw [AbstractSimplicialComplex.mem_vertices]
       apply isSubcomplex_face_imp_face
       apply x₂_in_bd
-      apply simplexBoundary_subcomplex
+      apply faceBoundary_subcomplex
       assumption
 
       have contra : {(x : E)} ≠ (∅ : Finset E) := by apply Finset.singleton_ne_empty
@@ -209,7 +209,7 @@ by
     rw [a₂_empty] at x_in_a₂
     contradiction
 
-    apply simplexBoundary_subcomplex
+    apply faceBoundary_subcomplex
     assumption
     assumption
   contradiction

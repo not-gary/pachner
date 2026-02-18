@@ -25,7 +25,7 @@ by
     rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_iff_inter_eq_empty]
     assumption
   rw [t_decomp, Finset.sdiff_union_distrib, ne_eq, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self]
-  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
+  rw [Set.mem_union, Set.mem_singleton_iff, faceBoundary_mem_iff_subset] at t₂_in_bd
   cases' t₂_in_bd with t₂_in_bd t₂_empty
 
   choose t₂_sss_s t₂_ne using t₂_in_bd
@@ -42,7 +42,7 @@ by
 
   constructor
   rw [Finset.union_sdiff_self_eq_union, t_decomp, Finset.union_assoc]
-  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [FaceBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset] at t₂_in_bd
   cases' t₂_in_bd with t₂_in_bd t₂_empty
   choose t₂_ss_s t₂_ne_s using t₂_in_bd
@@ -63,7 +63,7 @@ by
   by
     rw [Finset.sdiff_eq_self_iff_disjoint, Finset.disjoint_iff_inter_eq_empty, t₁_empty, Finset.inter_empty]
   rw [t_decomp, Finset.sdiff_union_distrib, ne_eq, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self]
-  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
+  rw [Set.mem_union, Set.mem_singleton_iff, faceBoundary_mem_iff_subset] at t₂_in_bd
   cases' t₂_in_bd with t₂_in_bd t₂_empty
 
   choose t₂_sss_s t₂_ne using t₂_in_bd
@@ -80,7 +80,7 @@ by
 
   constructor
   rw [Finset.union_sdiff_self_eq_union, t_decomp, Finset.union_assoc]
-  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [FaceBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset] at t₂_in_bd
   cases' t₂_in_bd with t₂_in_bd t₂_empty
   choose t₂_ss_s t₂_ne_s using t₂_in_bd
@@ -98,8 +98,7 @@ theorem starBoundary_mem_compl
     (t_in_star_bd : t ∈ ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces)
   : s \ t ∈ X.faces :=
 by
-  apply @link_subcomplex_simplices _ _ _ t
-  exact starBoundary_mem_link s_in_X t_in_star_bd
+  exact link_subcomplex (starBoundary_mem_link s_in_X t_in_star_bd)
 
 theorem stellarSubdivision_anticomm_link_left_ac
     (s_in_X : s ∈ X.faces)
@@ -242,7 +241,7 @@ by
     rw [Finset.empty_union] at t₂_decomp u₂_decomp tu₃_in_barycenter
 
     choose tu₂_in_bd tu₂_ne using tu₂_in_bd
-    rw [← u₂_decomp, ← t₂_decomp, Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at tu₂_in_bd
+    rw [← u₂_decomp, ← t₂_decomp, Set.mem_union, Set.mem_singleton_iff, faceBoundary_mem_iff_subset] at tu₂_in_bd
     cases' tu₂_in_bd with tu₂_in_bd tu₂_empty
     · subst u₂_decomp
       subst t₂_decomp
@@ -369,7 +368,7 @@ by
 
       subst t'_decomp t₃_empty
       rw [Finset.empty_union] at t'_ne ⊢
-      rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+      rw [faceBoundary_mem_iff_subset] at t₂_in_bd
       cases' t₂_in_bd with t₂_in_bd t₂_empty
       · choose t₂_sss_s t₂_ne using t₂_in_bd
         assumption
@@ -399,7 +398,7 @@ by
 
       subst u'_decomp u₃_empty
       rw [Finset.empty_union] at u'_ne ⊢
-      rw [simplexBoundary_mem_iff_subset] at u₂_in_bd
+      rw [faceBoundary_mem_iff_subset] at u₂_in_bd
       cases' u₂_in_bd with u₂_in_bd u₂_empty
       · choose u₂_sss_s u₂_ne using u₂_in_bd
         assumption
@@ -543,7 +542,7 @@ by
           rw [u'_decomp, u₃_empty, Finset.empty_union]
 
           cases' u₂_in_bd with u₂_in_bd u₂_empty
-          · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd
+          · rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd
             choose u₂_sss_s u₂_ne using u₂_in_bd
             choose u₂_ss_s u₂_ne_s using u₂_sss_s
             assumption
@@ -831,7 +830,7 @@ by
             · assumption
           rw [w₃_empty, Finset.empty_union] at t'₂_decomp; subst t'₂_decomp
 
-          rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at w₂_in_bd
+          rw [Set.mem_union, Set.mem_singleton_iff, faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at w₂_in_bd
           cases' w₂_in_bd with t'₂_in_bd t'₂_empty
           · choose t'₂_sss_s t'₂_ne using t'₂_in_bd
             choose t'₂_ss_s t'₂_ne_s using t'₂_sss_s
@@ -850,7 +849,7 @@ by
         apply Finset.inter_subset_inter_right
 
         cases' t₂_in_bd with t₂_in_bd t₂_empty
-        · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+        · rw [faceBoundary_mem_iff_subset] at t₂_in_bd
           choose t₂_sss_s t₂_ne using t₂_in_bd
           choose t₂_ss_s t₂_ne_s using t₂_sss_s
           assumption
@@ -930,7 +929,7 @@ by
   have st₂_ne : s \ t₂ ≠ ∅ :=
   by
     cases' t₂_in_bd with t₂_in_bd t₂_empty
-    · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+    · rw [faceBoundary_mem_iff_subset] at t₂_in_bd
       choose t₂_sss_s t₂_ne using t₂_in_bd
       rw [ne_eq, Finset.sdiff_eq_empty_iff_subset, Finset.not_subset]
       apply Finset.exists_of_ssubset t₂_sss_s
@@ -950,14 +949,14 @@ by
         rw [t_decomp, Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty, Finset.sdiff_union_distrib, st₁_eq_s,
           ← Finset.inter_sdiff_assoc, Finset.inter_self]
         assumption
-      rw [simplexBoundary_mem_iff_subset, t_decomp, Finset.sdiff_union_distrib, st₁_eq_s,
+      rw [faceBoundary_mem_iff_subset, t_decomp, Finset.sdiff_union_distrib, st₁_eq_s,
         ← Finset.inter_sdiff_assoc, Finset.inter_self]
       left; constructor
       apply @stellarSubdivision_anticomm_link_left_bd_u_ss_st _ _ _
         s t u t₁ u₁ t₂ u₂ u₃ tu_disj
 
       cases' t₂_in_bd with t₂_in_bd t₂_empty
-      · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+      · rw [faceBoundary_mem_iff_subset] at t₂_in_bd
         choose t₂_sss_s t₂_ne_s using t₂_in_bd
         assumption
       · rw [t₂_empty, Finset.empty_ssubset, Finset.nonempty_iff_ne_empty]
@@ -1015,7 +1014,7 @@ by
                   use u₂; constructor
                   apply isSubcomplex_face_imp_face
                   assumption
-                  apply simplexBoundary_subcomplex
+                  apply faceBoundary_subcomplex
                   assumption
                   assumption
                 contradiction
@@ -1031,7 +1030,7 @@ by
                     use z₂; constructor
                     apply isSubcomplex_face_imp_face
                     assumption
-                    apply simplexBoundary_subcomplex
+                    apply faceBoundary_subcomplex
                     assumption
                     assumption
                   contradiction
@@ -1065,7 +1064,7 @@ by
                 use z₂; constructor
                 apply isSubcomplex_face_imp_face
                 assumption
-                apply simplexBoundary_subcomplex
+                apply faceBoundary_subcomplex
                 assumption
                 rw [← u'₂_decomp, Finset.mem_union]
                 left; apply Finset.mem_singleton_self
@@ -1087,7 +1086,7 @@ by
                   use u₂; constructor
                   apply isSubcomplex_face_imp_face
                   assumption
-                  apply simplexBoundary_subcomplex
+                  apply faceBoundary_subcomplex
                   assumption
                   rw [u'₂_decomp, Finset.mem_union, z₃_eq_x]
                   left; apply Finset.mem_singleton_self
@@ -1123,7 +1122,7 @@ by
               use u₂; constructor
               apply isSubcomplex_face_imp_face
               assumption
-              apply simplexBoundary_subcomplex
+              apply faceBoundary_subcomplex
               assumption
               rw [← u'₂_decomp, Finset.mem_union, u₃_eq_x]
               left; apply Finset.mem_singleton_self
@@ -1139,7 +1138,7 @@ by
               use u₂; constructor
               apply isSubcomplex_face_imp_face
               assumption
-              apply simplexBoundary_subcomplex
+              apply faceBoundary_subcomplex
               assumption
               rw [u'₂_decomp, Finset.mem_union, z₃_eq_x]
               left; apply Finset.mem_singleton_self
@@ -1147,7 +1146,7 @@ by
           · rw [u₃_empty, z₃_empty]
         subst u₃_ident
 
-        rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at wz₂_in_bd
+        rw [Set.mem_union, Set.mem_singleton_iff, faceBoundary_mem_iff_subset] at wz₂_in_bd
         cases' wz₂_in_bd with tu₂_in_bd tu₂_empty
         · choose tu₂_sss_s tu₂_ne using tu₂_in_bd
           assumption
@@ -1191,7 +1190,7 @@ by
         rw [Finset.union_comm]; assumption
 
         cases' t₂_in_bd with t₂_in_bd t₂_empty
-        · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
+        · rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
           choose t₂_sss_s t₂_ne using t₂_in_bd
           choose t₂_ss_s t₂_ne_s using t₂_sss_s
           assumption
@@ -1207,7 +1206,7 @@ by
           assumption
 
           cases' t₂_in_bd with t₂_in_bd t₂_empty
-          · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+          · rw [faceBoundary_mem_iff_subset] at t₂_in_bd
             choose t₂_sss_s t₂_ne using t₂_in_bd
             assumption
           · rw [t₂_empty, Finset.empty_ssubset, Finset.nonempty_iff_ne_empty]
@@ -1227,7 +1226,7 @@ by
         apply X.down_closed su₁_in_X
         apply Finset.union_subset_union_left
         cases' t₂_in_bd with t_in_bd t_empty
-        · rw [simplexBoundary_mem_iff_subset] at t_in_bd
+        · rw [faceBoundary_mem_iff_subset] at t_in_bd
           choose t_sss_s t_ne using t_in_bd
           choose t_ss_s t_ne_s using t_sss_s
           assumption
@@ -1253,7 +1252,7 @@ by
           rw [Finset.sdiff_empty]
 
           cases' t₂_in_bd with t_in_bd t_empty
-          · rw [simplexBoundary_mem_iff_subset] at t_in_bd
+          · rw [faceBoundary_mem_iff_subset] at t_in_bd
             choose t_sss_s t_ne using t_in_bd
             assumption
           · rw [t_empty, Finset.empty_ssubset, Finset.nonempty_iff_ne_empty]
@@ -1294,7 +1293,7 @@ by
       rw [Finset.union_comm]; assumption
 
       cases' t₂_in_bd with t₂_in_bd t₂_empty
-      · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
+      · rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
         choose t₂_sss_s t₂_ne using t₂_in_bd
         choose t₂_ss_s t₂_ne_s using t₂_sss_s
         assumption
@@ -1328,7 +1327,7 @@ by
       choose u_in_X su_in_X su_disj using tu_in_link
 
       cases' t₂_in_bd with t₂_in_bd t₂_empty
-      · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
+      · rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
         choose t_sss_s t_ne using t₂_in_bd
         choose t_ss_s t_ne_s using t_sss_s
 
@@ -1456,7 +1455,7 @@ by
   have st₂_ne : s \ t₂ ≠ ∅ :=
   by
     cases' t₂_in_bd with t₂_in_bd t₂_empty
-    · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+    · rw [faceBoundary_mem_iff_subset] at t₂_in_bd
       choose t₂_sss_s t₂_ne using t₂_in_bd
       rw [ne_eq, Finset.sdiff_eq_empty_iff_subset, Finset.not_subset]
       apply Finset.exists_of_ssubset t₂_sss_s
@@ -1474,7 +1473,7 @@ by
       choose u₃ u₃_in_barycenter u₂ u₂_in_bd u_decomp u_ne using u'₂_in_join
       simp only [simplex, Set.mem_diff_singleton, Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at u₃_in_barycenter
       simp only [Finset.sdiff_union_distrib, st₁_eq_s, ← Finset.inter_sdiff_assoc, Finset.inter_self,
-        simplexBoundary_mem_iff_subset] at u₂_in_bd
+        faceBoundary_mem_iff_subset] at u₂_in_bd
 
       cases' u₂_in_bd with u₂_in_bd u₂_empty
       · choose u₂_sss_st₂ u₂_ne using u₂_in_bd
@@ -1567,7 +1566,7 @@ by
     · left; apply isSubcomplex_face_imp_face
       assumption
       simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
-      apply simplexBoundary_subsimplex_subcomplex
+      apply faceBoundary_subface_subcomplex
       apply Finset.sdiff_subset
     · right; assumption
 
@@ -1615,11 +1614,11 @@ by
     right; assumption
 
     left
-    rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne]
+    rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne]
     constructor; constructor
     apply Finset.union_subset
     cases' u₂_in_bd with u₂_in_bd u₂_empty
-    · rw [simplexBoundary_mem_iff_subset] at u₂_in_bd
+    · rw [faceBoundary_mem_iff_subset] at u₂_in_bd
       choose u₂_sss_st₁t₂ u₂_ne using u₂_in_bd
       apply @subset_trans _ _ _ _ (s \ (t₁ ∪ t₂))
       rw [Finset.ssubset_def] at u₂_sss_st₁t₂
@@ -1628,7 +1627,7 @@ by
       apply Finset.sdiff_subset
     · rw [u₂_empty]; apply Finset.empty_subset
     cases' t₂_in_bd with t₂_in_bd t₂_empty
-    · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+    · rw [faceBoundary_mem_iff_subset] at t₂_in_bd
       choose t₂_sss_s t₂_ne using t₂_in_bd
       rw [Finset.ssubset_def] at t₂_sss_s
       choose t₂_ss_s s_nss_t₂ using t₂_sss_s
@@ -1636,10 +1635,10 @@ by
     · rw [t₂_empty]; apply Finset.empty_subset
 
     cases' u₂_in_bd with u₂_in_bd u₂_empty
-    · rw [simplexBoundary_mem_iff_subset] at u₂_in_bd
+    · rw [faceBoundary_mem_iff_subset] at u₂_in_bd
       choose u₂_sss_st₁t₂ u₂_ne using u₂_in_bd
       cases' t₂_in_bd with t₂_in_bd t₂_empty
-      · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_of_subset] at t₂_in_bd
+      · rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_of_subset] at t₂_in_bd
         choose t₂_sss_s t₂_ne using t₂_in_bd
         choose a a_in_s a_nin_t₂ using t₂_sss_s
 
@@ -1668,7 +1667,7 @@ by
         assumption
     · rw [u₂_empty, Finset.empty_union]
       cases' t₂_in_bd with t₂_in_bd t₂_empty
-      · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
+      · rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
         choose t₂_sss_s t₂_ne using t₂_in_bd
         choose t₂_ss_s t₂_ne_s using t₂_sss_s
         assumption
@@ -1746,7 +1745,7 @@ by
     have tu₂_disj : (t₁ ∪ t₂) ∩ u₂ = ∅ :=
     by
       cases' u₂_in_bd with u₂_in_bd u₂_empty
-      · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd
+      · rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd
         choose u₂_sss_st₁t₂ u₂_ne using u₂_in_bd
         choose u₂_ss_st₁t₂ u₂_ne_st₁t₂ using u₂_sss_st₁t₂
         rw [Finset.subset_sdiff, Finset.disjoint_iff_inter_eq_empty, Finset.inter_comm] at u₂_ss_st₁t₂
@@ -1775,7 +1774,7 @@ by
     · left; apply isSubcomplex_face_imp_face
       assumption
       simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
-      apply simplexBoundary_subsimplex_subcomplex
+      apply faceBoundary_subface_subcomplex
       apply Finset.sdiff_subset
     · right; assumption
 
@@ -1802,11 +1801,11 @@ by
     right; assumption
 
     left
-    rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne]
+    rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne]
     constructor; constructor
     apply Finset.union_subset
     cases' u₂_in_bd with u₂_in_bd u₂_empty
-    · rw [simplexBoundary_mem_iff_subset] at u₂_in_bd
+    · rw [faceBoundary_mem_iff_subset] at u₂_in_bd
       choose u₂_sss_st₁t₂ u₂_ne using u₂_in_bd
       apply @subset_trans _ _ _ _ (s \ (t₁ ∪ t₂))
       rw [Finset.ssubset_def] at u₂_sss_st₁t₂
@@ -1815,7 +1814,7 @@ by
       apply Finset.sdiff_subset
     · rw [u₂_empty]; apply Finset.empty_subset
     cases' t₂_in_bd with t₂_in_bd t₂_empty
-    · rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+    · rw [faceBoundary_mem_iff_subset] at t₂_in_bd
       choose t₂_sss_s t₂_ne using t₂_in_bd
       rw [Finset.ssubset_def] at t₂_sss_s
       choose t₂_ss_s s_nss_t₂ using t₂_sss_s
@@ -1823,10 +1822,10 @@ by
     · rw [t₂_empty]; apply Finset.empty_subset
 
     cases' u₂_in_bd with u₂_in_bd u₂_empty
-    · rw [simplexBoundary_mem_iff_subset] at u₂_in_bd
+    · rw [faceBoundary_mem_iff_subset] at u₂_in_bd
       choose u₂_sss_st₁t₂ u₂_ne using u₂_in_bd
       cases' t₂_in_bd with t₂_in_bd t₂_empty
-      · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_of_subset] at t₂_in_bd
+      · rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_of_subset] at t₂_in_bd
         choose t₂_sss_s t₂_ne using t₂_in_bd
         choose a a_in_s a_nin_t₂ using t₂_sss_s
 
@@ -1855,7 +1854,7 @@ by
         assumption
     · rw [u₂_empty, Finset.empty_union]
       cases' t₂_in_bd with t₂_in_bd t₂_empty
-      · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
+      · rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
         choose t₂_sss_s t₂_ne using t₂_in_bd
         choose t₂_ss_s t₂_ne_s using t₂_sss_s
         assumption
@@ -1894,7 +1893,7 @@ by
     have tu₂_disj : (t₁ ∪ t₂) ∩ u₂ = ∅ :=
     by
       cases' u₂_in_bd with u₂_in_bd u₂_empty
-      · rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd
+      · rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd
         choose u₂_sss_st₁t₂ u₂_ne using u₂_in_bd
         choose u₂_ss_st₁t₂ u₂_ne_st₁t₂ using u₂_sss_st₁t₂
         rw [Finset.subset_sdiff, Finset.disjoint_iff_inter_eq_empty, Finset.inter_comm] at u₂_ss_st₁t₂

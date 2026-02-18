@@ -84,7 +84,7 @@ by
   cases' t₁_in_link with t₁_in_link t₁_empty
 
   choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
-  rw [Set.mem_union, Set.mem_singleton_iff, simplexBoundary_mem_iff_subset] at t₂_in_bd
+  rw [Set.mem_union, Set.mem_singleton_iff, faceBoundary_mem_iff_subset] at t₂_in_bd
   constructor
   rw [Finset.ssubset_iff_subset_ne] at t₂_in_bd
   cases' t₂_in_bd with t₂_in_bd t₂_empty
@@ -136,7 +136,7 @@ by
   rw [Set.mem_union, Set.mem_singleton_iff] at t₂_in_bd
   cases' t₂_in_bd with t₂_in_bd t₂_empty
 
-  simp only [simplexBoundary_mem_iff_subset] at t₂_in_bd
+  simp only [faceBoundary_mem_iff_subset] at t₂_in_bd
   choose t_sss_s t_ne using t₂_in_bd
   rw [Finset.ssubset_def] at t_sss_s
   choose t_ss_s s_nss_t using t_sss_s

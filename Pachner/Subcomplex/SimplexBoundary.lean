@@ -4,8 +4,8 @@ variable {E F : Type _}
 variable [DecidableEq E] [DecidableEq F]
 variable {X : AbstractSimplicialComplex E} {s : Finset E} {t : Finset E} {x : E}
 
--- Boundary of a single simplex.
-def SimplexBoundary
+-- Boundary of a single face.
+def FaceBoundary
     (s : Finset E)
   : AbstractSimplicialComplex E :=
     AbstractSimplicialComplex.mk (Finset.powerset s \ {s, ∅})
@@ -35,22 +35,22 @@ def SimplexBoundary
 
       assumption)
 
-prefix:75 "∂" => SimplexBoundary
+prefix:75 "∂" => FaceBoundary
 
-instance SimplexBoundary.fintype (s : Finset E) : Fintype (∂s).faces :=
+instance FaceBoundary.fintype (s : Finset E) : Fintype (∂s).faces :=
 by
-  unfold SimplexBoundary
+  unfold FaceBoundary
   apply Set.fintypeDiff
 
-theorem simplexBoundary_subcomplex_simplex : ∂s ⊆ simplex s := by
-  simp only [IsSubcomplex, simplex, SimplexBoundary, Set.subset_def]
+theorem faceBoundary_subcomplex_simplex : ∂s ⊆ simplex s := by
+  simp only [IsSubcomplex, simplex, FaceBoundary, Set.subset_def]
   intro t t_in_bd
   simp only [Set.mem_diff, Set.mem_insert_iff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset, not_or] at t_in_bd
   simp only [Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe, Finset.mem_powerset]
   choose t_sset_s t_ne_s t_ne using t_in_bd
   constructor <;> assumption
 
-theorem simplexBoundary_simplicialIso : (simplex s ≅ simplex t) → ∂s ≅ ∂t := by
+theorem faceBoundary_simplicialIso : (simplex s ≅ simplex t) → ∂s ≅ ∂t := by
   intro s_iso_t
   unfold IsSimpliciallyIso at s_iso_t ⊢
   choose f f_iso using s_iso_t
@@ -105,7 +105,7 @@ theorem simplexBoundary_simplicialIso : (simplex s ≅ simplex t) → ∂s ≅ �
 
   have f_simp : IsSimplicialMap (∂s) (∂t) f.map :=
   by
-    simp only [IsSimplicialMap, SimplexBoundary]
+    simp only [IsSimplicialMap, FaceBoundary]
     simp only [Set.mem_union, Set.mem_diff, Set.mem_insert_iff, Set.mem_singleton_iff, Finset.mem_coe,
       Finset.mem_powerset, not_or]
     intro u u_in_s
@@ -175,7 +175,7 @@ theorem simplexBoundary_simplicialIso : (simplex s ≅ simplex t) → ∂s ≅ �
 
   have g_simp : IsSimplicialMap (∂t) (∂s) g.map :=
   by
-    simp only [IsSimplicialMap, SimplexBoundary]
+    simp only [IsSimplicialMap, FaceBoundary]
     simp only [Set.mem_union, Set.mem_diff, Set.mem_insert_iff, Set.mem_singleton_iff, Finset.mem_coe,
       Finset.mem_powerset, not_or]
     intro u u_in_t
@@ -251,22 +251,22 @@ theorem simplexBoundary_simplicialIso : (simplex s ≅ simplex t) → ∂s ≅ �
     id]
   constructor
   · intro x x_in_bd
-    have x_in_s : x ∈ (simplex s).vertices := isSubcomplex_vertices (simplexBoundary_subcomplex_simplex) x x_in_bd
+    have x_in_s : x ∈ (simplex s).vertices := isSubcomplex_vertices (faceBoundary_subcomplex_simplex) x x_in_bd
     specialize gf_id x_in_s
     assumption
   · intro x x_in_bd
-    have x_in_t : x ∈ (simplex t).vertices := isSubcomplex_vertices (simplexBoundary_subcomplex_simplex) x x_in_bd
+    have x_in_t : x ∈ (simplex t).vertices := isSubcomplex_vertices (faceBoundary_subcomplex_simplex) x x_in_bd
     specialize fg_id x_in_t
     assumption
 
-theorem simplexBoundary_simplicialCoe_image_left
+theorem faceBoundary_simplicialCoe_image_left
     [Nonempty E]
     {φ : SimplicialCoe X F}
     (s_in_X : s ∈ X.faces)
   : (∂Finset.image φ.coe s) ⊆ (SimplicialImage φ.coe (∂s)) :=
 by
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
-  simp only [SimplexBoundary, SimplicialImage, Set.subset_def]
+  simp only [FaceBoundary, SimplicialImage, Set.subset_def]
   simp only [Set.mem_setOf, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset]
   intro t t_in_bd
@@ -339,13 +339,13 @@ by
     simp only [not_true_eq_false] at t_ne_empty
   assumption
 
-theorem simplexBoundary_simplicialCoe_image_right
+theorem faceBoundary_simplicialCoe_image_right
     {φ : SimplicialCoe X F}
     (s_in_X : s ∈ X.faces)
   : (SimplicialImage φ.coe (∂s)) ⊆ (∂Finset.image φ.coe s) :=
 by
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex]
-  simp only [SimplexBoundary, SimplicialImage, Set.subset_def]
+  simp only [FaceBoundary, SimplicialImage, Set.subset_def]
   simp only [Set.mem_setOf, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset]
   intro t t_in_img
@@ -393,40 +393,33 @@ by
   · rw [u_empty] at u_not_empty
     simp only [not_true_eq_false] at u_not_empty
 
-theorem simplexBoundary_simplicialCoe_image
+theorem faceBoundary_simplicialCoe_image
     [Nonempty E]
     (s_in_X : s ∈ X.faces)
     (φ : SimplicialCoe X F)
   : (∂(Finset.image φ.coe s)) = (SimplicialImage φ.coe (∂s)) :=
 by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
-  exact ⟨simplexBoundary_simplicialCoe_image_left s_in_X, simplexBoundary_simplicialCoe_image_right s_in_X ⟩
+  exact ⟨faceBoundary_simplicialCoe_image_left s_in_X, faceBoundary_simplicialCoe_image_right s_in_X ⟩
 
-theorem simplexBoundary_subcomplex_simplices (s_in_X : s ∈ X.faces) : t ∈ (∂s).faces → t ∈ X.faces := by
-  intro t_in_bd
-  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset]
-      at t_in_bd
-  choose t_ss_s t_ne_s_empty using t_in_bd
-  simp only [Set.mem_insert_iff, Set.mem_singleton_iff, not_or] at t_ne_s_empty
-  choose t_ne_s t_ne_empty using t_ne_s_empty
-  apply X.down_closed <;> assumption
-
-theorem simplexBoundary_subcomplex (s_in_X : s ∈ X.faces) : ∂s ⊆ X := by
+theorem faceBoundary_subcomplex (s_in_X : s ∈ X.faces) : ∂s ⊆ X := by
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def]
-  intro u
-  exact simplexBoundary_subcomplex_simplices s_in_X
+  intro t t_in_bd
+  simp only [FaceBoundary, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, Set.mem_insert_iff,
+    Set.mem_singleton_iff, not_or] at t_in_bd
+  choose t_ss_s _ t_nonempty using t_in_bd
+  exact X.down_closed s_in_X t_ss_s t_nonempty
 
-theorem simplexBoundary_subcomplex_vertices (s_in_X : s ∈ X.faces) : x ∈ (∂s).vertices → x ∈ X.vertices :=
+theorem faceBoundary_subcomplex_vertices (s_in_X : s ∈ X.faces) : x ∈ (∂s).vertices → x ∈ X.vertices :=
 by
-  rw [AbstractSimplicialComplex.mem_vertices, AbstractSimplicialComplex.mem_vertices]
-  exact simplexBoundary_subcomplex_simplices s_in_X
+  apply isSubcomplex_vertices (faceBoundary_subcomplex s_in_X)
 
-theorem simplexBoundary_mem_iff_subset : t ∈ (∂s).faces ↔ t ⊂ s ∧ t ≠ ∅ := by
-  simp only [SimplexBoundary, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, not_or,
+theorem faceBoundary_mem_iff_subset : t ∈ (∂s).faces ↔ t ⊂ s ∧ t ≠ ∅ := by
+  simp only [FaceBoundary, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset, not_or,
     Set.mem_insert_iff, Finset.ssubset_iff_subset_ne, and_assoc, Set.notMem_singleton_iff]
 
-theorem simplexBoundary_subsimplex_subcomplex : s ⊆ t → ∂s ⊆ ∂t := by
-  simp only [IsSubcomplex, SimplexBoundary, Set.subset_def, Finset.subset_iff]
+theorem faceBoundary_subface_subcomplex : s ⊆ t → ∂s ⊆ ∂t := by
+  simp only [IsSubcomplex, FaceBoundary, Set.subset_def, Finset.subset_iff]
   intro s_ss_t u u_in_bd_s
   simp only [Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
     Set.mem_singleton_iff] at u_in_bd_s ⊢

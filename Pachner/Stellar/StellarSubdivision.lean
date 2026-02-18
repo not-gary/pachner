@@ -32,7 +32,7 @@ by
   simp only [StellarSubdivision, SimplicialUnion]
   have star_comp_fin : Fintype ↥(X\St(X, s)).faces := by apply StarComplement.fintype
   have barycenter_fin : Fintype ↥(simplex {x}).faces := by apply simplex.Fintype {x}
-  have bd_fin : Fintype ↥(∂s).faces := by apply SimplexBoundary.fintype
+  have bd_fin : Fintype ↥(∂s).faces := by apply FaceBoundary.fintype
   have barycenter_bd_fin : Fintype ↥(simplex {x} ⋆ ∂s : AbstractSimplicialComplex (E × 𝕜)).faces := by
     apply SimplicialJoin.fintype
   have proj_bary_bd_fin :
@@ -102,7 +102,7 @@ by
       by
         rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty]
         exact face_nonempty s_in_X
-      rw [simplexBoundary_mem_iff_subset]
+      rw [faceBoundary_mem_iff_subset]
       constructor
 
       apply Finset.sdiff_ssubset
@@ -255,7 +255,7 @@ by
       by
         rw [Set.mem_union] at t₂_in_bd
         cases' t₂_in_bd with t₂_in_bd t₂_empty
-        rw [simplexBoundary_mem_iff_subset] at t₂_in_bd
+        rw [faceBoundary_mem_iff_subset] at t₂_in_bd
         choose t₂_sss_s t₂_ne using t₂_in_bd
         assumption
 
@@ -360,7 +360,7 @@ by
         rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty]
         exact face_nonempty s_in_X
 
-      rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
+      rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
       choose t₂_ss_s t₂_ne using t₂_in_bd
       choose t₂_ss_s t₂_ne_s using t₂_ss_s
       assumption
@@ -432,7 +432,7 @@ by
     subst s'_decomp
     have s₂_empty : s₂ = ∅ :=
     by
-      simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff,
+      simp only [FaceBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff,
         Finset.mem_coe, Finset.mem_powerset, Finset.subset_singleton_iff] at s₂_in_bd
       cases' s₂_in_bd with s₂_in_bd s₂_empty
       choose s₂_ss_y s₂_ne_y using s₂_in_bd
@@ -629,7 +629,7 @@ by
   use t₂; constructor
   apply isSubcomplex_face_imp_face
   assumption
-  apply simplexBoundary_subcomplex
+  apply faceBoundary_subcomplex
   assumption
   assumption
 
@@ -650,7 +650,7 @@ by
   subst t₃_empty
   rw [Finset.empty_union] at t'_decomp
   subst t'_decomp
-  simp only [SimplexBoundary, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
+  simp only [FaceBoundary, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
     Set.mem_insert_iff, Set.mem_singleton_iff, not_or] at t₂_in_bd
   choose t₂_ss_s t₂_ne_s t₂_ne using t₂_in_bd
   left; use t' ∪ t₁; constructor
@@ -1000,7 +1000,7 @@ by
     cases' t₁_in_link with t₁_in_link t₁_empty
 
     choose t₁_in_X st₁_in_X st₁_disj using t₁_in_link
-    rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
+    rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at t₂_in_bd
     cases' t₂_in_bd with t₂_in_bd t₂_empty
 
     choose t₂_in_bd t₂_nonempty using t₂_in_bd
@@ -1026,7 +1026,7 @@ by
     subst t_eq_t₂
     cases' t₂_in_bd with t_in_bd t_empty
 
-    simp only [SimplexBoundary, Set.mem_diff, Finset.coe_powerset, Set.mem_preimage, Set.mem_powerset_iff,
+    simp only [FaceBoundary, Set.mem_diff, Finset.coe_powerset, Set.mem_preimage, Set.mem_powerset_iff,
       Finset.coe_subset, Set.mem_insert_iff, Set.mem_singleton_iff, not_or] at t_in_bd
     choose t_ss_s t_ne_s t_nonempty using t_in_bd
     apply X.down_closed s_in_X
@@ -1043,8 +1043,7 @@ by
     subst t_eq_t₁
     cases' t₁_in_link with t_in_link t_empty
 
-    apply link_subcomplex_simplices
-    assumption
+    apply link_subcomplex t_in_link
 
     contradiction
 
@@ -1073,7 +1072,7 @@ by
     choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
     cases' u₂_in_bd with u₂_in_bd u₂_empty
 
-    rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd
+    rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd
     choose u₂_ss_s u₂_ne_s using u₂_in_bd
     have xu₁_rw : u₁ \ {x} = u₁ :=
       by
@@ -1165,7 +1164,7 @@ by
     subst u₃_eq_x
     cases' u₂_in_bd with u₂_in_bd u₂_empty
 
-    rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd
+    rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne] at u₂_in_bd
     choose u₂_ss_s u₂_nonempty using u₂_in_bd
     choose u₂_ss_s u₂_ne_s using u₂_ss_s
     rw [Finset.union_sdiff_distrib, Finset.sdiff_self, Finset.empty_union]
@@ -1196,7 +1195,7 @@ by
     rw [Finset.empty_union] at *
     cases' u₂_in_bd with u₂_in_bd u₂_empty
 
-    simp only [SimplexBoundary, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset] at u₂_in_bd
+    simp only [FaceBoundary, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset] at u₂_in_bd
     choose u₂_ss_s u₂_ne_s_empty using u₂_in_bd
     have h : s ∪ u₂ \ {x} ⊆ s :=
       by
@@ -1403,7 +1402,7 @@ by
   use Finset.image f.map u₂
   constructor
 
-  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [FaceBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset] at u₂_in_bd ⊢
   cases' u₂_in_bd with u₂_in_bd u₂_empty
 
@@ -1481,7 +1480,7 @@ by
 
   rw [← fs_t, ← Finset.image_inter_of_injOn, su₁_disj, Finset.image_eq_empty]
   rw [← Finset.coe_union]
-  apply simplicialIso_injective_simplices f f_iso (s ∪ u₁)
+  apply simplicialIso_injective_faces f f_iso (s ∪ u₁)
   assumption
 
   right
@@ -1524,7 +1523,7 @@ by
 
   rw [← fs_t, ← Finset.image_inter_of_injOn, su₁_disj, Finset.image_eq_empty]
   rw [← Finset.coe_union]
-  apply simplicialIso_injective_simplices f f_iso (s ∪ u₁)
+  apply simplicialIso_injective_faces f f_iso (s ∪ u₁)
   assumption
 
   subst u₁_empty
@@ -1687,7 +1686,7 @@ by
   choose s₃ s₃_in_barycenter s₂ s₂_in_bd s'_decomp using s'_in_join
   choose s'_decomp s'_nonempty using s'_decomp
   subst s'_decomp
-  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [FaceBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset] at s₂_in_bd
   have s₂_empty : s₂ = ∅ := by
     cases' s₂_in_bd with s₂_in_bd s₂_empty
@@ -2068,5 +2067,5 @@ theorem stellarSubdivision_congr
   : σ(X, s, x; 𝕜, s_in_X, x_nin_X) =
       σ(Y, s, x; 𝕜, by rw [← X_eq_Y]; assumption, by rw [← vertices_congr X_eq_Y]; assumption) :=
 by
-  simp only [StellarSubdivision, SimplicialUnion, StarComplement, Link, simplex, SimplexBoundary, X_eq_Y]
+  simp only [StellarSubdivision, SimplicialUnion, StarComplement, Link, simplex, FaceBoundary, X_eq_Y]
   rfl

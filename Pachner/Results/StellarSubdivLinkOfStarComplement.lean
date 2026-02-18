@@ -190,7 +190,7 @@ by
   rw [Finset.inter_comm]
   apply Finset.sdiff_inter_self
   use t ∩ s; constructor
-  rw [Set.mem_union, simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne]
+  rw [Set.mem_union, faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne]
   by_cases ts_ne : t ∩ s = ∅
   right
   rw [ts_ne]

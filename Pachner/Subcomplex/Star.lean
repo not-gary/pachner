@@ -4,7 +4,8 @@ variable {E F : Type _}
 variable [DecidableEq E] [DecidableEq F]
 variable {X : AbstractSimplicialComplex E} {s t : Finset E}
 
--- Star of a complex wrt a simplex.
+-- Star of a complex wrt a face.
+-- TODO: should this include s ∈ X.faces as assumption?
 @[simp]
 def StarNeighborhood -- Note: the name "Star" is already taken by a certain Typeclass in mathlib
     (X : AbstractSimplicialComplex E)
@@ -41,22 +42,16 @@ by
     apply Set.decidableMemOfFintype
   apply Set.fintypeSep
 
-theorem star_subcomplex_simplices : t ∈ St(X, s).faces → t ∈ X.faces := by
-  intro t_in_star
-  simp only [StarNeighborhood, Set.mem_sep_iff] at t_in_star
-  choose t_in_X st_in_X using t_in_star
-  assumption
-
 theorem star_subcomplex : St(X, s) ⊆ X := by
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def]
-  intro t
-  exact star_subcomplex_simplices
+  intro t t_in_star
+  simp only [StarNeighborhood, Set.mem_sep_iff] at t_in_star
+  exact t_in_star.left
 
 theorem star_iso
     {Y : AbstractSimplicialComplex F}
     {t : Finset F}
     (s_in_X : s ∈ X.faces)
-    (t_in_Y : t ∈ Y.faces)
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
   : Finset.image f.map s = t → St(X, s) ≅ St(Y, t) :=

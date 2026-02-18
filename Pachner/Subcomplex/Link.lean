@@ -5,7 +5,7 @@ variable {E F : Type _}
 variable [DecidableEq E] [DecidableEq F]
 variable {X Y : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
--- Link of a complex wrt a simplex.
+-- Link of a complex wrt a face.
 @[simp]
 def Link
     (X : AbstractSimplicialComplex E)
@@ -161,13 +161,11 @@ by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
   exact ⟨link_simplicialCoe_image_left s_in_X, link_simplicialCoe_image_right s_in_X⟩
 
-theorem link_subcomplex_simplices : t ∈ Lk(X, s).faces → t ∈ X.faces := by
-  intro t_in_link
+theorem link_subcomplex : Lk(X, s) ⊆ X := by
+  intro t t_in_link
   simp only [Link, Set.mem_sep_iff] at t_in_link
   choose t_in_X st_in_X st_disj using t_in_link
   assumption
-
-theorem link_subcomplex : Lk(X, s) ⊆ X := @link_subcomplex_simplices E _ _ _
 
 theorem link_notMem_vertices : x ∉ X.vertices → x ∉ Lk(X, s).vertices := by
   contrapose
@@ -179,7 +177,6 @@ theorem link_simplicialIso
     {Y : AbstractSimplicialComplex F}
     {t : Finset F}
     (s_in_X : s ∈ X.faces)
-    (t_in_Y : t ∈ Y.faces)
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
   : Finset.image f.map s = t → Lk(X, s) ≅ Lk(Y, t) :=
@@ -201,7 +198,7 @@ by
     rw [← Finset.image_inter_of_injOn, Finset.image_eq_empty]
     assumption
     rw [← Finset.coe_union]
-    apply simplicialIso_injective_simplices f f_iso (s ∪ u)
+    apply simplicialIso_injective_faces f f_iso (s ∪ u)
     assumption
   let f_link := SimplicialMap.mk f.map f_simp
   let f_iso' := f_iso
@@ -249,7 +246,7 @@ by
     rw [← Finset.image_inter_of_injOn, Finset.image_eq_empty]
     assumption
     rw [← Finset.coe_union]
-    apply simplicialIso_injective_simplices g
+    apply simplicialIso_injective_faces g
     apply simplicialIso_inverse_is_simplicialIso f <;> assumption
     assumption
   let g_link := SimplicialMap.mk g.map g_simp
@@ -261,11 +258,11 @@ by
     id]
   constructor
   · intro x x_in_X_link
-    have x_in_X : x ∈ X.vertices := isSubcomplex_vertices (link_subcomplex) x x_in_X_link
+    have x_in_X : x ∈ X.vertices := isSubcomplex_vertices link_subcomplex x x_in_X_link
     specialize gf_id x_in_X
     assumption
   · intro x x_in_Y_link
-    have x_in_Y : x ∈ Y.vertices := isSubcomplex_vertices (link_subcomplex) x x_in_Y_link
+    have x_in_Y : x ∈ Y.vertices := isSubcomplex_vertices link_subcomplex x x_in_Y_link
     specialize fg_id x_in_Y
     assumption
 

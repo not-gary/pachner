@@ -37,7 +37,6 @@ by
 def IsSimplicialIso (f : SimplicialMap X Y) : Prop :=
     ∃ g : SimplicialMap Y X, IsInverseSimplicialIso f g
 
---:= set.bij_on (simplicial_map_lift f) X.simplices Y.simplices
 -- For example, the identity map is a simplicial isomorphism
 -- because it is its own inverse
 theorem id_isSimplicialIso : IsSimplicialIso (idSimplicialMap X) := by
@@ -112,7 +111,7 @@ by
   symm
   assumption
 
-theorem simplicialIso_injective_simplices
+theorem simplicialIso_injective_faces
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
   : ∀ s ∈ X.faces, Set.InjOn f.map ↑s :=
@@ -266,7 +265,7 @@ by
   apply congr_arg fun z : ℤ => z - 1
   symm
   rw [Nat.cast_inj, Finset.card_image_iff]
-  apply simplicialIso_injective_simplices f f_iso s s_in_X
+  apply simplicialIso_injective_faces f f_iso s s_in_X
 
 theorem simplicialIso_preserves_dim
     [Fintype X.faces]

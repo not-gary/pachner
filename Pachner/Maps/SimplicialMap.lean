@@ -15,7 +15,7 @@ variable {X Y : AbstractSimplicialComplex E} {Z : AbstractSimplicialComplex F}
 variable {f : E → F}
 
 /- Simplicial maps are maps between the underlying base types
-   that map simplices to simplices.
+   that map faces to faces.
 -/
 @[simp]
 def IsSimplicialMap
@@ -60,7 +60,7 @@ def SimplicialImage
     (X : AbstractSimplicialComplex E)
   : AbstractSimplicialComplex F :=
     AbstractSimplicialComplex.mk
-      ((Finset.image f) '' X.faces)--{(Finset.image f s) | s ∈ X.faces}
+      ((Finset.image f) '' X.faces)
       (by
         simp only [Set.mem_image, X.empty_notMem]
         simp only [Finset.image_eq_empty, not_exists, not_and, ← ne_eq]
@@ -310,7 +310,7 @@ section Dimension
 variable [DecidableEq F]
 variable {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F}
 
--- The dimension of simplices does not increase
+-- The dimension of faces does not increase
 -- under simplicial maps.
 theorem simplicialMap_dim_mono
     (f : SimplicialMap X Y)
@@ -375,7 +375,6 @@ by
   intro (s_in_SX : s ∈ X.faces)
   let t : Finset F := Finset.image f s
   have t_in_SY : t ∈ Y.faces := by apply f_simpl s; apply s_in_SX
-  -- or just: tauto},
   have gfs_in_SZ : Finset.image g t ∈ Z.faces := by apply g_simpl t; apply t_in_SY
   show Finset.image (g ∘ f) s ∈ Z.faces
   rw [Finset.image_image.symm]

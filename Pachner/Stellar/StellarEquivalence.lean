@@ -347,7 +347,7 @@ by
   simp only [Finset.singleton_ne_empty, not_false_eq_true]
 
   use Finset.image f u₂; constructor
-  simp only [SimplexBoundary, Set.mem_union, Set.mem_insert_iff, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
+  simp only [FaceBoundary, Set.mem_union, Set.mem_insert_iff, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
     Set.mem_singleton_iff] at u₂_in_bd ⊢
   cases' u₂_in_bd with u₂_in_bd u₂_empty
   left
@@ -524,7 +524,7 @@ by
   left; use ∅; constructor
   right; apply Set.mem_singleton
   use u₂; constructor
-  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [FaceBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Set.mem_insert_iff, Finset.mem_powerset, not_or]
   left; constructor
   rw [Finset.subset_iff] at t₂_ss_fs ⊢
@@ -669,7 +669,7 @@ by
   left; use ∅; constructor
   right; apply Set.mem_singleton
   use u₂; constructor; left
-  rw [simplexBoundary_mem_iff_subset, Finset.ssubset_def]
+  rw [faceBoundary_mem_iff_subset, Finset.ssubset_def]
   constructor; constructor
 
   rw [Finset.subset_iff] at t₂_ss_fs ⊢
@@ -775,7 +775,7 @@ by
   apply Finset.singleton_ne_empty
 
   use u₂; constructor
-  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [FaceBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Set.mem_insert_iff, not_or, Finset.mem_powerset]
 
   by_cases u₂_empty : u₂ = ∅
@@ -948,7 +948,7 @@ by
   apply Finset.singleton_ne_empty
 
   use u₂; constructor; left
-  rw [simplexBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne]
+  rw [faceBoundary_mem_iff_subset, Finset.ssubset_iff_subset_ne]
   constructor; constructor
 
   rw [Finset.subset_iff] at t₂_ss_fs ⊢
@@ -1218,7 +1218,7 @@ by
 
   choose t₃ t₃_in_barycenter t₂ t₂_in_bd t'_decomp t'_ne using t'_in_join
   subst t'_decomp
-  simp only [SimplexBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
+  simp only [FaceBoundary, Set.mem_union, Set.mem_diff, Set.mem_singleton_iff, Finset.mem_coe,
     Finset.mem_powerset] at t₂_in_bd
   simp only [simplex, Set.mem_union, Set.mem_diff, Finset.mem_coe, Finset.mem_powerset,
     Finset.subset_singleton_iff, Set.mem_singleton_iff] at t₃_in_barycenter
