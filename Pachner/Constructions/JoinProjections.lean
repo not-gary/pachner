@@ -1,5 +1,5 @@
 import Pachner.Constructions.Join
-import Pachner.Subcomplex.SimplexBoundary
+import Pachner.Subcomplex.FaceBoundary
 import Pachner.Subcomplex.Link
 
 variable
