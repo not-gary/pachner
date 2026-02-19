@@ -1,10 +1,11 @@
 import Pachner.Maps.SimplicialIsomorphism
 
-variable {E F : Type _}
-variable [DecidableEq E] [DecidableEq F]
-variable {X : AbstractSimplicialComplex E} {s t : Finset E}
+variable
+  {E F : Type _}
+  [DecidableEq E] [DecidableEq F]
+  {X : AbstractSimplicialComplex E} {s : Finset E}
+  {Y : AbstractSimplicialComplex F} {t : Finset F}
 
--- Star of a complex wrt a face.
 -- TODO: should this include s ∈ X.faces as assumption?
 @[simp]
 def StarNeighborhood -- Note: the name "Star" is already taken by a certain Typeclass in mathlib
@@ -48,9 +49,7 @@ theorem star_subcomplex : St(X, s) ⊆ X := by
   simp only [StarNeighborhood, Set.mem_sep_iff] at t_in_star
   exact t_in_star.left
 
-theorem star_iso
-    {Y : AbstractSimplicialComplex F}
-    {t : Finset F}
+theorem star_simplicialIso
     (s_in_X : s ∈ X.faces)
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)

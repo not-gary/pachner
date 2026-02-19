@@ -1,14 +1,16 @@
 import Pachner.Stellar.StellarSubdivision
 
-variable {E : Type _} [DecidableEq E] [AddCommGroup E]
-variable {𝕜 : Type _} [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
-variable {X : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
+variable
+  {E 𝕜 : Type _}
+  [DecidableEq E]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+  {X : AbstractSimplicialComplex E} {s : Finset E} {x : E}
 
 theorem star_boundary_is_join_left
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : (X\St(X, s) ∩
-      ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+      ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
         ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
           ''ˢ (Simplex {x} ⋆ ∂s)) ⋆
               Lk(X, s)))) ⊆
@@ -69,7 +71,7 @@ theorem star_boundary_is_join_right
     (x_nin_X : x ∉ X.vertices)
   : ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)) ⊆
       (X\St(X, s) ∩
-        ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+        ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
             ''ˢ ((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
               ''ˢ (Simplex {x} ⋆ ∂s) ⋆
                 Lk(X, s)))) :=
@@ -171,7 +173,7 @@ theorem star_boundary_is_join
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : (X\St(X, s) ∩
-      ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+      ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
         ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
           ''ˢ (Simplex {x} ⋆ ∂s)) ⋆
               Lk(X, s)))) =

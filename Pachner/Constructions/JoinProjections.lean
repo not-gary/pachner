@@ -2,11 +2,11 @@ import Pachner.Constructions.Join
 import Pachner.Subcomplex.SimplexBoundary
 import Pachner.Subcomplex.Link
 
-variable {E F 𝕜 : Type _}
-variable [DecidableEq E] [DecidableEq F] [DecidableEq 𝕜]
-variable [AddCommGroup E] [AddCommGroup F]
-variable [Ring 𝕜] [Nontrivial 𝕜]
-variable {X Y : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
+variable
+  {E F 𝕜 : Type _}
+  [DecidableEq E] [DecidableEq F]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+  {X Y : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
 -- Show that, for disjoint complexes, projection to the first coordinate is a coercion.
 theorem simplicialJoinProj_injective
@@ -103,7 +103,7 @@ def SimplicialJoinProj {X Y : AbstractSimplicialComplex E} (H : Disjoint X.verti
   : SimplicialCoe (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) E :=
       SimplicialCoe.mk Prod.fst (simplicialJoinProj_injective H)
 
-notation "π₁[" 𝕜 "]" => @SimplicialJoinProj _ 𝕜 _ _ _ _ _ _ _
+notation "π₁[" 𝕜 "]" => @SimplicialJoinProj _ 𝕜 _ _ _ _ _
 
 theorem simplicialJoinProj_mem_vertices
     (H : Disjoint X.vertices Y.vertices)
@@ -431,10 +431,6 @@ by
   rw [← s_decomp, ← t_decomp]
   constructor; rfl
   assumption
-
--- TODO: General result on existence of coercion for complexes over ℤ.
--- Useful for combinatorial mfds.
--- cf. Lean 3 unported code for former def'n using ℕ.
 
 theorem disjoint_barycenter_boundary
     (s_in_X : s ∈ X.faces)

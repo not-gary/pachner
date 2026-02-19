@@ -4,11 +4,11 @@ import Pachner.Subcomplex.Star
 import Pachner.Subcomplex.StarComplement
 import Pachner.Subcomplex.Link
 
-variable {E : Type _}
-variable [DecidableEq E] [AddCommGroup E]
-variable {𝕜 : Type _}
-variable [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
-variable {X Y Z : AbstractSimplicialComplex E} {s t : Finset E}
+variable
+  {E F 𝕜 : Type _}
+  [DecidableEq E]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+  {X Y Z : AbstractSimplicialComplex E} {s t : Finset E}
 
 -- Distributive properties of join over union
 section Union

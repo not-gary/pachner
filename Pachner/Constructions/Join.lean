@@ -1,18 +1,12 @@
 import Pachner.Basic.Disjoint
 import Pachner.Maps.SimplicialCoercion
 
-/-
-# Simplicial joins
--/
-section Join
+variable
+  {E F 𝕜 : Type _}
+  [DecidableEq E] [DecidableEq F]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+  {X Y Z W : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
-variable {E F 𝕜 : Type _}
-variable [DecidableEq E] [DecidableEq F] [DecidableEq 𝕜]
---variable [AddCommGroup E] [AddCommGroup F]
-variable [Ring 𝕜] [Nontrivial 𝕜]
-variable {X Y Z W : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
-
--- Define simplicial join.
 @[simp]
 def SimplicialJoin (X Y : AbstractSimplicialComplex E) : AbstractSimplicialComplex (E × 𝕜) :=
   AbstractSimplicialComplex.mk
@@ -99,7 +93,6 @@ by
   symm; assumption
   assumption
 
--- Establish basic algebraic properties about joins.
 instance SimplicialJoin.fintype
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
     (Y : AbstractSimplicialComplex E) [Fintype Y.faces]
@@ -1692,7 +1685,6 @@ theorem simplicialJoin_comm : (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) 
       simp only [one_ne_zero, ↓reduceIte, g, f]
       simp only [← x_one, Prod.ext_iff, Prod.fst, Prod.snd]
 
--- Make sense of natural projections, inclusions, etc.
 def SimplicialJoinBotIsoIdForwardMap : E × 𝕜 → E := fun x : E × 𝕜 => x.fst
 
 theorem simplicialJoin_bot_iso_id_forward_simplicial
@@ -2117,5 +2109,3 @@ by
     apply Finset.le_max'
     rw [Finset.mem_union]
     right; apply Finset.mem_singleton_self
-
-end Join

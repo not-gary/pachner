@@ -1,8 +1,10 @@
 import Pachner.Stellar.StellarSubdivision
 
-variable {E : Type _} [DecidableEq E] [AddCommGroup E]
-variable {𝕜 : Type _} [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
-variable {X : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
+variable
+  {E 𝕜 : Type _}
+  [DecidableEq E]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+  {X : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
 theorem stellarSubdivision_link_of_barycenter_left
     {s_in_X : s ∈ X.faces}

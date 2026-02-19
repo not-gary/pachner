@@ -1,20 +1,22 @@
 import Pachner.Stellar.StellarEquivalence
 import Pachner.Constructions.JoinProperties
 
-variable {E : Type _} [DecidableEq E] [AddCommGroup E]
-variable {𝕜 : Type _} [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
-variable {X Y Z W : AbstractSimplicialComplex E} {s t : Finset E} {x y : E}
+variable
+  {E 𝕜 : Type _}
+  [DecidableEq E]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+  {X Y Z W : AbstractSimplicialComplex E} {s t : Finset E} {x y : E}
 
 theorem simplicialJoin_stellarSubdivision_faces_left
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+  : ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
       ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
         ''ˢ (Simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y ⊆
-      (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ (X ⋆ Y) _ _
+      (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ (X ⋆ Y) _ _
             (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
         ''ˢ ((π₁[𝕜]
-              (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _ (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
+              (@disjoint_barycenter_boundary _ _ (X ⋆ Y) _ _ (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
           ''ˢ (Simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) :=
 by
   simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.subset_def,
@@ -325,12 +327,12 @@ by
 theorem simplicialJoin_stellarSubdivision_faces_right
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ (X ⋆ Y) _ _
+  : (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ (X ⋆ Y) _ _
             (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
-        ''ˢ ((π₁[𝕜] (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _
+        ''ˢ ((π₁[𝕜] (@disjoint_barycenter_boundary _ _ (X ⋆ Y) _ _
                 (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
           ''ˢ (Simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅)) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) ⊆
-      ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+      ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
         ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
           ''ˢ (Simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y :=
 by
@@ -1180,12 +1182,12 @@ by
 theorem simplicialJoin_stellarSubdivision_faces
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
+  : ((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ s_in_X x_nin_X)).coe
       ''ˢ (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe
         ''ˢ (Simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))) ⋆ Y =
-      (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ (X ⋆ Y) _ _
+      (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ (X ⋆ Y) _ _
             (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
-        ''ˢ ((π₁[𝕜] (@disjoint_barycenter_boundary _ _ _ (X ⋆ Y) _ _
+        ''ˢ ((π₁[𝕜] (@disjoint_barycenter_boundary _ _ (X ⋆ Y) _ _
                 (simplicialJoin_incl_left s_in_X) (simplicialJoin_notMem_vertices_left x_nin_X))).coe
           ''ˢ ((Simplex {((x, 0) : E × 𝕜)} ⋆ ∂(s ⊔ₛ ∅))) ⋆ Lk(X ⋆ Y, s ⊔ₛ ∅)) :=
 by

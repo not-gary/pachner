@@ -1,10 +1,11 @@
 import Pachner.Basic.AbstractSimplicialComplex
 import Pachner.Basic.Dimension
 
+variable
+  {E : Type _}
+  {X Y Z : AbstractSimplicialComplex E}
 
 section SimplicialUnion
-variable {E : Type _}
-
 
 @[simp]
 def SimplicialUnion
@@ -47,8 +48,6 @@ by
   rw [Set.finite_coe_iff, Set.finite_union, ← Set.finite_coe_iff]
   constructor <;> assumption
 
-variable {X Y Z : AbstractSimplicialComplex E}
-
 theorem simplicialUnion_assoc : X ∪ Y ∪ Z = X ∪ (Y ∪ Z) := by
   simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.union_assoc]
 
@@ -71,15 +70,12 @@ theorem simplicialUnion_subcomplex_right [DecidableEq E] : Y ⊆ X ∪ Y := by
   simp only [AbstractSimplicialComplex.instHasUnion, AbstractSimplicialComplex.instHasSubset,
     IsSubcomplex, SimplicialUnion, Set.subset_union_right]
 
-
 end SimplicialUnion
 
-
 section SimplicialUnion.Dimension
-variable {E : Type _} [DecidableEq E] {X Y : AbstractSimplicialComplex E}
-
 
 theorem simplicial_union_dim
+    [DecidableEq E]
     [Fintype X.faces] [Fintype Y.faces]
   : (X ∪ Y).dim = max (X.dim) (Y.dim) :=
 by

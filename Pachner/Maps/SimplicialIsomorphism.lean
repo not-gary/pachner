@@ -1,16 +1,11 @@
 import Pachner.Maps.SimplicialMap
 
-/-
-# Simplicial isomorphisms
--/
 section Isomorphism
 
-variable {E F G : Type _}
-variable [DecidableEq E] [DecidableEq F] [DecidableEq G]
-variable {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F} {Z : AbstractSimplicialComplex G}
-
--- A simplicial map is a simplicial isomorphism
--- if it admits an inverse simplicial map.
+variable
+  {E F G : Type _}
+  [DecidableEq E] [DecidableEq F] [DecidableEq G]
+  {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F} {Z : AbstractSimplicialComplex G}
 
 @[simp]
 def IsInverseSimplicialIso
@@ -37,8 +32,6 @@ by
 def IsSimplicialIso (f : SimplicialMap X Y) : Prop :=
     ∃ g : SimplicialMap Y X, IsInverseSimplicialIso f g
 
--- For example, the identity map is a simplicial isomorphism
--- because it is its own inverse
 theorem id_isSimplicialIso : IsSimplicialIso (idSimplicialMap X) := by
   use idSimplicialMap X
   simp only [IsInverseSimplicialIso, Set.restrict_id, and_self]
@@ -56,7 +49,6 @@ by
   rw [and_comm]
   assumption
 
--- The composition of two isomorphisms gives an isomorphism.
 theorem simplicialIso.comp
     (f : SimplicialMap X Y)
     (g : SimplicialMap Y Z)
@@ -169,7 +161,6 @@ by
   assumption
   assumption
 
--- Defining isomorphy between simplicial complexes.
 @[simp]
 def IsSimpliciallyIso
     (X : AbstractSimplicialComplex E)

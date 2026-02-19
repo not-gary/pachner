@@ -1,15 +1,15 @@
 import Pachner.Subcomplex.Link
 import Pachner.Constructions.Join
 
-variable {E : Type _}
-variable [DecidableEq E]
+variable
+  {E F 𝕜: Type _}
+  [DecidableEq E] [DecidableEq F]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+  {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F} {x : E} {y : F}
 
 @[simp]
 def IsNegOneSphere
-    {X : AbstractSimplicialComplex E}
-    {s : Finset E}
     (Y : AbstractSimplicialComplex E)
-    (Y_link_X : Y = Lk(X, s))
   : Prop := Y = ⊥
 
 @[simp]
@@ -45,7 +45,6 @@ by
     Int.reduceNeg, Left.neg_nonpos_iff, zero_le_one, sup_of_le_left]
   all_goals { apply Finset.singleton_nonempty }
 
--- The ball around a face.
 def mBall
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
     (s : Finset E)
@@ -80,20 +79,11 @@ by
   apply Set.fintypeDiff
 
 
--- The cone of a complex.
-
-variable {F : Type _}
-variable [AddCommGroup E] [DecidableEq F] [AddCommGroup F]
-variable {𝕜 : Type _}
-variable [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
-variable {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F} {x : E} {y : F}
-
-
 @[simp]
 def Cone
   (X : AbstractSimplicialComplex E)
   (x : E)
-  (x_nin_X : x ∉ X.vertices) -- Ensure that we use a new point for projection purposes.
+  (_ : x ∉ X.vertices) -- Ensure that we use a new point for projection purposes.
 : AbstractSimplicialComplex (E × 𝕜) := (NegOneBall x) ⋆ X
 
 notation "Cone(" X ", " x ")" => Cone X x
@@ -284,7 +274,6 @@ theorem cone_simplicialIso
     (X_iso_Y : X ≅ Y)
   : (Cone(X, x) x_nin_X : AbstractSimplicialComplex (E × 𝕜)) ≅ (Cone(Y, y) y_nin_Y : AbstractSimplicialComplex (F × 𝕜)) :=
 by
-  --intro X_iso_Y
   unfold IsSimpliciallyIso at X_iso_Y ⊢
   choose f f_iso using X_iso_Y
   unfold IsSimplicialIso at f_iso ⊢

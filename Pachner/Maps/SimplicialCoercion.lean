@@ -1,13 +1,11 @@
 import Pachner.Maps.SimplicialIsomorphism
 
-/-
-# Simplicial Coercions
--/
 section Coercion
 
-variable {E F G : Type _}
-variable [DecidableEq E] [F_dec : DecidableEq F] [DecidableEq G]
-variable {X Y : AbstractSimplicialComplex E}
+variable
+  {E F G : Type _}
+  [DecidableEq F]
+  {X Y : AbstractSimplicialComplex E}
 
 -- Define as coercion on types that lifts to simplicial map.
 structure SimplicialCoe
@@ -30,7 +28,7 @@ by
   rw [simplicialImage_is_lift_image]
   apply Set.fintypeImage
 
-theorem simplicialCoe_inv_isSimplicialMap [Nonempty E]
+theorem simplicialCoe_inv_isSimplicialMap [Nonempty E] [DecidableEq E]
     (φ : SimplicialCoe X F)
   : IsSimplicialMap (φ.coe ''ˢ X) X (Function.invFunOn φ.coe X.vertices) :=
 by
@@ -48,7 +46,7 @@ by
   rw [inv_id]
   assumption
 
-noncomputable def SimplicialCoeInv [Nonempty E]
+noncomputable def SimplicialCoeInv [Nonempty E] [DecidableEq E]
     {X : AbstractSimplicialComplex E}
     (φ : SimplicialCoe X F)
   : SimplicialMap (φ.coe ''ˢ X) X :=
@@ -56,7 +54,7 @@ noncomputable def SimplicialCoeInv [Nonempty E]
 
 notation φ "⁻ᶜ" => SimplicialCoeInv φ
 
-theorem simplicialCoe_inverse_isInverseSimplicialIso [Nonempty E]
+theorem simplicialCoe_inverse_isInverseSimplicialIso [Nonempty E] [DecidableEq E]
     (φ : SimplicialCoe X F)
   : IsInverseSimplicialIso (SimplicialMap.mk φ.coe (isSimplicialMap_onto_image X φ.coe)) (φ⁻ᶜ) :=
 by
@@ -71,7 +69,7 @@ by
   choose x x_in_X coe_x_y using y_in_coe
   use x
 
-theorem simplicialCoe_is_simplicialIso [Nonempty E]
+theorem simplicialCoe_is_simplicialIso [Nonempty E] [DecidableEq E]
     (φ : SimplicialCoe X F)
   : IsSimplicialIso
       (@SimplicialMap.mk _ _ _ X (φ.coe ''ˢ X) φ.coe (by apply isSimplicialMap_onto_image)) :=
@@ -80,7 +78,7 @@ by
   use SimplicialCoeInv φ
   apply simplicialCoe_inverse_isInverseSimplicialIso
 
-theorem simplicialCoeInv_injective [Nonempty E]
+theorem simplicialCoeInv_injective [Nonempty E] [DecidableEq E]
     (φ : SimplicialCoe X F)
   : Set.InjOn (φ⁻ᶜ).map (φ.coe ''ˢ X).vertices :=
 by
@@ -102,7 +100,7 @@ by
   rw [← φy₁_eq_φy₂, φx₁_y₁] at φx₂_y₂
   assumption
 
-theorem SimplicialCoe.simplicialIso_onto_image [Nonempty E]
+theorem SimplicialCoe.simplicialIso_onto_image [Nonempty E] [DecidableEq E]
     (φ : SimplicialCoe X F)
   : X ≅ φ.coe ''ˢ X :=
 by
@@ -110,7 +108,7 @@ by
   use φ.simplicialMap
   apply simplicialCoe_is_simplicialIso
 
-theorem simplicialCoe_preserves_simplicialIso [Nonempty E]
+theorem simplicialCoe_preserves_simplicialIso [Nonempty E] [DecidableEq E]
     (φ : SimplicialCoe X F)
     (ψ : SimplicialCoe Y F)
   : (X ≅ Y) → (φ.coe ''ˢ X ≅ ψ.coe ''ˢ Y) :=
@@ -129,7 +127,7 @@ by
   simp only [Set.InjOn.comp ψ.Injective φ.Injective, simplicialImage_vertices, Set.mapsTo_image]
 
 theorem simplicialCoe_comp_image
-    (X : AbstractSimplicialComplex E)
+    [DecidableEq G]
     (φ : SimplicialCoe X F)
     (ψ : SimplicialCoe (φ.coe ''ˢ X) G)
   : ((ψ.coe ∘ φ.coe) ''ˢ X) = (ψ.coe ''ˢ (φ.coe ''ˢ X)) :=
@@ -169,7 +167,7 @@ def SimplicialCoe.restrictCoe
     Coe.mk fun φ : SimplicialCoe X F => φ.restrict Y Y_subcomp_X
 
 -- Convert isomorphisms into coercions.
-def SimplicialMap.coe
+def SimplicialMap.coe [DecidableEq E]
     {X : AbstractSimplicialComplex E}
     {Y : AbstractSimplicialComplex F}
     (f : SimplicialMap X Y)
@@ -181,7 +179,7 @@ def SimplicialMap.coe
 --  g[Y] = X → φ[X]
 --  ↑     ↗ φ ∘ g
 --  Y
-def SimplicialCoeOnImage
+def SimplicialCoeOnImage [DecidableEq E]
     {X : AbstractSimplicialComplex E}
     {Y : AbstractSimplicialComplex F}
     (f : SimplicialMap X Y)
@@ -201,7 +199,7 @@ def SimplicialCoeOnImage
       apply f.is_simplicial
       assumption)
 
-theorem simplicialCoe_union
+theorem simplicialCoe_union [DecidableEq E]
     (φ : SimplicialCoe (X ∪ Y) F)
   : φ.coe ''ˢ (X ∪ Y) =
       φ[X; by apply isSubcomplex_vertices; apply simplicialUnion_subcomplex_left].coe ''ˢ X ∪

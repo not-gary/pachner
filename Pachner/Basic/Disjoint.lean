@@ -1,7 +1,9 @@
 import Pachner.Basic.AbstractSimplicialComplex
 
 section Disjoint
-variable {E : Type _} {X Y : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
+variable
+  {E : Type _}
+  {X Y : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
 def DisjointComplexes
     (X Y : AbstractSimplicialComplex E) : Prop :=
@@ -49,8 +51,10 @@ end Disjoint
 
 
 section DisjointUnion
-variable {E 𝕜 : Type _}
-variable [DecidableEq E] [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+variable
+  {E 𝕜 : Type _}
+  [DecidableEq E]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
 
 @[simp]
 def FaceDisjointUnion (s t : Finset E) : Finset (E × 𝕜) :=

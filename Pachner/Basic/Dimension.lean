@@ -1,11 +1,9 @@
 import Pachner.Basic.AbstractSimplicialComplex
 
-variable {E : Type _}
+variable
+  {E : Type _}
+  {s : Finset E} {x : E}
 
-/-
-# Dimension of faces and simplicial complexes
--/
--- The dimension of a face is just its cardinality - 1.
 @[simp]
 def face_dim (s : Finset E) : ℤ :=
   Finset.card s - 1
@@ -14,8 +12,6 @@ def face_dim (s : Finset E) : ℤ :=
 def IsKFace (s : Finset E) (k : ℕ) :=
   face_dim s = k
 
--- A simplicial complex has dimension n
--- if n is the maximal dimension of all faces.
 @[simp]
 def HasDimensionLeq
     (X : AbstractSimplicialComplex E) (n : ℕ) :=
@@ -30,8 +26,6 @@ def HasDimensionGeq
 def HasDimension
     (X : AbstractSimplicialComplex E) (n : ℕ) :=
   HasDimensionLeq X n ∧ HasDimensionGeq X n
-
-variable {s : Finset E} {x : E}
 
 theorem dim_geq_zero_iff_nonempty : 0 ≤ face_dim s ↔ s ≠ ∅ := by
   unfold face_dim
@@ -109,8 +103,6 @@ by
   rw [Finset.singleton_subset_iff]
   assumption
 
--- The dimension of a finite complex is the maximum
--- dimension of its faces.
 instance DimSet.Finite
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
   : Finite (Finset.image face_dim X.faces.toFinset) :=

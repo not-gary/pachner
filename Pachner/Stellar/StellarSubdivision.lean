@@ -1,12 +1,12 @@
 import Pachner.Subcomplex.StarComplement
 import Pachner.Constructions.JoinProjections
 
-variable {E F 𝕜 : Type _}
-variable [DecidableEq E] [DecidableEq F] [DecidableEq 𝕜]
-variable [AddCommGroup E] [AddCommGroup F]
-variable [Ring 𝕜] [Nontrivial 𝕜]
-variable {X : AbstractSimplicialComplex E} {s : Finset E} {x : E}
-variable {Y : AbstractSimplicialComplex F} {t : Finset F} {y : F}
+variable
+  {E F 𝕜 : Type _}
+  [DecidableEq E] [DecidableEq F]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+  {X : AbstractSimplicialComplex E} {s : Finset E} {x : E}
+  {Y : AbstractSimplicialComplex F} {t : Finset F} {y : F}
 
 def StellarSubdivision
     (X : AbstractSimplicialComplex E)
@@ -16,10 +16,10 @@ def StellarSubdivision
     (x_nin_X : x ∉ X.vertices)
   : AbstractSimplicialComplex E :=
     X\St(X, s) ∪
-      (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe ''ˢ
+      (π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ s_in_X x_nin_X)).coe ''ˢ
         (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (Simplex {x} ⋆ ∂s))  ⋆ Lk(X, s))
 
-notation "σ(" X ", " s ", " x "; " 𝕜 ", " s_in_X ", " x_nin_X ")" => @StellarSubdivision _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X
+notation "σ(" X ", " s ", " x "; " 𝕜 ", " s_in_X ", " x_nin_X ")" => @StellarSubdivision _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X
 
 instance StellarSubdivision.fintype
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
@@ -46,7 +46,7 @@ by
     by apply SimplicialJoin.fintype
   have join_fin :
     Fintype
-      ↥((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X)).coe ''ˢ
+      ↥((π₁[𝕜] (@disjoint_barycenter_join_boundary_link _ 𝕜 _ _ _ _ _ _ _ s_in_X x_nin_X)).coe ''ˢ
           (((π₁[𝕜] (disjoint_barycenter_boundary s_in_X x_nin_X)).coe ''ˢ (Simplex {x} ⋆ ∂s)) ⋆ Lk(X, s))).faces :=
     by apply SimplicialCoe.Fintype
   apply Set.fintypeUnion
@@ -799,7 +799,7 @@ instance BarycenterStar.Fintype
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     [Fintype σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces]
-  : Fintype (@BarycenterStar _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X) :=
+  : Fintype (@BarycenterStar _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X) :=
 by
   simp only [BarycenterStar]
   apply Set.fintypeSep
@@ -811,13 +811,13 @@ def BarycenterWeld
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
   : Set (Finset E) :=
-  {(s ∪ (t \ {x})) | t ∈ @BarycenterStar _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X}
+  {(s ∪ (t \ {x})) | t ∈ @BarycenterStar _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X}
 
 theorem barycenterWeld_as_union
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
-  : @BarycenterWeld _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X =
-      ⋃ t ∈ @BarycenterStar _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X, {s ∪ t \ {x}} :=
+  : @BarycenterWeld _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X =
+      ⋃ t ∈ @BarycenterStar _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X, {s ∪ t \ {x}} :=
 by
   simp only [BarycenterWeld, Set.ext_iff, Set.mem_iUnion, Set.mem_setOf, Set.mem_singleton_iff]
   intro t
@@ -844,7 +844,7 @@ instance BarycenterWeld.Fintype
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     [Fintype σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces]
-  : Fintype (@BarycenterWeld _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X) :=
+  : Fintype (@BarycenterWeld _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X) :=
 by
   rw [barycenterWeld_as_union]
   apply Set.fintypeBiUnion
@@ -856,7 +856,7 @@ theorem stellarWeld_faces
     (x_nin_X : x ∉ X.vertices)
   : X.faces =
       {t ∈ σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces | x ∉ t} ∪ -- TODO: is this σ(X, s, x)\St(σ(X, s, x), {x})?
-        @BarycenterWeld _ 𝕜 _ _ _ _ _ X s x s_in_X x_nin_X :=
+        @BarycenterWeld _ 𝕜 _ _ _ _ X s x s_in_X x_nin_X :=
 by
   simp only [BarycenterWeld, Set.ext_iff, Set.mem_union, Set.mem_sep_iff, Set.mem_setOf]
   intro t
@@ -1261,7 +1261,7 @@ instance StellarSubdivision.FintypeConverse
     [Fintype σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces]
   : Fintype X.faces :=
 by
-  rw [@stellarWeld_faces _ 𝕜 _ _ _ _ _ _ _ _ s_in_X x_nin_X]
+  rw [@stellarWeld_faces _ 𝕜 _ _ _ _ _ _ _ s_in_X x_nin_X]
   apply Set.fintypeUnion
 
 end SynthOrder
@@ -1584,10 +1584,10 @@ by
     assumption
   let f_subdiv :=
     SimplicialMap.mk f.map
-      (@stellarSubdivision_simplicialMap _ _ 𝕜 _ _ _ _ _ _ _ _ _ _ _ _ _ s_in_X t_in_Y x_nin_X y_nin_Y f f_iso fs_t fx_y)
+      (@stellarSubdivision_simplicialMap _ _ 𝕜 _ _ _ _ _ _ _ _ _ _ _ s_in_X t_in_Y x_nin_X y_nin_Y f f_iso fs_t fx_y)
   let g_subdiv :=
     SimplicialMap.mk g.map
-      (@stellarSubdivision_simplicialMap _ _ 𝕜 _ _ _ _ _ _ _ _ _ _ _ _ _ t_in_Y s_in_X y_nin_Y x_nin_X g g_iso gt_s gy_x)
+      (@stellarSubdivision_simplicialMap _ _ 𝕜 _ _ _ _ _ _ _ _ _ _ _ t_in_Y s_in_X y_nin_Y x_nin_X g g_iso gt_s gy_x)
   unfold IsSimpliciallyIso
   use f_subdiv
   unfold IsSimplicialIso
@@ -1598,7 +1598,7 @@ by
   · intro a a_in_X
     have a_in_union : a ∈ X.vertices ∪ {x} :=
       by
-      apply @stellarSubdivision_subset_vertices _ 𝕜 _ _ _ _ _ X s
+      apply @stellarSubdivision_subset_vertices _ 𝕜 _ _ _ _ X s
       apply a_in_X
     rw [Set.mem_union, Set.mem_singleton_iff] at a_in_union
     cases' a_in_union with a_in_X a_eq_x
@@ -1609,7 +1609,7 @@ by
   · intro a a_in_Y
     have a_in_union : a ∈ Y.vertices ∪ {y} :=
       by
-      apply @stellarSubdivision_subset_vertices _ 𝕜 _ _ _ _ _ Y t
+      apply @stellarSubdivision_subset_vertices _ 𝕜 _ _ _ _ Y t
       apply a_in_Y
     rw [Set.mem_union, Set.mem_singleton_iff] at a_in_union
     cases' a_in_union with a_in_Y a_eq_y

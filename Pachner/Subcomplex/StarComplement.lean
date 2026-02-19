@@ -1,10 +1,11 @@
 import Pachner.Maps.SimplicialCoercion
 
-variable {E F : Type _}
-variable [DecidableEq E] [DecidableEq F]
-variable {X : AbstractSimplicialComplex E}
+variable
+  {E F : Type _}
+  [DecidableEq E] [DecidableEq F]
+  {X : AbstractSimplicialComplex E} {s : Finset E}
+  {Y : AbstractSimplicialComplex F} {t : Finset F}
 
--- Complement of the star of a complex wrt a face.
 @[simp]
 def StarComplement
     (X : AbstractSimplicialComplex E)
@@ -38,13 +39,13 @@ instance StarComplement.fintype
   : Fintype (X\St(X, s)).faces :=
 by
   simp only [StarComplement]
-  have H_dec : DecidablePred fun t : Finset E => ¬s ⊆ t :=
+  have _ : DecidablePred fun t : Finset E => ¬s ⊆ t :=
   by
     unfold DecidablePred
     intro t
     simp only [Finset.subset_iff, Classical.not_forall]
     apply Finset.decidableDExistsFinset
-  apply @Set.fintypeSep _ _ _ _ H_dec
+  apply Set.fintypeSep
 
 theorem starComplement_subcomplex (s : Finset E) : X\St(X, s) ⊆ X := by
   simp only [IsSubcomplex, AbstractSimplicialComplex.instHasSubset, Set.subset_def]
@@ -53,10 +54,6 @@ theorem starComplement_subcomplex (s : Finset E) : X\St(X, s) ⊆ X := by
   exact t_in_star_comp.left
 
 theorem starComplement_simplicialIso
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
-    {s : Finset E}
-    {t : Finset F}
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)
     (f : SimplicialMap X Y)
@@ -179,7 +176,6 @@ by
     assumption
 
 theorem starComplement_simplicialCoe_image_left
-    {s : Finset E}
     {φ : SimplicialCoe X F}
   : (StarComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) ⊆ (φ.coe ''ˢ X\St(X, s)) :=
 by
@@ -199,7 +195,6 @@ by
   assumption
 
 theorem starComplement_simplicialCoe_image_right
-    {s : Finset E}
     {φ : SimplicialCoe X F}
     (s_in_X : s ∈ X.faces)
   : (φ.coe ''ˢ X\St(X, s)) ⊆ (StarComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) :=
@@ -230,8 +225,6 @@ by
 
 -- TODO: werid assymetry in ..._left and ..._right with hypothesis s_in_X
 theorem starComplement_simplicialCoe_image
-    (X : AbstractSimplicialComplex E)
-    (s : Finset E)
     (s_in_X : s ∈ X.faces)
     (φ : SimplicialCoe X F)
   : (StarComplement (φ.coe ''ˢ X) (Finset.image φ.coe s)) = (φ.coe ''ˢ (X\St(X, s))) :=

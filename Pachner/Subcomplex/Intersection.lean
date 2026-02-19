@@ -1,6 +1,8 @@
 import Pachner.Basic.AbstractSimplicialComplex
 
-variable {E : Type _}
+variable
+  {E : Type _}
+  {X Y Z : AbstractSimplicialComplex E} {s : Finset E} {x : E}
 
 @[simp]
 def SimplicialInter
@@ -23,8 +25,6 @@ def SimplicialInter
 @[reducible]
 instance AbstractSimplicialComplex.instHasInter : Inter (AbstractSimplicialComplex E) :=
   ⟨SimplicialInter⟩
-
-variable {X Y Z : AbstractSimplicialComplex E} {s : Finset E} {x : E}
 
 theorem simplicialInter_assoc : X ∩ Y ∩ Z = X ∩ (Y ∩ Z) := by
   simp only [AbstractSimplicialComplex.instHasInter, SimplicialInter, AbstractSimplicialComplex.ext_iff,

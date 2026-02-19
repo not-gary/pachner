@@ -1,10 +1,10 @@
 import Pachner.Maps.SimplicialCoercion
 
-variable {E F : Type _}
-variable [DecidableEq E] [DecidableEq F]
-variable {X : AbstractSimplicialComplex E} {s : Finset E} {t : Finset E} {x : E}
+variable
+  {E F : Type _}
+  [DecidableEq F]
+  {X : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
--- Boundary of a single face.
 def FaceBoundary
     (s : Finset E)
   : AbstractSimplicialComplex E :=
@@ -37,7 +37,7 @@ def FaceBoundary
 
 prefix:75 "∂" => FaceBoundary
 
-instance FaceBoundary.fintype (s : Finset E) : Fintype (∂s).faces :=
+instance FaceBoundary.fintype [DecidableEq E] (s : Finset E) : Fintype (∂s).faces :=
 by
   unfold FaceBoundary
   apply Set.fintypeDiff
@@ -50,7 +50,7 @@ theorem faceBoundary_subcomplex_simplex : ∂s ⊆ Simplex s := by
   choose t_sset_s t_ne_s t_ne using t_in_bd
   constructor <;> assumption
 
-theorem faceBoundary_simplicialIso : (Simplex s ≅ Simplex t) → ∂s ≅ ∂t := by
+theorem faceBoundary_simplicialIso  [DecidableEq E] : (Simplex s ≅ Simplex t) → ∂s ≅ ∂t := by
   intro s_iso_t
   unfold IsSimpliciallyIso at s_iso_t ⊢
   choose f f_iso using s_iso_t
@@ -260,7 +260,7 @@ theorem faceBoundary_simplicialIso : (Simplex s ≅ Simplex t) → ∂s ≅ ∂t
     assumption
 
 theorem faceBoundary_simplicialCoe_image_left
-    [Nonempty E]
+    [Nonempty E] [DecidableEq E]
     {φ : SimplicialCoe X F}
     (s_in_X : s ∈ X.faces)
   : (∂Finset.image φ.coe s) ⊆ (SimplicialImage φ.coe (∂s)) :=
@@ -394,7 +394,7 @@ by
     simp only [not_true_eq_false] at u_not_empty
 
 theorem faceBoundary_simplicialCoe_image
-    [Nonempty E]
+    [Nonempty E] [DecidableEq E]
     (s_in_X : s ∈ X.faces)
     (φ : SimplicialCoe X F)
   : (∂(Finset.image φ.coe s)) = (SimplicialImage φ.coe (∂s)) :=

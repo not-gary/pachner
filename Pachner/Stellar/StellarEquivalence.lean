@@ -1,10 +1,10 @@
 import Pachner.Stellar.StellarCoercion
 
-variable {E F 𝕜 : Type _}
-variable [DecidableEq E] [DecidableEq F] [DecidableEq 𝕜]
-variable [AddCommGroup E] [AddCommGroup F]
-variable [Ring 𝕜] [Nontrivial 𝕜]
-variable {X Y Z : AbstractSimplicialComplex E} {s t : Finset E} {x y : E} {f : E → F}
+variable
+  {E F 𝕜 : Type _}
+  [DecidableEq E] [DecidableEq F]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+  {X Y Z : AbstractSimplicialComplex E} {s t : Finset E} {x y : E} {f : E → F}
 
 @[simp]
 def StellarMove : AbstractSimplicialComplex E → AbstractSimplicialComplex E → Prop :=
@@ -13,7 +13,7 @@ def StellarMove : AbstractSimplicialComplex E → AbstractSimplicialComplex E �
     (∃ (s : Finset E) (Hs : s ∈ X.faces) (x : E) (Hx : x ∉ X.vertices), Y ≅ σ(X, s, x; 𝕜, Hs, Hx)) ∨
       X ≅ Y
 
-notation X " ≅ₛₜₘ[" 𝕜 "] " Y : 50 => @StellarMove _ 𝕜 _ _ _ _ _ X Y
+notation X " ≅ₛₜₘ[" 𝕜 "] " Y : 50 => @StellarMove _ 𝕜 _ _ _ _ X Y
 
 section SynthOrder
 set_option synthInstance.checkSynthOrder false
@@ -25,7 +25,7 @@ noncomputable instance StellarMove.Weld.Fintype
 by
   choose t t_in_Y y y_nin_Y X_weld_Y using X_weld_Y
   apply
-    @StellarSubdivision.FintypeConverse _ 𝕜 _ _ _ _ _ Y t y t_in_Y y_nin_Y
+    @StellarSubdivision.FintypeConverse _ 𝕜 _ _ _ _ Y t y t_in_Y y_nin_Y
       (IsSimpliciallyIso.Fintype X σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y) X_weld_Y)
 
 noncomputable instance StellarMove.Subdiv.Fintype
@@ -38,7 +38,7 @@ by
   rw [simplicialIso_symm] at X_subdiv_Y
   apply
     @IsSimpliciallyIso.Fintype _ _ _ _ σ(X, s, x; 𝕜, s_in_X, x_nin_X)
-      (@StellarSubdivision.fintype _ 𝕜 _ _ _ _ _ X X_fin s x s_in_X x_nin_X) Y X_subdiv_Y
+      (@StellarSubdivision.fintype _ 𝕜 _ _ _ _ X X_fin s x s_in_X x_nin_X) Y X_subdiv_Y
 
 noncomputable instance StellarMove.Fintype
     (X Y : AbstractSimplicialComplex E) [Fintype X.faces]
@@ -73,12 +73,12 @@ by
   choose t t_in_Y y y_nin_Y Y_subdiv_X using Y_subdiv_X
   rw [simplicialIso_preserves_dim Y_subdiv_X]
   symm
-  rw [@stellarSubdivision_dim _ 𝕜 _ _ _ _ _ Y t y _ t_in_Y y_nin_Y]
+  rw [@stellarSubdivision_dim _ 𝕜 _ _ _ _ Y t y _ t_in_Y y_nin_Y]
   rotate_left
   cases' X_move_Y with X_subdiv_Y X_iso_Y
   choose s s_in_X x x_nin_X X_subdiv_Y using X_subdiv_Y
   rw [simplicialIso_preserves_dim X_subdiv_Y]
-  rw [@stellarSubdivision_dim _ 𝕜 _ _ _ _ _ X s x _ s_in_X x_nin_X]
+  rw [@stellarSubdivision_dim _ 𝕜 _ _ _ _ X s x _ s_in_X x_nin_X]
   rotate_left
   rw [simplicialIso_preserves_dim X_iso_Y]
   all_goals
@@ -102,9 +102,9 @@ by
 
 def StellarEquiv
     : AbstractSimplicialComplex E → AbstractSimplicialComplex E → Prop :=
-  Relation.ReflTransGen (@StellarMove _ 𝕜 _ _ _ _ _)
+  Relation.ReflTransGen (@StellarMove _ 𝕜 _ _ _ _)
 
-notation X " ≅ₛₜ[" 𝕜 "] " Y : 50 => @StellarEquiv _ 𝕜 _ _ _ _ _ X Y
+notation X " ≅ₛₜ[" 𝕜 "] " Y : 50 => @StellarEquiv _ 𝕜 _ _ _ _ X Y
 
 section SynthOrder
 set_option synthInstance.checkSynthOrder false
@@ -125,14 +125,14 @@ by
     apply Set.Finite.fintype
     assumption
   constructor
-  apply @StellarMove.Fintype _ 𝕜 _ _ _ _ _ K L _ K_move_L
+  apply @StellarMove.Fintype _ 𝕜 _ _ _ _ K L _ K_move_L
 
 end SynthOrder
 
 theorem stellarEquiv_preserves_dim
     [X_fin : Fintype X.faces]
     (X_eq_Y : X ≅ₛₜ[𝕜] Y)
-  : X.dim = @AbstractSimplicialComplex.dim _ Y (@StellarEquiv.fintype _ 𝕜 _ _ _ _ _ X Y X_fin X_eq_Y) :=
+  : X.dim = @AbstractSimplicialComplex.dim _ Y (@StellarEquiv.fintype _ 𝕜 _ _ _ _ X Y X_fin X_eq_Y) :=
 by
   induction' X_eq_Y with K L X_eq_K K_move_L H_ind
   · unfold AbstractSimplicialComplex.dim
@@ -150,7 +150,7 @@ by
         right
         assumption
   · let K_fin : Fintype K.faces := by
-        apply @StellarEquiv.fintype _ 𝕜 _ _ _ _ _ X K _ X_eq_K
+        apply @StellarEquiv.fintype _ 𝕜 _ _ _ _ X K _ X_eq_K
     trans K.dim
     assumption
 
@@ -159,8 +159,8 @@ by
         apply Relation.ReflTransGen.single
         assumption
     let L_fin : Fintype L.faces := by
-        apply @StellarEquiv.fintype _ 𝕜 _ _ _ _ _ K L K_fin K_eq_L
-    apply @stellarMove_preserves_dim _ 𝕜 _ _ _ _ _ K L K_fin L_fin
+        apply @StellarEquiv.fintype _ 𝕜 _ _ _ _ K L K_fin K_eq_L
+    apply @stellarMove_preserves_dim _ 𝕜 _ _ _ _ K L K_fin L_fin
     assumption
 
 @[refl]
@@ -217,30 +217,30 @@ theorem stellarEquiv_neg_trans : X ≅ₛₜ[𝕜] Y → ¬Y ≅ₛₜ[𝕜] Z �
 
 instance StellarEquiv.Trans
   : Trans
-      (@StellarEquiv E 𝕜 _ _ _ _ _)
-      (@StellarEquiv E 𝕜 _ _ _ _ _)
-      (@StellarEquiv E 𝕜 _ _ _ _ _) where
+      (@StellarEquiv E 𝕜 _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _) where
     trans := Relation.ReflTransGen.trans
 
 instance StellarEquiv_StellarMove_left.Trans
   : Trans
-      (@StellarMove E 𝕜 _ _ _ _ _)
-      (@StellarEquiv E 𝕜 _ _ _ _ _)
-      (@StellarEquiv E 𝕜 _ _ _ _ _) where
+      (@StellarMove E 𝕜 _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _) where
     trans := Relation.ReflTransGen.head
 
 instance StellarEquiv_StellarMove_right.Trans
   : Trans
-      (@StellarEquiv E 𝕜 _ _ _ _ _)
-      (@StellarMove E 𝕜 _ _ _ _ _)
-      (@StellarEquiv E 𝕜 _ _ _ _ _) where
+      (@StellarEquiv E 𝕜 _ _ _ _)
+      (@StellarMove E 𝕜 _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _) where
     trans := Relation.ReflTransGen.tail
 
 instance StellarEquiv_SimplicialIso_left.Trans
   : Trans
       (@IsSimpliciallyIso E E _ _)
-      (@StellarEquiv E 𝕜 _ _ _ _ _)
-      (@StellarEquiv E 𝕜 _ _ _ _ _) where
+      (@StellarEquiv E 𝕜 _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _) where
     trans := (
 by
   intro X Y Z X_iso_Y Y_eq_Z
@@ -250,9 +250,9 @@ by
 
 instance StellarEquiv_SimplicialIso_right.Trans
   : Trans
-      (@StellarEquiv E 𝕜 _ _ _ _ _)
+      (@StellarEquiv E 𝕜 _ _ _ _)
       (@IsSimpliciallyIso E E _ _)
-      (@StellarEquiv E 𝕜 _ _ _ _ _) where
+      (@StellarEquiv E 𝕜 _ _ _ _) where
     trans := (
 by
   intro X Y Z X_eq_Y Y_iso_Z
@@ -455,6 +455,7 @@ by
   contradiction
 
 theorem stellarSubdivision_injective_image_faces_right_ac
+    [Nonempty E]
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
@@ -737,6 +738,7 @@ by
   assumption
 
 theorem stellarSubdivision_injective_image_faces_right_ad
+    [Nonempty E]
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
@@ -1184,6 +1186,7 @@ by
   simp only [Finset.union_empty]
 
 theorem stellarSubdivision_injective_image_faces_right
+    [Nonempty E]
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
@@ -1309,6 +1312,7 @@ by
   assumption
 
 theorem stellarSubdivision_injective_image
+    [Nonempty E]
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
@@ -1328,6 +1332,7 @@ by
   assumption
 
 theorem stellarSsubdivision_exists_iso
+    [Nonempty E]
     {Z : AbstractSimplicialComplex F}
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
@@ -1383,6 +1388,7 @@ by
   assumption
 
 theorem stellar_weld_exists_iso
+    [Nonempty E]
     {Z : AbstractSimplicialComplex F}
     (t_in_Y : t ∈ Y.faces)
     (y_nin_Y : y ∉ Y.vertices)
@@ -1430,7 +1436,7 @@ by
   by
     apply @Set.InjOn.mono _ _ Y.vertices (Y.vertices ∪ {y})
     apply Set.subset_union_left
-    rw [← @stellarSubdivision_vertices _ 𝕜 _ _ _ _ _ Y t y t_in_Y y_nin_Y t_nonsingleton]
+    rw [← @stellarSubdivision_vertices _ 𝕜 _ _ _ _ Y t y t_in_Y y_nin_Y t_nonsingleton]
     apply simplicialIso_injective_vertices g g_iso
   let g_coe : SimplicialCoe Y F := SimplicialCoe.mk g.map g_inj
   have gy_nin_gY : g.map y ∉ (g_coe.coe ''ˢ Y).vertices :=
@@ -1447,10 +1453,10 @@ by
       assumption
     contradiction
     assumption
-  let φ := @StellarCoeForward _ _ 𝕜 _ _ _ _ _ _ _ Y g_coe t y (g.map y) t_in_Y y_nin_Y gy_nin_gY
+  let φ := @StellarCoeForward _ _ 𝕜 _ _ _ _ _ _ Y g_coe t y (g.map y) t_in_Y y_nin_Y gy_nin_gY
   have φ_inj : Set.InjOn φ.map (Y.vertices ∪ {y}) :=
   by
-    rw [← @stellarSubdivision_vertices _ 𝕜 _ _ _ _ _ Y t y t_in_Y y_nin_Y t_nonsingleton]
+    rw [← @stellarSubdivision_vertices _ 𝕜 _ _ _ _ Y t y t_in_Y y_nin_Y t_nonsingleton]
     apply
       simplicialIso_injective_vertices φ (stellarCoe_simplicialIso t_in_Y y_nin_Y gy_nin_gY)
   have φy_nin_φY : φ.map y ∉ (SimplicialImage φ.map Y).vertices :=
@@ -1507,9 +1513,10 @@ by
   simp only [Set.EqOn, implies_true, φY]
 
 theorem stellarMove_exists_iso
+    [Nonempty E]
     {Z : AbstractSimplicialComplex F}
     (f_inj : Function.Injective f)
-  : (X ≅ Z) → @StellarMove _ 𝕜 _ _ _ _ _ X Y →
+  : (X ≅ Z) → X ≅ₛₜₘ[𝕜] Y →
       ∃ W : AbstractSimplicialComplex F, (Y ≅ W) ∧ Z ≅ₛₜ[𝕜] W :=
 by
   intro X_iso_Z X_move_Y
@@ -1529,6 +1536,7 @@ by
   rfl
 
 theorem stellarEquiv_exists_iso
+    [Nonempty E]
     {Z : AbstractSimplicialComplex F}
     (f_inj : Function.Injective f)
   : (X ≅ Z) → X ≅ₛₜ[𝕜] Y →
@@ -1553,9 +1561,10 @@ by
   assumption
 
 theorem stellarMove_iso
+    [Nonempty E]
     {Z W : AbstractSimplicialComplex F}
     (f_inj : Function.Injective f)
-  : (X ≅ Z) → (Y ≅ W) → @StellarMove _ 𝕜 _ _ _ _ _ X Y → Z ≅ₛₜ[𝕜] W :=
+  : (X ≅ Z) → (Y ≅ W) → X ≅ₛₜₘ[𝕜] Y → Z ≅ₛₜ[𝕜] W :=
 by
   intro X_iso_Z Y_iso_W X_move_Y
   have Y_iso_L : ∃ L : AbstractSimplicialComplex F, (Y ≅ L) ∧ Z ≅ₛₜ[𝕜] L :=
@@ -1574,6 +1583,7 @@ by
   assumption
 
 theorem stellarEquiv_iso
+    [Nonempty E]
     {Z W : AbstractSimplicialComplex F}
     (f_inj : Function.Injective f)
   : (X ≅ Z) → (Y ≅ W) → X ≅ₛₜ[𝕜] Y → Z ≅ₛₜ[𝕜] W :=

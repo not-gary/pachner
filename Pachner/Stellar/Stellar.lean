@@ -1,75 +1,12 @@
 import Pachner.Stellar.StellarSubdivision
 
-
-variable {E F 𝕜 : Type _}
-variable [DecidableEq E] [DecidableEq F] [DecidableEq 𝕜]
-variable [AddCommGroup E] [AddCommGroup F]
-variable [Ring 𝕜] [Nontrivial 𝕜]
-
--- stellar_weld_exists_iso
-
--- barycenter_injective_image
-
--- stellarSubdivision_injective_image_faces_left
-
--- stellarSubdivision_injective_image_faces_right_ac
-
--- stellarSubdivision_injective_image_faces_right_ad
-
--- stellarSubdivision_injective_image_faces_right_bc
-
--- stellarSubdivision_injective_image_faces_right_bd
-
--- stellarSubdivision_injective_image_faces_right
-
--- stellarSubdivision_injective_image_faces
-
--- stellarSubdivision_injective_image
-
--- stellarSsubdivision_exists_iso
-
--- stellarMove_exists_iso
-
--- stellarEquiv_exists_iso
-
--- stellarMove_iso
-
--- stellarEquiv_iso
-
-/-
-# Properties of Stellar Subdivision
--/
-
--- simplicialJoin_notMem_vertices_left
-
--- simplicialJoin_stellarSubdivision_faces_left
-
--- simplicialJoin_stellarSubdivision_faces_right
-
--- simplicialJoin_stellarSubdivision_faces
-
--- simplicialJoin_stellarSubdivision_left
-
--- simplicialJoin_notMem_vertices_right
-
--- simplicialJoin_stellarSubdivision_right
-
--- simplicialJoin_stellarEquiv
-
--- simplicialJoin_stellarEquiv_left
-
--- simplicialJoin_stellarEquiv_right
-
--- stellarSubdivision_link_of_starComplement
-
--- stellarSubdivision_link_of_barycenter
-
--- star_boundary_is_join
+variable {E 𝕜 : Type _}
+  [DecidableEq E]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+  {X : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
 theorem star_boundary_diff_ne
-    {X : AbstractSimplicialComplex E}
-    {s t : Finset E} [s_ne : Nonempty s]
-    {s_in_X : s ∈ X.faces}
+    (s_in_X : s ∈ X.faces)
   : t ∈ ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
       Nonempty ↥(s \ t) :=
 by
@@ -100,6 +37,9 @@ by
   rw [t₂_empty, Finset.union_empty] at t_decomp
   subst t_decomp
   simp only [Finset.eq_empty_iff_forall_notMem, Finset.mem_inter, not_and] at st₁_disj
+  have s_ne : Nonempty { x // x ∈ s } := by
+    rw [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty]
+    exact face_nonempty s_in_X
   simp only [Finset.nonempty_coe_sort, Finset.nonempty_iff_ne_empty, ne_eq, Finset.eq_empty_iff_forall_notMem,
     not_forall, not_not] at s_ne
   choose a a_in_s using s_ne
@@ -123,34 +63,9 @@ by
 
   contradiction
 
--- starBoundary_mem_link
-
--- link_notMem_vertices
-
--- stellarSubdivision_anticomm_link_left_ac
-
--- stellarSubdivision_anticomm_link_left_ad_tu_in_X
-
--- stellarSubdivision_anticomm_link_left_ad_st_nss_u
-
--- stellarSubdivision_anticomm_link_left_ad
-
--- stellarSubdivision_anticomm_link_left_bc
-
--- stellarSubdivision_anticomm_link_left_bd_u_ss_st
-
--- stellarSubdivision_anticomm_link_left_bd_u_mem_link
-
--- stellarSubdivision_anticomm_link_left_bd_stu_mem_link
-
--- stellarSubdivision_anticomm_link_left_bd
-
 theorem star_boundary_mem_subdiv
-    {X : AbstractSimplicialComplex E}
-    {s t : Finset E}
-    {x : E}
-    {s_in_X : s ∈ X.faces}
-    {x_nin_X : x ∉ X.vertices}
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
   : t ∈ ((π₁[𝕜] (disjoint_link_boundary X s)).coe ''ˢ (Lk(X, s) ⋆ ∂s)).faces →
       t ∈ σ(X, s, x; 𝕜, s_in_X, x_nin_X).faces :=
 by
@@ -207,15 +122,3 @@ by
     · subst t₁_empty t₂_empty
       rw [Finset.empty_union] at t_decomp
       contradiction
-
--- stellarSubdivision_anticomm_link_left
-
--- stellarSubdivision_anticomm_link_right_e
-
--- starBoundary_mem_compl
-
--- stellarSubdivision_anticomm_link_right_f
-
--- stellarSubdivision_anticomm_link_right
-
--- stellarSubdivision_anticomm_link

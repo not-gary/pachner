@@ -1,12 +1,12 @@
 import Pachner.Stellar.StellarSubdivision
 
-variable {E F 𝕜 : Type _}
-variable [DecidableEq E] [DecidableEq F] [DecidableEq 𝕜]
-variable [AddCommGroup E] [AddCommGroup F]
-variable [Ring 𝕜] [Nontrivial 𝕜]
-variable {X : AbstractSimplicialComplex E} {s : Finset E} {x : E}
-variable {y : F}
-variable {φ : SimplicialCoe X F}
+variable
+  {E F 𝕜 : Type _}
+  [DecidableEq E] [DecidableEq F]
+  [DecidableEq 𝕜] [Ring 𝕜] [Nontrivial 𝕜]
+  {X : AbstractSimplicialComplex E} {s : Finset E} {x : E}
+  {y : F}
+  {φ : SimplicialCoe X F}
 
 @[simp]
 def StellarCoeMap (f : E → F) (x : E) (y : F) : E → F := fun a : E => if a = x then y else f a
@@ -36,6 +36,7 @@ by
     assumption
 
 theorem stellarCoeMap_forward_simplicialMap
+    [Nonempty E]
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
@@ -49,7 +50,7 @@ by
   cases' t_in_subdiv with t_in_star_comp t_in_join
 
   left
-  rw [starComplement_simplicialCoe_image X s s_in_X φ, stellarCoe_face_image]
+  rw [starComplement_simplicialCoe_image s_in_X φ, stellarCoe_face_image]
   apply isSimplicialMap_onto_image
   assumption
   revert x_nin_X
@@ -224,6 +225,7 @@ by
   contradiction
 
 theorem stellarCoeMap_inverse_simplicialMap
+    [Nonempty E]
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
@@ -465,6 +467,7 @@ by
   contradiction
 
 def StellarCoeForward
+    [Nonempty E]
     (X : AbstractSimplicialComplex E)
     (φ : SimplicialCoe X F)
     (s : Finset E)
@@ -480,6 +483,7 @@ def StellarCoeForward
     (stellarCoeMap_forward_simplicialMap s_in_X x_nin_X y_nin_coe)
 
 noncomputable def StellarCoeInverse
+    [Nonempty E]
     (X : AbstractSimplicialComplex E)
     (φ : SimplicialCoe X F)
     (s : Finset E)
@@ -549,11 +553,12 @@ by
   contradiction
 
 theorem stellarCoe_inv_simplicialIso
+    [Nonempty E]
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
   : IsInverseSimplicialIso (StellarCoeForward X φ s x y s_in_X x_nin_X y_nin_coe)
-      (@StellarCoeInverse _ _ 𝕜 _ _ _ _ _ _ _ X φ s x y s_in_X x_nin_X y_nin_coe) :=
+      (@StellarCoeInverse _ _ 𝕜 _ _ _ _ _ _ X φ s x y s_in_X x_nin_X y_nin_coe) :=
 by
   unfold IsInverseSimplicialIso
   simp only [Set.restrict_eq_restrict_iff, Set.EqOn, SimplicialMap.comp, Function.comp_apply, id]
@@ -625,10 +630,11 @@ by
     simp only [StellarCoeMap, b_eq_y, eq_self_iff_true, if_true]
 
 theorem stellarCoe_simplicialIso
+    [Nonempty E]
     (s_in_X : s ∈ X.faces)
     (x_nin_X : x ∉ X.vertices)
     (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
-  : IsSimplicialIso (@StellarCoeForward _ _ 𝕜 _ _ _ _ _ _ _ X φ s x y s_in_X x_nin_X y_nin_coe) :=
+  : IsSimplicialIso (@StellarCoeForward _ _ 𝕜 _ _ _ _ _ _ X φ s x y s_in_X x_nin_X y_nin_coe) :=
 by
   use StellarCoeInverse X φ s x y s_in_X x_nin_X y_nin_coe
   apply stellarCoe_inv_simplicialIso

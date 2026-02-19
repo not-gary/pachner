@@ -1,11 +1,11 @@
 import Pachner.Maps.SimplicialCoercion
 import Pachner.Subcomplex.Intersection
 
-variable {E F : Type _}
-variable [DecidableEq E] [DecidableEq F]
-variable {X Y : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
+variable
+  {E F : Type _}
+  [DecidableEq E] [DecidableEq F]
+  {X Y : AbstractSimplicialComplex E} {s t : Finset E} {x : E}
 
--- Link of a complex wrt a face.
 @[simp]
 def Link
     (X : AbstractSimplicialComplex E)

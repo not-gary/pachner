@@ -1,22 +1,17 @@
 import Pachner.Basic.AbstractSimplicialComplex
 import Pachner.Subcomplex.Union
 
-variable {E F G : Type _}
+variable
+  {E F G : Type _}
+  [DecidableEq F] [DecidableEq G]
+  {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F} {Z : AbstractSimplicialComplex G}
 
-set_option autoImplicit false
-
-/-
-# Simplicial maps
--/
 section SimplicialMap
 
-variable [DecidableEq F] [DecidableEq G]
-variable {X Y : AbstractSimplicialComplex E} {Z : AbstractSimplicialComplex F}
-variable {f : E → F}
+variable
+  {Y : AbstractSimplicialComplex E} {Z : AbstractSimplicialComplex F}
+  {f : E → F}
 
-/- Simplicial maps are maps between the underlying base types
-   that map faces to faces.
--/
 @[simp]
 def IsSimplicialMap
     (X : AbstractSimplicialComplex E)
@@ -176,16 +171,10 @@ theorem simplicialImage_union [DecidableEq E] : (f ''ˢ (X ∪ Y)) = (f ''ˢ X) 
 
 end SimplicialMap
 
-/-
-# Simplicial maps on vertices
--/
-section vertices
+section SimplicialMap.vertices
 
-variable [DecidableEq E] [DecidableEq F]
-variable {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F} {x : E}
-variable {f : SimplicialMap X Y}
+variable {x : E} {f : SimplicialMap X Y}
 
--- Simplicial maps map vertices to vertices.
 theorem simplicialMap_on_vertices
     (f : SimplicialMap X Y)
     (x_in_X : x ∈ X.vertices)
@@ -302,16 +291,8 @@ by
 
 end vertices
 
-/-
-# Dimension monotonicity
--/
-section Dimension
+section SimplicialMap.Dimension
 
-variable [DecidableEq F]
-variable {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F}
-
--- The dimension of faces does not increase
--- under simplicial maps.
 theorem simplicialMap_dim_mono
     (f : SimplicialMap X Y)
     (s : Finset E)
@@ -322,14 +303,10 @@ by
     _ ≤ Finset.card s - 1 := by simp [Finset.card_image_le]
     _ ≤ face_dim s := by simp only [face_dim, le_refl]
 
-end Dimension
+end SimplicialMap.Dimension
 
-variable {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F}
+section SimplicialMap.Examples
 
-/-
-# Examples
--/
--- The identity map is simplicial.
 theorem id_isSimplicialMap [DecidableEq E]
   : IsSimplicialMap X X id :=
 by
@@ -340,8 +317,7 @@ def idSimplicialMap [DecidableEq E]
   : SimplicialMap X X :=
     SimplicialMap.mk id (id_isSimplicialMap)
 
--- Constant maps are simplicial
-theorem const_is_simplicial [DecidableEq F]
+theorem const_is_simplicial
     (y_0 : F)
     (y0_vertex : y_0 ∈ Y.vertices)
   : IsSimplicialMap X Y (fun _ : E => y_0) :=
@@ -352,7 +328,7 @@ by
   rw [Finset.nonempty_iff_ne_empty]
   exact face_nonempty s_in_X
 
-def constSimplicialMap [DecidableEq F]
+def constSimplicialMap
     (X : AbstractSimplicialComplex E)
     (Y : AbstractSimplicialComplex F)
     (y_0 : F)
@@ -360,11 +336,7 @@ def constSimplicialMap [DecidableEq F]
   : SimplicialMap X Y :=
     SimplicialMap.mk (fun _ : E => y_0) (const_is_simplicial y_0 y0_vertex)
 
--- Compositions of simplicial maps are simplicial
-theorem isSimplicial_comp [DecidableEq F] [DecidableEq G]
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
-    {Z : AbstractSimplicialComplex G}
+theorem isSimplicial_comp
     (f : E → F)
     (f_simpl : IsSimplicialMap X Y f)
     (g : F → G)
@@ -380,11 +352,10 @@ by
   rw [Finset.image_image.symm]
   assumption
 
-def SimplicialMap.comp [DecidableEq F] [DecidableEq G]
-    {X : AbstractSimplicialComplex E}
-    {Y : AbstractSimplicialComplex F}
-    {Z : AbstractSimplicialComplex G}
+def SimplicialMap.comp
     (f : SimplicialMap X Y)
     (g : SimplicialMap Y Z)
   : SimplicialMap X Z :=
     SimplicialMap.mk (g.map ∘ f.map) (isSimplicial_comp f.map f.is_simplicial g.map g.is_simplicial)
+
+end SimplicialMap.Examples
