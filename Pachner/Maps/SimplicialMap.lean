@@ -165,7 +165,7 @@ theorem simplicialImage_is_lift_image : (f ''ˢ X).faces = SimplicialMapLift ⟨
   simp only [SimplicialImage, SimplicialMapLift, Set.ext_iff, Set.mem_setOf, Set.mem_image,
     forall_true_iff]
 
-theorem simplicialImage_union [DecidableEq E] : (f ''ˢ (X ∪ Y)) = (f ''ˢ X) ∪ (f ''ˢ Y) := by
+theorem simplicialImage_union : (f ''ˢ (X ∪ Y)) = (f ''ˢ X) ∪ (f ''ˢ Y) := by
   simp only [AbstractSimplicialComplex.ext_iff, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
   simplicialImage_is_lift_image, SimplicialMapLift, Set.image_union]
 

@@ -54,19 +54,19 @@ theorem simplicialUnion_assoc : X ∪ Y ∪ Z = X ∪ (Y ∪ Z) := by
 theorem simplicialUnion_comm : X ∪ Y = Y ∪ X := by
   simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion, Set.union_comm]
 
-theorem simplicialUnion_eq_left_iff_subcomplex [DecidableEq E] : (X ∪ Y) = X ↔ Y ⊆ X := by
+theorem simplicialUnion_eq_left_iff_subcomplex : (X ∪ Y) = X ↔ Y ⊆ X := by
   simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion, AbstractSimplicialComplex.ext_iff,
     AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.union_eq_left]
 
-theorem simplicialUnion_eq_right_iff_subcomplex [DecidableEq E] : (X ∪ Y) = Y ↔ X ⊆ Y := by
+theorem simplicialUnion_eq_right_iff_subcomplex : (X ∪ Y) = Y ↔ X ⊆ Y := by
   simp only [AbstractSimplicialComplex.instHasUnion, SimplicialUnion, AbstractSimplicialComplex.ext_iff,
     AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.union_eq_right]
 
-theorem simplicialUnion_subcomplex_left [DecidableEq E] : X ⊆ X ∪ Y := by
+theorem simplicialUnion_subcomplex_left : X ⊆ X ∪ Y := by
   simp only [AbstractSimplicialComplex.instHasUnion, AbstractSimplicialComplex.instHasSubset,
     IsSubcomplex, SimplicialUnion, Set.subset_union_left]
 
-theorem simplicialUnion_subcomplex_right [DecidableEq E] : Y ⊆ X ∪ Y := by
+theorem simplicialUnion_subcomplex_right : Y ⊆ X ∪ Y := by
   simp only [AbstractSimplicialComplex.instHasUnion, AbstractSimplicialComplex.instHasSubset,
     IsSubcomplex, SimplicialUnion, Set.subset_union_right]
 

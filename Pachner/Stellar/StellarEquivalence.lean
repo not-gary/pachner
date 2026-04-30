@@ -286,10 +286,7 @@ theorem stellarSubdivision_injective_image_faces_left
     (f : E → F)
     (f_inj : Function.Injective f)
   : (SimplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces ⊆
-      σ(SimplicialImage f X, Finset.image f s, f x; 𝕜,
-        by
-          apply isSimplicialMap_onto_image
-          assumption,
+      σ(SimplicialImage f X, Finset.image f s, f x; 𝕜, isSimplicialMap_onto_image _ _ _ s_in_X,
         barycenter_injective_image x_nin_X f_inj).faces :=
 by
   rw [Set.subset_def]
@@ -405,13 +402,11 @@ by
   choose u₁_in_X su₁_in_X su₁_disj using u₁_in_link
 
   left; constructor
-  apply isSimplicialMap_onto_image
-  assumption
+  exact isSimplicialMap_onto_image _ _ _ u₁_in_X
 
   constructor
   rw [← Finset.image_union]
-  apply isSimplicialMap_onto_image
-  assumption
+  exact isSimplicialMap_onto_image _ _ _ su₁_in_X
   rw [← Finset.image_inter s u₁ f_inj, Finset.image_eq_empty]
   assumption
 
@@ -1191,10 +1186,7 @@ theorem stellarSubdivision_injective_image_faces_right
     (x_nin_X : x ∉ X.vertices)
     (f : E → F)
     (f_inj : Function.Injective f)
-  : σ(SimplicialImage f X, Finset.image f s, f x; 𝕜,
-        by
-          apply isSimplicialMap_onto_image
-          assumption,
+  : σ(SimplicialImage f X, Finset.image f s, f x; 𝕜, isSimplicialMap_onto_image _ _ _ s_in_X,
         barycenter_injective_image x_nin_X f_inj).faces ⊆
       (SimplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)).faces :=
 by
@@ -1318,10 +1310,7 @@ theorem stellarSubdivision_injective_image
     (f : E → F)
     (f_inj : Function.Injective f)
   : (SimplicialImage f σ(X, s, x; 𝕜, s_in_X, x_nin_X)) =
-      σ(SimplicialImage f X, Finset.image f s, f x; 𝕜,
-          by
-            apply isSimplicialMap_onto_image
-            assumption,
+      σ(SimplicialImage f X, Finset.image f s, f x; 𝕜, isSimplicialMap_onto_image _ _ _ s_in_X,
           barycenter_injective_image x_nin_X f_inj) :=
 by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
@@ -1364,11 +1353,7 @@ by
   assumption
   right; left
   use Finset.image τX.coe s
-  have τs_in_img : Finset.image τX.coe s ∈ (τX.coe ''ˢ X).faces :=
-  by
-    apply isSimplicialMap_onto_image X τX.coe
-    assumption
-  use τs_in_img
+  use isSimplicialMap_onto_image _ _ _ s_in_X
   use τX.coe x
   have τx_nin_τX : τX.coe x ∉ (τX.coe ''ˢ X).vertices :=
   by
@@ -1491,19 +1476,15 @@ by
   unfold StellarMove
   left
   use Finset.image φ.map t
-  have φt_in_φY : Finset.image φ.map t ∈ (SimplicialImage φ.map Y).faces :=
-  by
-    apply isSimplicialMap_onto_image Y φ.map
-    assumption
-  use φt_in_φY
+  use isSimplicialMap_onto_image _ _ _ t_in_Y
   use φ.map y
   use φy_nin_φY
   apply simplicialIso_trans σ(Y, t, y; 𝕜, t_in_Y, y_nin_Y)
   assumption
   apply
     simplicialIso_trans
-      σ(SimplicialImage g_coe.coe Y, Finset.image g_coe.coe t, g.map y; 𝕜, by
-        apply isSimplicialMap_onto_image; assumption, gy_nin_gY)
+      σ(SimplicialImage g_coe.coe Y, Finset.image g_coe.coe t, g.map y; 𝕜,
+        isSimplicialMap_onto_image _ _ _ t_in_Y, gy_nin_gY)
   unfold IsSimpliciallyIso
   use φ
   apply stellarCoe_simplicialIso

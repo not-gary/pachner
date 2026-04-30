@@ -199,7 +199,7 @@ def SimplicialCoeOnImage [DecidableEq E]
       apply f.is_simplicial
       assumption)
 
-theorem simplicialCoe_union [DecidableEq E]
+theorem simplicialCoe_union
     (φ : SimplicialCoe (X ∪ Y) F)
   : φ.coe ''ˢ (X ∪ Y) =
       φ[X; by apply isSubcomplex_vertices; apply simplicialUnion_subcomplex_left].coe ''ˢ X ∪

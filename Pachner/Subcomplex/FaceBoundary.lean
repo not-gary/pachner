@@ -287,13 +287,7 @@ by
       apply simplicialCoe_mapsTo_vertices
       rw [vertex_iff_in_face]
       use t
-      constructor
-      apply (φ.coe ''ˢ X).down_closed
-      apply isSimplicialMap_onto_image
-      assumption
-      assumption
-      assumption
-      assumption
+      exact ⟨(φ.coe ''ˢ X).down_closed (isSimplicialMap_onto_image _ _ _ s_in_X) t_ss_φs t_ne_empty, H⟩
     intro y
     constructor
     intro y_in_img

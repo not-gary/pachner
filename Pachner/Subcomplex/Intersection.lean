@@ -34,11 +34,11 @@ theorem simplicialInter_comm : X ∩ Y = Y ∩ X := by
   simp only [AbstractSimplicialComplex.instHasInter, SimplicialInter, AbstractSimplicialComplex.ext_iff,
     Set.inter_comm]
 
-theorem simplicialInter_subcomplex_left [DecidableEq E] : X ∩ Y ⊆ X := by
+theorem simplicialInter_subcomplex_left : X ∩ Y ⊆ X := by
   simp only [AbstractSimplicialComplex.instHasInter, SimplicialInter, AbstractSimplicialComplex.ext_iff,
     AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.inter_subset_left]
 
-theorem implicialInter_subcomplex_right [DecidableEq E] : X ∩ Y ⊆ Y := by
+theorem implicialInter_subcomplex_right : X ∩ Y ⊆ Y := by
   simp only [AbstractSimplicialComplex.instHasInter, SimplicialInter, AbstractSimplicialComplex.ext_iff,
     AbstractSimplicialComplex.instHasSubset, IsSubcomplex, Set.inter_subset_right]
 
