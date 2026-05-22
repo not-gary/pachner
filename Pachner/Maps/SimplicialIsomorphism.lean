@@ -7,8 +7,6 @@ variable
   [DecidableEq E] [DecidableEq F] [DecidableEq G]
   {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F} {Z : AbstractSimplicialComplex G}
 
-section Bundled
-
 structure SimplicialIso (X : AbstractSimplicialComplex E) (Y : AbstractSimplicialComplex F) where
   toFun : SimplicialMap X Y -- this naming convention follows (Partial)Equiv, there is also the one from CategoryTheory
   invFun : SimplicialMap Y X -- which would be 'hom' and 'inv'
@@ -161,9 +159,7 @@ theorem SimplicialIso.preserves_dim (f : X ≅' Y) [Fintype X.faces] : X.dim = @
       rw [Finset.mem_union]
       exact Or.inr Y_empty
 
-end Bundled
-
-@[simp]
+@[simp, deprecated "use individually" (since := "")]
 def IsInverseSimplicialIso
     (f : SimplicialMap X Y)
     (g : SimplicialMap Y X)
@@ -171,6 +167,7 @@ def IsInverseSimplicialIso
     (X.vertices).restrict (SimplicialMap.comp f g).map = (X.vertices).restrict id ∧
     (Y.vertices).restrict (SimplicialMap.comp g f).map = (Y.vertices).restrict id
 
+@[deprecated "IsInverseSimplicialIso unused" (since := "")]
 theorem isInverseSimplicialIso_symm
     (f : SimplicialMap X Y)
     (g : SimplicialMap Y X)
@@ -184,15 +181,17 @@ by
     cases' g_inv_f with gf_id fg_id
     constructor <;> assumption
 
-@[simp]
+@[simp, deprecated SimplicialIso (since := "")]
 def IsSimplicialIso (f : SimplicialMap X Y) : Prop :=
     ∃ g : SimplicialMap Y X, IsInverseSimplicialIso f g
 
+@[deprecated SimplicialIso.id' (since := "")]
 theorem id_isSimplicialIso : IsSimplicialIso (idSimplicialMap X) := by
   use idSimplicialMap X
   simp only [IsInverseSimplicialIso, Set.restrict_id, and_self]
   tauto
 
+@[deprecated SimplicialIso.symm (since := "")]
 theorem simplicialIso_inverse_is_simplicialIso
     (f : SimplicialMap X Y)
     (g : SimplicialMap Y X)
@@ -205,6 +204,7 @@ by
   rw [and_comm]
   assumption
 
+@[deprecated SimplicialIso.comp (since := "")]
 theorem simplicialIso.comp
     (f : SimplicialMap X Y)
     (g : SimplicialMap Y Z)
@@ -234,6 +234,7 @@ by
   simp
   assumption
 
+@[deprecated SimplicialIso.injective_vertices (since := "")]
 theorem simplicialIso_injective_vertices
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
@@ -259,6 +260,7 @@ by
   symm
   assumption
 
+@[deprecated SimplicialIso.injective_faces (since := "")]
 theorem simplicialIso_injective_faces
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
@@ -293,6 +295,7 @@ by
   rw [gfx₁_eq_x₁, gfx₂_eq_x₂] at gfx₁_eq_gfx₂
   assumption
 
+@[deprecated SimplicialIso.surjective_vertices (since := "")]
 theorem simplicialIso_surjective_vertices
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
@@ -317,15 +320,17 @@ by
   assumption
   assumption
 
-@[simp]
+@[simp, deprecated SimplicialIso (since := "")]
 def IsSimpliciallyIso
     (X : AbstractSimplicialComplex E)
     (Y : AbstractSimplicialComplex F)
   : Prop :=
     ∃ f : SimplicialMap X Y, IsSimplicialIso f
 
+@[deprecated SimplicialIso (since := "")]
 infixr:50 " ≅ " => IsSimpliciallyIso
 
+@[deprecated SimplicialIso.simplicialMapLift_bijective (since := "")]
 theorem simplicialIso_imp_simplicialMapLift_bijective
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
@@ -359,6 +364,7 @@ by
   apply f.is_simplicial
   assumption
 
+@[deprecated SimplicialIso.congr_vertices (since := "")]
 theorem simplicialIso_vertices
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f)
@@ -390,7 +396,9 @@ by
   apply f.is_simplicial
   assumption
 
+section SynthOrder
 set_option synthInstance.checkSynthOrder false
+@[deprecated SimplicialIso.fintype (since := "")]
 noncomputable instance IsSimpliciallyIso.Fintype
     (X : AbstractSimplicialComplex E) [Fintype X.faces]
     (Y : AbstractSimplicialComplex F)
@@ -401,7 +409,9 @@ by
   choose f f_iso using X_iso_Y
   rw [simplicialIso_imp_simplicialMapLift_bijective f f_iso]
   apply Set.fintypeImage
+end SynthOrder
 
+@[deprecated SimplicialIso.preserves_face_dim (since := "")]
 theorem simplicialIso_preserves_face_dim
     (f : SimplicialMap X Y)
     (f_iso : IsSimplicialIso f) :
@@ -414,6 +424,7 @@ by
   rw [Nat.cast_inj, Finset.card_image_iff]
   apply simplicialIso_injective_faces f f_iso s s_in_X
 
+@[deprecated SimplicialIso.preserves_dim (since := "")]
 theorem simplicialIso_preserves_dim
     [Fintype X.faces]
     (X_iso_Y : X ≅ Y) :
@@ -480,13 +491,13 @@ by
   assumption
 
 -- Being simplicially isomorphic is an equivalence relation.
-@[refl]
+@[refl, deprecated SimplicialIso.refl (since := "")]
 theorem simplicialIso_refl : X ≅ X := by
   unfold IsSimpliciallyIso
   use idSimplicialMap X
   apply id_isSimplicialIso
 
-@[symm]
+@[symm, deprecated SimplicialIso.symm (since := "")]
 theorem simplicialIso_symm : (X ≅ Y) ↔ (Y ≅ X) := by
   unfold IsSimpliciallyIso
   constructor <;> unfold IsSimplicialIso
@@ -501,7 +512,7 @@ theorem simplicialIso_symm : (X ≅ Y) ↔ (Y ≅ X) := by
     rw [isInverseSimplicialIso_symm]
     assumption
 
-@[trans]
+@[trans, deprecated SimplicialIso.trans (since := "")]
 theorem simplicialIso_trans (Y : AbstractSimplicialComplex F) : (X ≅ Y) → Y ≅ Z → X ≅ Z := by
   intro X_iso_Y Y_iso_Z
   unfold IsSimpliciallyIso at *
@@ -510,10 +521,12 @@ theorem simplicialIso_trans (Y : AbstractSimplicialComplex F) : (X ≅ Y) → Y 
   use f.comp g
   apply simplicialIso.comp <;> assumption
 
+@[deprecated SimplicialIso.Trans (since := "")]
 instance IsSimpliciallyIso.Trans
   : Trans (@IsSimpliciallyIso E F _ _) (@IsSimpliciallyIso F G _ _) (@IsSimpliciallyIso E G _ _) where
     trans := simplicialIso_trans _
 
+@[deprecated "should not be a necessary theorem, use rw and SimplicialIso.refl or id" (since := "")]
 theorem simplicialIso_preserves_equiv
     {X Y : AbstractSimplicialComplex E}
   : X.faces = Y.faces → X ≅ Y :=

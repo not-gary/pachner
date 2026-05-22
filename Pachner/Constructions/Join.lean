@@ -567,6 +567,46 @@ def SimplicialJoinIsoInverseMap (f g : F → E) : F × 𝕜 → E × 𝕜
   := fun x : F × 𝕜
     => if x.snd = 0 then (f x.fst, x.snd) else (g x.fst, x.snd)
 
+def simplicialJoin_simplicialIso' {Z W : AbstractSimplicialComplex F} (f : X ≅' Z) (g : Y ≅' W) :
+    (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) ≅' (Z ⋆ W : AbstractSimplicialComplex (F × 𝕜)) where
+  toFun := {
+    map := SimplicialJoinIsoMap f.toFun.map g.toFun.map
+    is_simplicial := simplicialJoin_simplicialMap f.toFun g.toFun }
+  invFun := {
+    map := SimplicialJoinIsoMap f.invFun.map g.invFun.map
+    is_simplicial := simplicialJoin_simplicialMap f.invFun g.invFun }
+  left_inv x_in_XY := by
+    simp only [SimplicialMap.map, SimplicialJoinIsoMap]
+    split_ifs with h <;> (rw [Prod.eq_iff_fst_eq_snd_eq]; simp only [and_true])
+    · apply f.left_inv
+      rw [← @simplicialJoin_mem_vertices_left _ 𝕜, ← h, Prod.mk.eta]
+      exact x_in_XY
+    · apply g.left_inv
+      rw [← @simplicialJoin_mem_vertices_right _ 𝕜 _ _ _ _ X]
+      rw [simplicialJoin_mem_vertices] at x_in_XY
+      cases' x_in_XY with x_in_XY x_in_XY
+      · choose x_in_X x0 using x_in_XY
+        contradiction
+      · choose x_in_Y x1 using x_in_XY
+        rw [← x1, Prod.mk.eta, simplicialJoin_mem_vertices]
+        exact Or.inr (And.intro x_in_Y x1)
+  right_inv x_in_ZW := by
+    simp only [SimplicialMap.map, SimplicialJoinIsoMap]
+    split_ifs with h <;> (rw [Prod.eq_iff_fst_eq_snd_eq]; simp only [and_true])
+    · apply f.right_inv
+      rw [← @simplicialJoin_mem_vertices_left _ 𝕜, ← h, Prod.mk.eta]
+      exact x_in_ZW
+    · apply g.right_inv
+      rw [← @simplicialJoin_mem_vertices_right _ 𝕜 _ _ _ _ Z]
+      rw [simplicialJoin_mem_vertices] at x_in_ZW
+      cases' x_in_ZW with x_in_ZW x_in_ZW
+      · choose x_in_Z x0 using x_in_ZW
+        contradiction
+      · choose x_in_W x1 using x_in_ZW
+        rw [← x1, Prod.mk.eta, simplicialJoin_mem_vertices]
+        exact Or.inr (And.intro x_in_W x1)
+
+@[deprecated simplicialJoin_simplicialIso' (since := "")]
 theorem simplicialJoin_simplicialIso
     {Z W : AbstractSimplicialComplex F}
   : (X ≅ Z) → Y ≅ W → (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) ≅ (Z ⋆ W : AbstractSimplicialComplex (F × 𝕜)) :=
@@ -647,6 +687,11 @@ by
     right
     constructor <;> assumption
 
+def SimplicialIso.join_right (f : X ≅' Y) (Z : AbstractSimplicialComplex E) :
+    (X ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) ≅' (Y ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) :=
+  simplicialJoin_simplicialIso' f SimplicialIso.id'
+
+@[deprecated SimplicialIso.join_right (since := "")]
 theorem simplicialJoin_simplicialIso_left
   : (X ≅ Y) → (X ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) ≅ (Y ⋆ Z : AbstractSimplicialComplex (E × 𝕜)) :=
 by
@@ -655,6 +700,11 @@ by
   assumption
   rfl
 
+def SimplicialIso.join_left (f : X ≅' Y) (Z : AbstractSimplicialComplex E) :
+    (Z ⋆ X : AbstractSimplicialComplex (E × 𝕜)) ≅' (Z ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) :=
+  simplicialJoin_simplicialIso' SimplicialIso.id' f
+
+@[deprecated SimplicialIso.join_left (since := "")]
 theorem simplicialJoin_simplicialIso_right
   : (X ≅ Y) → (Z ⋆ X : AbstractSimplicialComplex (E × 𝕜)) ≅ (Z ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) :=
 by
@@ -677,6 +727,7 @@ def SimplicialJoinAssocForwardMap
     fun x : E × 𝕜 =>
       if x.snd = 0 then (SimplicialJoinAssocForwardAux Y Z ψ) (f.map x.fst) else (ψ.coe x, x.snd)
 
+@[deprecated "no replacement yet" (since := "")]
 theorem simplicialJoin_assoc_forward_simplicial_left
     (φ : SimplicialCoe (X ⋆ Y) E)
     (ψ : SimplicialCoe (Y ⋆ Z) E)
@@ -770,6 +821,7 @@ by
   assumption
   assumption
 
+@[deprecated "no replacement yet" (since := "")]
 theorem simplicialJoin_assoc_forward_simplicial_right
     (φ : SimplicialCoe (X ⋆ Y) E)
     (ψ : SimplicialCoe (Y ⋆ Z) E)
@@ -873,6 +925,7 @@ by
   constructor; assumption
   rw [y_one]; assumption
 
+@[deprecated "no replacement yet" (since := "")]
 theorem simplicialJoin_assoc_forward_simplicial
     (φ : SimplicialCoe (X ⋆ Y) E)
     (ψ : SimplicialCoe (Y ⋆ Z) E)
@@ -1021,6 +1074,7 @@ def SimplicialJoinAssocInvMap
       fun x : E × 𝕜 =>
         if x.snd = 0 then (φ.coe x, 0) else (SimplicialJoinAssocInvAux X Y φ) (g.map x.fst)
 
+@[deprecated "no replacement yet" (since := "")]
 theorem simplicialJoin_assoc_inv_simplicial_left
     (φ : SimplicialCoe (X ⋆ Y) E)
     (ψ : SimplicialCoe (Y ⋆ Z) E)
@@ -1111,6 +1165,7 @@ by
   rw [← x_one]
   assumption
 
+@[deprecated "no replacement yet" (since := "")]
 theorem simplicialJoin_assoc_inv_simplicial_right
     (φ : SimplicialCoe (X ⋆ Y) E)
     (ψ : SimplicialCoe (Y ⋆ Z) E)
@@ -1200,6 +1255,7 @@ by
   simp only [Prod.snd, x_one, gψ_id, Nat.one_ne_zero]
   simp only [one_ne_zero, ↓reduceIte]
 
+@[deprecated "no replacement yet" (since := "")]
 theorem simplicialJoin_assoc_inv_simplicial
     (φ : SimplicialCoe (X ⋆ Y) E)
     (ψ : SimplicialCoe (Y ⋆ Z) E)
@@ -1325,6 +1381,7 @@ by
   rw [ne_eq, faceDisjoint_empty, not_and_or] at u_ne
   cases u_ne <;> contradiction
 
+@[deprecated "no replacement yet" (since := "")]
 theorem simplicialJoin_assoc [Nonempty E]
     (φ : SimplicialCoe (X ⋆ Y) E)
     (ψ : SimplicialCoe (Y ⋆ Z) E)
@@ -1660,6 +1717,29 @@ by
   rw [Finset.image_eq_empty]
   assumption
 
+def SimplicialJoin.symm : (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) ≅' (Y ⋆ X : AbstractSimplicialComplex (E × 𝕜)) where
+  toFun := {
+    map := SimplicialJoinCommMap
+    is_simplicial := simplicialJoin_comm_simplicial }
+  invFun := {
+    map := SimplicialJoinCommMap
+    is_simplicial := simplicialJoin_comm_simplicial }
+  left_inv x_in_XY := by
+    rw [simplicialJoin_mem_vertices] at x_in_XY
+    simp only [SimplicialJoinCommMap]
+    cases' x_in_XY with x_in_XY x_in_XY <;>
+    · choose x_in_X x_index using x_in_XY
+      simp only [x_index, one_ne_zero, ↓reduceIte]
+      rw [← x_index]
+  right_inv x_in_XY := by
+    rw [simplicialJoin_mem_vertices] at x_in_XY
+    simp only [SimplicialJoinCommMap]
+    cases' x_in_XY with x_in_XY x_in_XY <;>
+    · choose x_in_X x_index using x_in_XY
+      simp only [x_index, one_ne_zero, ↓reduceIte]
+      rw [← x_index]
+
+@[deprecated SimplicialJoin.symm (since := "")]
 theorem simplicialJoin_comm : (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) ≅ (Y ⋆ X : AbstractSimplicialComplex (E × 𝕜)) := by
   let f : SimplicialMap (X ⋆ Y : AbstractSimplicialComplex (E × 𝕜)) (Y ⋆ X) :=
     SimplicialMap.mk SimplicialJoinCommMap simplicialJoin_comm_simplicial
@@ -1766,6 +1846,23 @@ by
   rw [u_empty]
   apply X.empty_notMem
 
+def simplicialJoin_bot_iso_id' : (X ⋆ ⊥ : AbstractSimplicialComplex (E × 𝕜)) ≅' X where
+  toFun := {
+    map := SimplicialJoinBotIsoIdForwardMap
+    is_simplicial := simplicialJoin_bot_iso_id_forward_simplicial }
+  invFun := {
+    map := SimplicialJoinBotIsoIdLeftInverseMap
+    is_simplicial := simplicialJoin_bot_iso_id_inverse_simplicial }
+  left_inv x_in_X_empty := by
+    rw [simplicialJoin_mem_vertices] at x_in_X_empty
+    simp only [SimplicialJoinBotIsoIdForwardMap, SimplicialJoinBotIsoIdLeftInverseMap, Prod.ext_iff, true_and]
+    cases' x_in_X_empty with x_in_X contra
+    · exact x_in_X.right.symm
+    · simp only [AbstractSimplicialComplex.hasBot, AbstractSimplicialComplex.vertices, Set.mem_setOf, Set.mem_empty_iff_false,
+        false_and] at contra
+  right_inv x_in_X := by simp only [SimplicialJoinBotIsoIdForwardMap, SimplicialJoinBotIsoIdLeftInverseMap]
+
+@[deprecated simplicialJoin_bot_iso_id' (since := "")]
 theorem simplicialJoin_bot_iso_id : (X ⋆ ⊥ : AbstractSimplicialComplex (E × 𝕜)) ≅ X := by
   let f : SimplicialMap (X ⋆ ⊥ : AbstractSimplicialComplex (E × 𝕜)) X :=
     SimplicialMap.mk SimplicialJoinBotIsoIdForwardMap simplicialJoin_bot_iso_id_forward_simplicial
@@ -1797,6 +1894,12 @@ theorem simplicialJoin_bot_iso_id : (X ⋆ ⊥ : AbstractSimplicialComplex (E ×
     simp only [f, g, SimplicialMap.comp, Function.comp_apply, id]
     simp only [SimplicialJoinBotIsoIdForwardMap, SimplicialJoinBotIsoIdLeftInverseMap]
 
+def simplicialJoin_bot_iso_right' : (⊥ ⋆ X : AbstractSimplicialComplex (E × 𝕜)) ≅' X :=
+  calc (⊥ ⋆ X : AbstractSimplicialComplex (E × 𝕜))
+    _ ≅' X ⋆ ⊥ := SimplicialJoin.symm
+    _ ≅' X     := simplicialJoin_bot_iso_id'
+
+@[deprecated simplicialJoin_bot_iso_right' (since := "")]
 theorem simplicialJoin_bot_iso_right : (⊥ ⋆ X : AbstractSimplicialComplex (E × 𝕜)) ≅ X := by
   calc (⊥ ⋆ X : AbstractSimplicialComplex (E × 𝕜))
     _ ≅ X ⋆ ⊥ := simplicialJoin_comm

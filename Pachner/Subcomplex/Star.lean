@@ -49,6 +49,27 @@ theorem star_subcomplex : St(X, s) ⊆ X := by
   simp only [StarNeighborhood, Set.mem_sep_iff] at t_in_star
   exact t_in_star.left
 
+def star_simplicialIso' (s_in_X : s ∈ X.faces) (f : X ≅' Y) (fs_eq_t : Finset.image f.toFun.map s = t) : St(X, s) ≅' St(Y, t) where
+  toFun := {
+    map := f.toFun.map
+    is_simplicial u u_in_star := (by
+      choose u_in_X su_in_X using u_in_star
+      constructor
+      · exact f.toFun.is_simplicial u u_in_X
+      · rw [← fs_eq_t, ← Finset.image_union]
+        exact f.toFun.is_simplicial _ su_in_X) }
+  invFun := {
+    map := f.invFun.map
+    is_simplicial u u_in_star := (by
+      choose u_in_Y tu_in_Y using u_in_star
+      constructor
+      · exact f.invFun.is_simplicial u u_in_Y
+      · rw [← f.face_mapsTo_face_inv s_in_X fs_eq_t, ← Finset.image_union]
+        exact f.invFun.is_simplicial _ tu_in_Y) }
+  left_inv x_in_star := f.left_inv (isSubcomplex_vertices star_subcomplex _ x_in_star)
+  right_inv x_in_star := f.right_inv (isSubcomplex_vertices star_subcomplex _ x_in_star)
+
+@[deprecated star_simplicialIso' (since := "")]
 theorem star_simplicialIso
     (s_in_X : s ∈ X.faces)
     (f : SimplicialMap X Y)

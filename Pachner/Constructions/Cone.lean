@@ -268,6 +268,60 @@ by
   simp at u_eq_st
   simp [u_eq_st]
 
+def cone_simplicialIso' (x_nin_X : x ∉ X.vertices) (y_nin_Y : y ∉ Y.vertices) (f : X ≅' Y) :
+    (Cone(X, x) x_nin_X : AbstractSimplicialComplex (E × 𝕜)) ≅' (Cone(Y, y) y_nin_Y : AbstractSimplicialComplex (F × 𝕜)) where
+  toFun := {
+    map := ConeIsoMap y f.toFun.map
+    is_simplicial := cone_simplicialMap x_nin_X y_nin_Y f.toFun }
+  invFun := {
+    map := ConeIsoMap x f.invFun.map
+    is_simplicial := cone_simplicialMap y_nin_Y x_nin_X f.invFun }
+  left_inv z_in_cone := by
+    rw [vertex_iff_in_face] at z_in_cone
+    choose u u_in_cone z_in_u using z_in_cone
+    simp only [Cone, NegOneBall, SimplicialJoin, Set.mem_diff, Set.mem_setOf] at u_in_cone
+    obtain ⟨⟨s, s_in_ball, t, t_in_X, st_eq_u⟩, u_nonempty⟩ := u_in_cone
+    rw [← st_eq_u, faceDisjoint_mem_iff] at z_in_u
+    rcases z_in_u with z_in_ball | ⟨z_in_t, z_one⟩
+    · cases' s_in_ball with s_eq_x contra
+      · rw [s_eq_x, Finset.mem_singleton] at z_in_ball
+        choose z_eq_x z_zero using z_in_ball
+        simp only [ConeIsoMap, Prod.ext_iff, z_zero, eq_self_iff_true, if_true, and_true, z_eq_x]
+      · rw [contra] at z_in_ball
+        choose contra z_zero using z_in_ball
+        contradiction
+    · simp only [ConeIsoMap, z_one, one_ne_zero, ↓reduceIte, Prod.ext_iff, and_true]
+      apply f.left_inv
+      rw [vertex_iff_in_face]
+      use t
+      cases' t_in_X with t_in_X t_empty
+      · exact And.intro t_in_X z_in_t
+      · subst t_empty
+        contradiction
+  right_inv z_in_cone := by
+    rw [vertex_iff_in_face] at z_in_cone
+    choose u u_in_cone z_in_u using z_in_cone
+    simp only [Cone, NegOneBall, SimplicialJoin, Set.mem_diff, Set.mem_setOf] at u_in_cone
+    obtain ⟨⟨s, s_in_ball, t, t_in_X, st_eq_u⟩, u_nonempty⟩ := u_in_cone
+    rw [← st_eq_u, faceDisjoint_mem_iff] at z_in_u
+    rcases z_in_u with z_in_ball | ⟨z_in_t, z_one⟩
+    · cases' s_in_ball with s_eq_x contra
+      · rw [s_eq_x, Finset.mem_singleton] at z_in_ball
+        choose z_eq_x z_zero using z_in_ball
+        simp only [ConeIsoMap, Prod.ext_iff, z_zero, eq_self_iff_true, if_true, and_true, z_eq_x]
+      · rw [contra] at z_in_ball
+        choose contra z_zero using z_in_ball
+        contradiction
+    · simp only [ConeIsoMap, z_one, one_ne_zero, ↓reduceIte, Prod.ext_iff, and_true]
+      apply f.right_inv
+      rw [vertex_iff_in_face]
+      use t
+      cases' t_in_X with t_in_X t_empty
+      · exact And.intro t_in_X z_in_t
+      · subst t_empty
+        contradiction
+
+@[deprecated cone_simplicialIso' (since := "")]
 theorem cone_simplicialIso
     (x_nin_X : x ∉ X.vertices)
     (y_nin_Y : y ∉ Y.vertices)

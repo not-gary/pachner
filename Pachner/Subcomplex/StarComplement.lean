@@ -47,12 +47,57 @@ by
     apply Finset.decidableDExistsFinset
   apply Set.fintypeSep
 
-theorem starComplement_subcomplex (s : Finset E) : X\St(X, s) ⊆ X := by
+theorem starComplement_subcomplex {s : Finset E} : X\St(X, s) ⊆ X := by
   simp only [IsSubcomplex, AbstractSimplicialComplex.instHasSubset, Set.subset_def]
   intro t t_in_star_comp
   simp only [StarComplement, Set.mem_sep_iff] at t_in_star_comp
   exact t_in_star_comp.left
 
+def starComplement_simplicialIso' (s_in_X : s ∈ X.faces) (t_in_Y : t ∈ Y.faces) (f : X ≅' Y)
+    (fs_eq_t : Finset.image f.toFun.map s = t) : X\St(X, s) ≅' Y\St(Y, t) where
+  toFun := {
+    map := f.toFun.map
+    is_simplicial u u_in_comp := (by
+      choose u_in_X s_nss_u using u_in_comp
+      constructor
+      · exact f.toFun.is_simplicial u u_in_X
+      · simp only [← fs_eq_t, Finset.image_subset_iff, Classical.not_forall, Finset.mem_image, not_exists]
+        simp only [Finset.subset_iff, Classical.not_forall] at s_nss_u
+        choose x x_in_s x_nin_u using s_nss_u
+        use x, x_in_s
+        intro y
+        rw [not_and_or]
+        by_cases y_in_u : y ∈ u
+        · rw [Set.InjOn.eq_iff f.injective_vertices (vertex_if_mem_face u_in_X y_in_u) (vertex_if_mem_face s_in_X x_in_s)]
+          right
+          by_contra y_eq_x
+          subst y_eq_x
+          contradiction
+        · exact Or.inl y_in_u) }
+  invFun := {
+    map := f.invFun.map
+    is_simplicial u u_in_comp := (by
+      choose u_in_X t_nss_u using u_in_comp
+      constructor
+      · exact f.invFun.is_simplicial u u_in_X
+      · rw [← f.face_mapsTo_face_inv s_in_X fs_eq_t]
+        simp only [Finset.image_subset_iff, Classical.not_forall, Finset.mem_image, not_exists, not_and_or]
+        simp only [Finset.subset_iff, Classical.not_forall] at t_nss_u
+        choose x x_in_t x_nin_u using t_nss_u
+        use x, x_in_t
+        intro y
+        by_cases y_in_u : y ∈ u
+        · right
+          have H : f.invFun = f.symm.toFun := rfl
+          rw [H, Set.InjOn.eq_iff f.symm.injective_vertices (vertex_if_mem_face u_in_X y_in_u) (vertex_if_mem_face t_in_Y x_in_t)]
+          by_contra y_eq_x
+          subst y_eq_x
+          contradiction
+        · exact Or.inl y_in_u) }
+  left_inv x_in_star := f.left_inv (isSubcomplex_vertices starComplement_subcomplex _ x_in_star)
+  right_inv x_in_star := f.right_inv (isSubcomplex_vertices starComplement_subcomplex _ x_in_star)
+
+@[deprecated starComplement_simplicialIso' (since := "")]
 theorem starComplement_simplicialIso
     (s_in_X : s ∈ X.faces)
     (t_in_Y : t ∈ Y.faces)
@@ -167,11 +212,11 @@ by
     id]
   constructor
   · intro x x_in_X_comp
-    have x_in_X : x ∈ X.vertices := isSubcomplex_vertices (starComplement_subcomplex s) x x_in_X_comp
+    have x_in_X : x ∈ X.vertices := isSubcomplex_vertices starComplement_subcomplex x x_in_X_comp
     specialize gf_id x_in_X
     assumption
   · intro x x_in_Y_comp
-    have x_in_Y : x ∈ Y.vertices := isSubcomplex_vertices (starComplement_subcomplex t) x x_in_Y_comp
+    have x_in_Y : x ∈ Y.vertices := isSubcomplex_vertices starComplement_subcomplex x x_in_Y_comp
     specialize fg_id x_in_Y
     assumption
 

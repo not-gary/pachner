@@ -58,7 +58,7 @@ by
   revert x
   simp only [← Finset.mem_coe, ← Set.subset_def]
   apply face_subset_vertices
-  exact isSubcomplex_face_imp_face t_in_star_comp (starComplement_subcomplex s)
+  exact isSubcomplex_face_imp_face t_in_star_comp starComplement_subcomplex
 
   right
   simp only [simplicialJoinProj_mem, Set.mem_union] at t_in_join ⊢

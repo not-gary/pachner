@@ -172,7 +172,38 @@ theorem link_notMem_vertices : x ∉ X.vertices → x ∉ Lk(X, s).vertices := b
   simp only [Classical.not_not]
   apply isSubcomplex_vertices
   apply link_subcomplex
+def link_simplicialIso' {Y : AbstractSimplicialComplex F} {t : Finset F} (s_in_X : s ∈ X.faces) (f : X ≅' Y)
+    ( fs_eq_t : Finset.image f.toFun.map s = t) : Lk(X, s) ≅' Lk(Y, t) where
+  toFun := {
+    map := f.toFun.map
+    is_simplicial u u_in_link := (by
+      choose u_in_X su_in_X su_disj using u_in_link
+      constructor
+      · exact f.toFun.is_simplicial u u_in_X
+      · simp only [← fs_eq_t, ← Finset.image_union]
+        constructor
+        · exact f.toFun.is_simplicial _ su_in_X
+        · rw [← Finset.image_inter_of_injOn, Finset.image_eq_empty]
+          exact su_disj
+          rw [← Finset.coe_union]
+          exact f.injective_faces _ su_in_X) }
+  invFun := {
+    map := f.invFun.map
+    is_simplicial u u_in_link := (by
+      choose u_in_Y su_in_Y su_disj using u_in_link
+      constructor
+      · exact f.invFun.is_simplicial u u_in_Y
+      · rw [← f.face_mapsTo_face_inv s_in_X fs_eq_t, ← Finset.image_union]
+        constructor
+        · exact f.invFun.is_simplicial _ su_in_Y
+        · rw [← Finset.image_inter_of_injOn, Finset.image_eq_empty]
+          exact su_disj
+          rw [← Finset.coe_union]
+          exact f.symm.injective_faces _ su_in_Y) }
+  left_inv x_in_star := f.left_inv (isSubcomplex_vertices link_subcomplex _ x_in_star)
+  right_inv x_in_star := f.right_inv (isSubcomplex_vertices link_subcomplex _ x_in_star)
 
+@[deprecated link_simplicialIso' (since := "")]
 theorem link_simplicialIso
     {Y : AbstractSimplicialComplex F}
     {t : Finset F}
@@ -365,6 +396,7 @@ theorem link_empty_eq_self : Lk(X, ∅) = X := by
     Finset.empty_union, Finset.empty_inter, and_true]
   simp only [and_self, forall_const]
 
+@[deprecated link_empty_eq_self (since := "")]
 theorem link_empty_eq_self_iso : Lk(X, ∅) ≅ X := by rw [link_empty_eq_self]
 
 theorem link_disjoint_base : t ∈ Lk(X, s) → Disjoint s t := by

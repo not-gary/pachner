@@ -347,6 +347,15 @@ by
 
 -- Lemma 2.2 (3), p.7
 -- TODO: could be = instead of ≅ but requires some work
+def simplicialJoin_starComplement_right' (s_in_X : s ∈ X.faces) :
+    (Y ⋆ (X\St(X, s)) : AbstractSimplicialComplex (E × 𝕜)) ≅' ((X ⋆ Y)\St(X ⋆ Y, s ⊔ₛ ∅) : AbstractSimplicialComplex (E × 𝕜)) :=
+  calc Y ⋆ (StarComplement X s)
+    _ ≅' (X\St(X, s)) ⋆ Y := SimplicialJoin.symm
+    _ = (X ⋆ Y)\St(X ⋆ Y, s ⊔ₛ ∅) := simplicialJoin_starComplement_left s_in_X
+
+-- Lemma 2.2 (3), p.7
+-- TODO: could be = instead of ≅ but requires some work
+@[deprecated simplicialJoin_starComplement_right' (since := "")]
 theorem simplicialJoin_starComplement_right
     (s_in_X : s ∈ X.faces)
   : (Y ⋆ (X\St(X, s)) : AbstractSimplicialComplex (E × 𝕜)) ≅
