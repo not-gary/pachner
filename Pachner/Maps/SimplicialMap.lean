@@ -169,6 +169,23 @@ theorem simplicialImage_union : (f ''ˢ (X ∪ Y)) = (f ''ˢ X) ∪ (f ''ˢ Y) :
   simp only [AbstractSimplicialComplex.ext_iff, AbstractSimplicialComplex.instHasUnion, SimplicialUnion,
   simplicialImage_is_lift_image, SimplicialMapLift, Set.image_union]
 
+theorem simplicialIso_subcomplex_image
+    {X Y : AbstractSimplicialComplex E}
+    {Z : AbstractSimplicialComplex F}
+    (f : SimplicialMap Y Z)
+  : X ⊆ Y → f.map ''ˢ X ⊆ Z :=
+by
+  intro X_sub_Y
+  simp only [SimplicialImage, AbstractSimplicialComplex.instHasSubset, IsSubcomplex] at X_sub_Y ⊢
+  simp only [Set.image]
+  simp only [Set.subset_def] at X_sub_Y ⊢
+  intro t t_in_fX
+  simp only [Set.mem_setOf] at t_in_fX ⊢
+  choose s s_in_X fs_eq_t using t_in_fX
+  specialize X_sub_Y s s_in_X
+  subst fs_eq_t
+  exact f.is_simplicial s X_sub_Y
+
 end SimplicialMap
 
 section SimplicialMap.vertices

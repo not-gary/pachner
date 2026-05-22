@@ -7,6 +7,162 @@ variable
   [DecidableEq E] [DecidableEq F] [DecidableEq G]
   {X : AbstractSimplicialComplex E} {Y : AbstractSimplicialComplex F} {Z : AbstractSimplicialComplex G}
 
+section Bundled
+
+structure SimplicialIso (X : AbstractSimplicialComplex E) (Y : AbstractSimplicialComplex F) where
+  toFun : SimplicialMap X Y -- this naming convention follows (Partial)Equiv, there is also the one from CategoryTheory
+  invFun : SimplicialMap Y X -- which would be 'hom' and 'inv'
+  left_inv : ∀ {x : E}, x ∈ X.vertices → invFun.map (toFun.map x) = x
+  right_inv : ∀ {x : F}, x ∈ Y.vertices → toFun.map (invFun.map x) = x
+
+infixr:50 " ≅' " => SimplicialIso
+
+def SimplicialIso.id' : X ≅' X where
+  toFun := idSimplicialMap X
+  invFun := idSimplicialMap X
+  left_inv := by simp only [idSimplicialMap, _root_.id, imp_true_iff]
+  right_inv := by simp only [idSimplicialMap, _root_.id, imp_true_iff]
+
+def SimplicialIso.comp (f : X ≅' Y) (g : Y ≅' Z) : X ≅' Z where
+  toFun := f.toFun.comp g.toFun
+  invFun := g.invFun.comp f.invFun
+  left_inv := by
+    intro x x_in_X
+    simp only [SimplicialMap.comp, Function.comp_apply]
+    rw [g.left_inv (simplicialMap_on_vertices f.toFun x_in_X), f.left_inv x_in_X]
+  right_inv := by
+    intro x x_in_Z
+    simp only [SimplicialMap.comp, Function.comp_apply]
+    rw [f.right_inv (simplicialMap_on_vertices g.invFun x_in_Z), g.right_inv x_in_Z]
+
+@[refl]
+def SimplicialIso.refl : X ≅' X := id'
+
+@[symm]
+def SimplicialIso.symm (f : X ≅' Y) : Y ≅' X where
+  toFun := f.invFun
+  invFun := f.toFun
+  left_inv := f.right_inv
+  right_inv := f.left_inv
+
+@[trans]
+def SimplicialIso.trans (f : X ≅' Y) (g : Y ≅' Z) : X ≅' Z := f.comp g
+
+instance SimplicialIso.Trans : Trans (@SimplicialIso E F _ _) (@SimplicialIso F G _ _) (@SimplicialIso E G _ _) where
+    trans := SimplicialIso.trans
+
+theorem SimplicialIso.EqOn_id_left (f : X ≅' Y) : Set.EqOn (f.invFun.map ∘ f.toFun.map) id X.vertices := by
+  intro x x_in_X
+  rw [Function.comp_apply, id, f.left_inv x_in_X]
+
+theorem SimplicialIso.EqOn_id_right (f : X ≅' Y) : Set.EqOn (f.toFun.map ∘ f.invFun.map) id Y.vertices := by
+  intro y y_in_Y
+  rw [Function.comp_apply, id, f.right_inv y_in_Y]
+
+theorem SimplicialIso.injective_vertices (f : X ≅' Y) : Set.InjOn f.toFun.map (X.vertices) := by
+  intro x x_in_X y y_in_X fx_eq_fy
+  apply_fun f.invFun.map at fx_eq_fy
+  rw [f.left_inv x_in_X, f.left_inv y_in_X] at fx_eq_fy
+  exact fx_eq_fy
+
+theorem SimplicialIso.surjective_vertices (f : X ≅' Y) : Set.SurjOn f.toFun.map X.vertices Y.vertices := by
+  simp only [Set.SurjOn, Set.subset_def, Set.mem_image]
+  intro x x_in_Y
+  exact ⟨f.invFun.map x, ⟨simplicialMap_on_vertices f.invFun x_in_Y, f.right_inv x_in_Y⟩⟩
+
+theorem SimplicialIso.bijective_vertices (f : X ≅' Y) : Set.BijOn f.toFun.map X.vertices Y.vertices := by
+  refine ⟨?_, ⟨f.injective_vertices, f.surjective_vertices⟩⟩
+  · intro x x_in_X
+    exact simplicialMap_on_vertices f.toFun x_in_X
+
+theorem SimplicialIso.congr_vertices (f : X ≅' Y) : f.toFun.map '' X.vertices = Y.vertices := by
+  exact Set.BijOn.image_eq f.bijective_vertices
+
+theorem SimplicialIso.injective_faces (f : X ≅' Y) : ∀ s ∈ X.faces, Set.InjOn f.toFun.map ↑s := by
+  intro s s_in_X
+  exact Set.InjOn.mono (face_subset_vertices s_in_X) f.injective_vertices
+
+theorem SimplicialIso.simplicialMapLift_bijective (f : X ≅' Y) : Y.faces = (Finset.image f.toFun.map) '' X.faces := by
+  rw [Set.ext_iff]
+  intro t
+  simp only [Set.mem_image]
+  constructor
+  · intro t_in_Y
+    refine ⟨Finset.image f.invFun.map t, ⟨f.invFun.is_simplicial t t_in_Y, ?_⟩⟩
+    · simp only [← Finset.coe_inj, Finset.coe_image, ← Set.image_comp,
+        Set.EqOn.image_eq (Set.EqOn.mono (face_subset_vertices t_in_Y) f.EqOn_id_right), Set.image_id]
+  · intro t_in_image
+    rcases t_in_image with ⟨s, s_in_X, fs_eq_t⟩
+    subst fs_eq_t
+    exact f.toFun.is_simplicial s s_in_X
+
+theorem SimplicialIso.face_mapsTo_face_inv {s : Finset E} {t : Finset F} (f : X ≅' Y) (s_in_X : s ∈ X.faces)
+    (fs_eq_t : Finset.image f.toFun.map s = t) : Finset.image f.invFun.map t = s := by
+  rw [← fs_eq_t, Finset.ext_iff, Finset.image_image]
+  intro x
+  simp only [Finset.mem_image, Function.comp_apply]
+  constructor
+  · intro x_in_img
+    rcases x_in_img with ⟨y, y_in_s, gfy_eq_x⟩
+    subst x
+    rw [f.left_inv (vertex_if_mem_face s_in_X y_in_s)]
+    exact y_in_s
+  · intro x_in_s
+    exact ⟨x, ⟨x_in_s, f.left_inv (vertex_if_mem_face s_in_X x_in_s)⟩⟩
+
+section SynthOrder
+set_option synthInstance.checkSynthOrder false
+instance SimplicialIso.fintype (f : X ≅' Y) [Fintype X.faces] : Fintype Y.faces := by
+  rw [f.simplicialMapLift_bijective]
+  exact Set.fintypeImage X.faces (Finset.image f.toFun.map)
+end SynthOrder
+
+theorem SimplicialIso.preserves_face_dim (f : X ≅' Y) : ∀ s ∈ X.faces, face_dim s = face_dim (Finset.image f.toFun.map s) := by
+  intro s s_in_X
+  unfold face_dim
+  apply congr_arg fun z : ℤ => z - 1
+  symm
+  rw [Nat.cast_inj, Finset.card_image_iff]
+  exact f.injective_faces s s_in_X
+
+theorem SimplicialIso.preserves_dim (f : X ≅' Y) [Fintype X.faces] : X.dim = @Y.dim _ (SimplicialIso.fintype f) := by
+  have Y_fin : Fintype Y.faces := by exact SimplicialIso.fintype f
+  simp only [AbstractSimplicialComplex.dim]
+  rw [le_antisymm_iff]
+  constructor
+  -- dim X ≤ dim Y case.
+  · rw [Finset.max'_le_iff]
+    intro n n_X_dim
+    rw [Finset.mem_union, Finset.mem_image] at n_X_dim
+    rcases n_X_dim with ⟨s, s_in_X, s_dim_n⟩ | X_empty
+    · rw [Set.mem_toFinset] at s_in_X
+      rw [← s_dim_n]
+      apply Finset.le_max'
+      rw [f.preserves_face_dim s s_in_X, Finset.mem_union, Finset.mem_image]
+      refine Or.inl ⟨Finset.image f.toFun.map s, ⟨?_, rfl⟩⟩
+      · simp only [Set.mem_toFinset]
+        exact f.toFun.is_simplicial s s_in_X
+    · apply Finset.le_max'
+      rw [Finset.mem_union]
+      exact Or.inr X_empty
+  -- dim Y ≤ dim X case.
+  · rw [Finset.max'_le_iff]
+    intro m m_Y_dim
+    rw [Finset.mem_union, Finset.mem_image] at m_Y_dim
+    rcases m_Y_dim with ⟨t, t_in_Y, t_dim_m⟩ | Y_empty
+    · simp only [Set.mem_toFinset] at t_in_Y
+      rw [← t_dim_m]
+      apply Finset.le_max'
+      rw [f.symm.preserves_face_dim t t_in_Y, Finset.mem_union, Finset.mem_image]
+      refine Or.inl ⟨Finset.image f.invFun.map t, ⟨?_, rfl⟩⟩
+      · rw [Set.mem_toFinset]
+        exact f.invFun.is_simplicial t t_in_Y
+    · apply Finset.le_max'
+      rw [Finset.mem_union]
+      exact Or.inr Y_empty
+
+end Bundled
+
 @[simp]
 def IsInverseSimplicialIso
     (f : SimplicialMap X Y)
@@ -365,23 +521,5 @@ by
   intro H
   have X_eq_Y : X = Y := by rw [AbstractSimplicialComplex.ext_iff, H]
   rw [X_eq_Y]
-
-theorem simplicialIso_subcomplex_image
-    {X Y : AbstractSimplicialComplex E}
-    {Z : AbstractSimplicialComplex F}
-    (f : SimplicialMap Y Z)
-    (f_iso : IsSimplicialIso f)
-  : X ⊆ Y → f.map ''ˢ X ⊆ Z :=
-by
-  intro X_sub_Y
-  simp only [AbstractSimplicialComplex.instHasSubset, IsSubcomplex] at X_sub_Y ⊢
-  rw [simplicialIso_imp_simplicialMapLift_bijective f f_iso]
-  simp only [SimplicialMapLift, Set.image]
-  simp only [Set.subset_def] at X_sub_Y ⊢
-  intro t t_in_fX
-  simp only [Set.mem_setOf] at t_in_fX ⊢
-  choose s s_in_X fs_eq_t using t_in_fX
-  specialize X_sub_Y s s_in_X
-  use s
 
 end Isomorphism
