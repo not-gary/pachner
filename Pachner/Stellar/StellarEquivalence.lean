@@ -1495,7 +1495,8 @@ by
   use φ
   apply stellarCoe_simplicialIso
   rw [simplicialIso_symm]
-  apply stellarCoe_stellarSubdivision <;> assumption
+  -- TODO: this breaks when using 'stellarCoe_stellarSubdivision', fix this proof
+  apply stellarCoe_stellarSubdivision_iso <;> assumption
 
   simp only [Set.EqOn, implies_true, φY]
 

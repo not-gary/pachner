@@ -549,6 +549,22 @@ by
   rw [h] at z_in_X
   contradiction
 
+-- TODO: this only exists because the proof of 'stellar_weld_exists_iso' breaks when just using
+--    'stellarCoe_stellarSubdivision'. as soon as that proof is fixed, remove this theorem
+@[deprecated "use 'stellarCoe_stellarSubdivision' instead" (since := "")]
+theorem stellarCoe_stellarSubdivision_iso
+    (s_in_X : s ∈ X.faces)
+    (x_nin_X : x ∉ X.vertices)
+    (y_nin_coe : y ∉ (φ.coe ''ˢ X).vertices)
+  : σ(SimplicialImage (StellarCoeMap φ.coe x y) X, Finset.image (StellarCoeMap φ.coe x y) s,
+        (StellarCoeMap φ.coe x y) x; 𝕜, isSimplicialMap_onto_image _ _ _ s_in_X,
+        by
+          simp only [StellarCoeMap, ↓reduceIte]
+          rw [stellarCoe_vertices] <;> assumption)
+      ≅ σ(SimplicialImage φ.coe X, Finset.image φ.coe s, y; 𝕜, isSimplicialMap_onto_image _ _ _ s_in_X, y_nin_coe) :=
+by
+  rw [stellarCoe_stellarSubdivision s_in_X x_nin_X]
+
 theorem stellarCoe_inv_simplicialIso
     [Nonempty E]
     (s_in_X : s ∈ X.faces)
