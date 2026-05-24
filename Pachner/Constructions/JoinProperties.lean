@@ -184,6 +184,7 @@ end Intersection
 section Star
 
 -- TODO: simplicialJoin_star_right
+-- TODO: probably, the more general version St(X, s) ⋆ St(Y, t) = St(X ⋆ Y, s ⊔ₛ t) also holds
 
 -- Lemma 2.2 (2), p.7
 theorem simplicialJoin_star_left
@@ -288,6 +289,7 @@ end Star
 -- Distributive properties of join over star complement
 section StarComplement
 
+-- TODO: probably, the more general version X\St(X, s) ⋆ Y\St(Y, t) = (X ⋆ Y)\St(X ⋆ Y, s ⊔ₛ t) also holds
 theorem simplicialJoin_starComplement_left
     (s_in_X : s ∈ X.faces)
   : X\St(X, s) ⋆ Y =
