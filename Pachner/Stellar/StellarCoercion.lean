@@ -519,7 +519,7 @@ theorem stellarCoe_stellarSubdivision
         by
           simp only [StellarCoeMap, ↓reduceIte]
           rw [stellarCoe_vertices] <;> assumption)
-      ≅ σ(SimplicialImage φ.coe X, Finset.image φ.coe s, y; 𝕜, isSimplicialMap_onto_image _ _ _ s_in_X, y_nin_coe) :=
+      = σ(SimplicialImage φ.coe X, Finset.image φ.coe s, y; 𝕜, isSimplicialMap_onto_image _ _ _ s_in_X, y_nin_coe) :=
 by
   have x_nin_s : x ∉ s := by
     revert x_nin_X
