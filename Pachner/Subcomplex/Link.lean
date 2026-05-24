@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2025 Garett Cunningham, Daniel Zach, Stefan Friedl. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Author: Garett Cunningham, Daniel Zach, Stefan Friedl
+-/
+
 import Pachner.Maps.SimplicialCoercion
 import Pachner.Subcomplex.Intersection
 
@@ -153,6 +159,7 @@ by
   apply face_subset_vertices
   assumption
 
+-- TODO: link_simplicialCoe_image
 theorem link_coe_image
     (s_in_X : s ∈ X.faces)
     (φ : SimplicialCoe X F)
@@ -161,6 +168,7 @@ by
   rw [AbstractSimplicialComplex.ext_iff, Set.Subset.antisymm_iff]
   exact ⟨link_simplicialCoe_image_left s_in_X, link_simplicialCoe_image_right s_in_X⟩
 
+-- TODO: link_isSubcomplex
 theorem link_subcomplex : Lk(X, s) ⊆ X := by
   intro t t_in_link
   simp only [Link, Set.mem_sep_iff] at t_in_link
