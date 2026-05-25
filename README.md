@@ -41,7 +41,7 @@ Citation:
 ```
 @inproceedings{stellarsubdivisionsinlean,
   title={Formalizing Abstract Simplicial Complexes {\&} Stellar Subdivisions in Lean},
-  author={Cunningham, Garett and Zach, Daniel, and Friedl, Stefan},
+  author={Cunningham, Garett and Zach, Daniel and Friedl, Stefan},
   booktitle={17th International Conference on Interactive Theorem Proving (ITP 2026)},
   year={2026},
   organization={Schloss Dagstuhl--Leibniz-Zentrum f{\"u}r Informatik}
