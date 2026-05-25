@@ -1,5 +1,5 @@
 ## Abstract Simplicial Complexes & Stellar Subdivisions
-Formalization for abstract simplicial complexes and stellar subdivisions in Lean 4. Partial progress and additional experiments toward formalizing a proof of Pachner's Theorem on equivalence combinatorial manifolds.
+Formalization for abstract simplicial complexes and stellar subdivisions in Lean 4. Partial progress and additional experiments toward formalizing a proof of Pachner's Theorem on equivalence of combinatorial manifolds.
 
 Part of this work is to be presented at [ITP '26](https://itp-conference-2026.github.io/index.html).
 
