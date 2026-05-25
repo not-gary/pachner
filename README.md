@@ -18,7 +18,7 @@ Part of this work is to be presented at [ITP '26](https://itp-conference-2026.gi
 	- `SimplicialCoercion` Utilities for typecasting complexes.
 	- `SimplicialIsomorphism`
 	- `SimplicialMap`
-- `Results/` Complex proofs identities, organized into their own files.
+- `Results/` Complex proofs of identities organized into their own files.
 	- `SimplicialJoinStellarEquiv`
 	- `StarBoundaryIsJoin`
 	- `StellarSubdivAnticommLink`
@@ -29,7 +29,7 @@ Part of this work is to be presented at [ITP '26](https://itp-conference-2026.gi
 	- `StellarCoercion` Typecasting for stellar subdivisions.
 	- `StellarEquivlance`
 	- `StellarSubdivision`
-- `Subcomplex/` Definitions and properties of some standard subcomplexes.
+- `Subcomplex/` Definitions and properties of some standard subcomplexes and set operations.
 	- `FaceBoundary`
 	- `Intersection`
 	- `Link`
